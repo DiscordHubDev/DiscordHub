@@ -18,8 +18,12 @@ jobs:
         id: get_branch
         run: echo "branch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
 
+      - name: Get Vercel Project ID
+        id: get_project_id
+        run: vercel project ls --json --token=${{ secrets.VERCEL_TOKEN }} | jq -r '.projects[] | select(.name == "your-vercel-project-name") | .id' >> $GITHUB_OUTPUT
+
       - name: List Vercel Deployments
-        run: vercel deployments --projectId=prj_U10w7yPhzVzgeGCR05jNMYq7Qgt3 --token=${{ secrets.VERCEL_TOKEN }} --git-branch=${{ steps.get_branch.outputs.branch }}
+        run: vercel ls deployments --token=${{ secrets.VERCEL_TOKEN }} --filter="projectId=${{ steps.get_project_id.outputs.result }} && gitBranch=${{ steps.get_branch.outputs.branch }}"
         continue-on-error: true
 
       - name: Sleep 30 seconds
