@@ -27,7 +27,7 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel (Preview)
-        run: vercel deploy --prebuilt --env=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prebuilt --target=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Vercel Preview URL
         uses: zentered/vercel-preview-url@v1.1.9
