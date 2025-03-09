@@ -8,6 +8,20 @@ jobs:
   vercel_preview:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Get Pull Request Branch
+        id: get_branch
+        run: echo "branch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
+
+      - name: List Vercel Deployments
+        run: vercel deployments --projectId=prj_U10w7yPhzVzgeGCR05jNMYq7Qgt3 --token=${{ secrets.VERCEL_TOKEN }} --git-branch=${{ steps.get_branch.outputs.branch }}
+        continue-on-error: true
+
       - name: Sleep 30 seconds
         run: sleep 30
 
