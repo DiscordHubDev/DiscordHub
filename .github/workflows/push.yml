@@ -10,7 +10,7 @@ on:
       - master
 
 jobs:
-  deploy_and_preview:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
