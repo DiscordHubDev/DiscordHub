@@ -11,8 +11,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+      - name: Install Vercel CLI (specific version)
+        run: npm install --global vercel@41.0.0
 
       - name: Get Pull Request Branch
         id: get_branch
