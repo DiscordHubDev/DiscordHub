@@ -1,38 +1,25 @@
-name: Vercel Preview URL Comment
+name: GitHub Actions Vercel Preview Deployment
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 on:
   pull_request:
-    types: [opened, synchronize]
 
 jobs:
-  vercel_preview:
+  Deploy-Preview:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+      contents: write
     steps:
-      - name: Sleep 30 seconds
-        run: sleep 30
-
-      - name: Vercel Preview URL
-        uses: zentered/vercel-preview-url@v1.1.9
-        id: vercel_preview_url
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - uses: actions/checkout@v3
+      - uses: amondnet/vercel-action@v25.2.0
         with:
-          vercel_project_id: 'prj_U10w7yPhzVzgeGCR05jNMYq7Qgt33'
-
-      - name: Create Comment with URL
-        uses: actions/github-script@v6
-        if: steps.vercel_preview_url.outputs.preview_url
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const url = `https://${{ steps.vercel_preview_url.outputs.preview_url }}`;
-            const message = `Vercel Preview URL: ${url}`;
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
-
-      - name: Get URL(for debug)
-        run: echo "https://${{ steps.vercel_preview_url.outputs.preview_url }}"
+         vercel-token: ${{ secrets.VERCEL_TOKEN }}
+         vercel-org-id: ${{ secrets.VERCEL_ORG_ID}}
+         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID}}
+         github-comment: 'true'
+         github-token: ${{ secrets.GITHUB_TOKEN }}
+         scope: ${{ secrets.VERCEL_ORG_ID}}
