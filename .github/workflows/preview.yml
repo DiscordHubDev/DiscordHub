@@ -30,12 +30,13 @@ jobs:
         run: vercel deploy --prebuilt --target=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Vercel Preview URL
-        uses: zentered/vercel-preview-url@v1.1.9
+        uses: zentered/vercel-preview-url@v1.4.0
         id: vercel_preview_url
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
         with:
-          vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel_app: 'discordhub'
 
       - name: Create Comment with URL
         uses: actions/github-script@v6
