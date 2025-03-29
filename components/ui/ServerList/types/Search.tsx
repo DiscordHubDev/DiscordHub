@@ -2,7 +2,7 @@ import React from "react";
 
 const Search: React.FC = () => {
   return (
-    <div className="p-4 bg-gray-800 rounded-lg mx-4">
+    <div className="p-1 bg-gray-800 rounded-lg mx-10 md:mx-auto md:max-w-md lg:max-w-lg">
       <div className="relative">
         <input
           type="text"

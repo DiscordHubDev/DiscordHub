@@ -1,10 +1,12 @@
 import React from "react";
-import ServerListPage from "../components/ServerList/types/ServerListPage";
+import ServerListPage from "../components/ui/ServerList/types/ServerListPage";
 
 const Page: React.FC = () => {
   return (
-    <div>
-      <ServerListPage />
+    <div className="py-10">
+      <div className="container mx-auto" style={{ maxWidth: "1200px" }}>
+        <ServerListPage />
+      </div>
     </div>
   );
 };
