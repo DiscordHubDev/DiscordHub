@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+enum NotificationLevel {
+  SUCCESS   // 完成或通過
+  INFO      // 一般通知
+  WARNING   // 較重要
+  DANGER    // 嚴重錯誤
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String?     // null = broadcast
+  type       String      // ex: 'system',
+  level     NotificationLevel  @default(INFO)
+  title      String
+  message    String?
+  data       Json?
+  read       Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+}
+
+model Bot {
+  id       String   @id @default(cuid())
+  name     String
+  bot_description String // 機器人短介紹
+  content String // 長介紹
+  avatar   String
+  banner   String?
+  prefix String?
+  website String
+
+  support_server String?
+  authors  String[]
+  have_slash Boolean
+  verfied  Boolean // 已驗證: True, 否則 False
+
+  reviews  Review[]
+}
+
+model Server {
+  id       String   @id @default(cuid())
+  name     String
+  server_description String // 伺服器短介紹
+  content String // 長介紹
+  description String
+  avatar   String
+  banner   String?
+  owner    String
+
+
+  reviews  Review[]
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int
+  vote Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  userId     String
+
+  botId      String? 
+  bot        Bot?     @relation(fields: [botId], references: [id])
+  
+  serverId   String?
+  server     Server?  @relation(fields: [serverId], references: [id])
+}
