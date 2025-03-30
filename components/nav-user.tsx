@@ -8,8 +8,11 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,13 +28,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { signOut } from "next-auth/react";
 
 interface NavUserProps {
   user: DiscordUser;
 }
 
 export function NavUser({ user }: NavUserProps) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { isMobile } = useSidebar();
 
   return (
@@ -56,7 +60,7 @@ export function NavUser({ user }: NavUserProps) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="mx-5 min-w-50 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -97,9 +101,9 @@ export function NavUser({ user }: NavUserProps) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={() => signOut()} variant="destructive">
               <LogOut />
-              Log out
+              登出
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -149,6 +149,14 @@
   transform: scale(1.05);
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: oklch(0.208 0.042 265.755)
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

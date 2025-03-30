@@ -49,7 +49,7 @@ const PopularServers: React.FC = () => {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-2"># 熱門伺服器</h2>
-      <div className="flex space-x-2 overflow-x-auto mb-4">
+      <div className="flex space-x-2 overflow-x-auto mb-4 max-w-full">
         {[
           "遊戲",
           "社群",

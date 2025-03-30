@@ -32,7 +32,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "h-screen w-screen font-sans antialiased bg-black text-white",
+          "h-screen w-full font-sans antialiased bg-black text-white",
           fontSans.variable
         )}
       >
@@ -44,7 +44,7 @@ export default async function RootLayout({
         >
           <SessionProvider session={session}>
             <SidebarProvider>
-              <main className="h-full w-full flex flex-col md:flex-row">
+              <main className="h-full w-full flex flex-col md:flex-row overflow-auto">
                 <AppSidebar className="md:w-64 flex-shrink-0" />
                 <SidebarInset className="flex-grow flex flex-col">
                   <Navbar />

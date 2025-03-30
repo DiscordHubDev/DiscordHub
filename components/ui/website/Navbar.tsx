@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { FaBars, FaBook, FaDiscord, FaRobot, FaServer } from "react-icons/fa";
+import { FaBars, FaBook, FaRobot, FaServer } from "react-icons/fa";
 import { SidebarTrigger } from "../sidebar";
 
 import {
@@ -13,17 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signIn, useSession } from "next-auth/react";
-import Discord from "next-auth/providers/discord";
 import DiscordLoginButton from "./DiscordLogin";
 
 const Navbar = () => {
-  const { data: session } = useSession();
   return (
     <nav className="sticky top-0 bg-transparent p-4 z-10">
       <div
         className="container mx-auto flex flex-col md:flex-row justify-between items-center"
-        style={{ maxWidth: "1200px" }}
+        style={{ maxWidth: "1170px" }}
       >
         <SidebarTrigger className="fixed top-4 left-4 md:hidden" />
 
