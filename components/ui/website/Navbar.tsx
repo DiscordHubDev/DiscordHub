@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { FaBars, FaBook, FaRobot, FaServer } from "react-icons/fa";
 import { SidebarTrigger } from "../sidebar";
+import { useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -16,6 +17,20 @@ import {
 import DiscordLoginButton from "./DiscordLogin";
 
 const Navbar = () => {
+  const router = useRouter();
+
+  const BotButtonClick = () => {
+    router.push("/bot");
+  };
+
+  const ServerButtonClick = () => {
+    router.push("/");
+  };
+
+  const HelpButtonClick = () => {
+    router.push("/help");
+  };
+
   return (
     <nav className="sticky top-0 bg-transparent p-4 z-10">
       <div
@@ -44,6 +59,7 @@ const Navbar = () => {
           <Button
             variant="secondary"
             className="bg-transparent hover:bg-[#1e222b] text-white text-md font-bold flex items-center flex-shrink-0 h-12 w-auto"
+            onClick={BotButtonClick}
           >
             <FaRobot
               className="mr-2"
@@ -54,6 +70,7 @@ const Navbar = () => {
           <Button
             variant="secondary"
             className="bg-transparent hover:bg-[#1e222b] text-white text-md font-bold flex items-center flex-shrink-0 h-12 w-auto"
+            onClick={ServerButtonClick}
           >
             <FaServer
               className="mr-2"
@@ -64,6 +81,7 @@ const Navbar = () => {
           <Button
             variant="secondary"
             className="bg-transparent hover:bg-[#1e222b] text-white text-md font-bold flex items-center flex-shrink-0 h-12 w-auto"
+            onClick={HelpButtonClick}
           >
             <FaBook
               className="mr-2"
