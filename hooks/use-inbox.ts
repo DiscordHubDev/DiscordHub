@@ -31,6 +31,14 @@ export function useInbox() {
     );
   };
 
+  const deleteMail = async (mailId: string) => {
+    const { error } = await supabase.from("Notification").delete().eq("id", mailId);
+
+    if (error) throw error;
+
+    setMails((prev) => prev.filter((mail) => mail.id !== mailId));
+  };
+
   const { data, error, isLoading, mutate } = useSWR(
     userId ? ["inbox", userId] : null,
     async () => {
@@ -62,5 +70,6 @@ export function useInbox() {
     refresh: mutate,
     addMail,
     markAsRead,
+    deleteMail,
   };
 }

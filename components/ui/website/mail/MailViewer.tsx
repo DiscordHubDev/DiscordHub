@@ -7,8 +7,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Mail } from "./MailItem"; // 引入你 Mail 的 interface
+
+import { Mail } from "./MailItem";
 import { cn } from "@/lib/utils";
 
 export function MailViewer({

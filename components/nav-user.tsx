@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  BadgeCheck,
-  Bell,
+  User,
+  Bot,
+  Server,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
+  Settings,
 } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -28,6 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 interface NavUserProps {
   user: DiscordUser;
@@ -78,27 +79,17 @@ export function NavUser({ user }: NavUserProps) {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+                <Settings />
+                帳號設定
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
+              <Link href={"/profile"}>
+                <DropdownMenuItem>
+                  <User />
+                  個人頁面
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()} variant="destructive">

@@ -39,8 +39,8 @@ import { NavItem } from "./nav-item";
 import { Separator } from "@radix-ui/react-separator";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { Switch } from "./ui/switch";
-import { Mail, MailItem } from "./ui/website/MailItem";
-import { MailViewer } from "./ui/website/MailViewer";
+import { Mail, MailItem } from "./ui/website/mail/MailItem";
+import { MailViewer } from "./ui/website/mail/MailViewer";
 import { useInbox } from "@/hooks/use-inbox";
 import { NotificationListener } from "@/app/providers/NotificationProvider";
 
@@ -203,7 +203,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [selectedMail, setSelectedMail] = useState<Mail | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { mails, isLoading, addMail, markAsRead } = useInbox();
+  const { mails, isLoading, addMail, markAsRead, deleteMail } = useInbox();
 
   const [search, setSearch] = useState("");
 
@@ -322,6 +322,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       onClick={() => {
                         openMail(mail);
                         console.log("開啟信件：", mail.subject);
+                      }}
+                      onDelete={async () => {
+                        if (confirm("確定要刪除這封郵件嗎？")) {
+                          try {
+                            await deleteMail(mail.id);
+                            alert("刪除成功！");
+                          } catch (error) {
+                            alert("刪除失敗！");
+                          }
+                        }
                       }}
                     />
                   ))}

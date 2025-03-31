@@ -39,7 +39,7 @@ const PopularBotsList: React.FC = () => {
   const router = useRouter();
 
   const handleBotClick = (botId: string) => {
-    router.push(`/thebots/${botId}`);
+    router.push(`/bots/${botId}`);
   };
 
   return (

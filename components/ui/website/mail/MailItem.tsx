@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { LucideSettings2 } from "lucide-react";
+import { LucideSettings2, Trash2 } from "lucide-react";
 
 type NotificationLevel = "SUCCESS" | "INFO" | "WARNING" | "DANGER";
 
@@ -18,9 +18,11 @@ export interface Mail {
 export function MailItem({
   mail,
   onClick,
+  onDelete,
 }: {
   mail: Mail;
   onClick?: () => void;
+  onDelete?: () => void;
 }) {
   const levelStyleMap: Record<
     NotificationLevel,
@@ -63,7 +65,7 @@ export function MailItem({
         if (e.key === "Enter") onClick?.();
       }}
       className={cn(
-        "group block border-b p-4 transition-colors bg-background hover:bg-muted mb-2",
+        "group block border-b p-4 transition-colors bg-background hover:bg-muted mb-2 relative",
         styles.indicator,
         !mail.read && "bg-muted/50"
       )}
@@ -100,15 +102,28 @@ export function MailItem({
           {mail.subject}
         </span>
         <Badge
-          className={cn("text-[10px]  font-medium rounded-full", styles.badge)}
+          className={cn("text-[10px] font-medium rounded-full", styles.badge)}
         >
           {mail.level}
         </Badge>
       </div>
 
-      <div className="text-xs text-muted-foreground line-clamp-2">
+      <div className="text-xs text-muted-foreground line-clamp-2 pr-6 ">
         {mail.teaser}
       </div>
+
+      {/* 新增刪除按鈕 */}
+      {onDelete && (
+        <button
+          className="absolute right-0.5 top-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500"
+          onClick={(e) => {
+            e.stopPropagation(); // 防止觸發onClick事件
+            onDelete();
+          }}
+        >
+          <Trash2 size={16} />
+        </button>
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import DiscordLoginButton from "./DiscordLogin";
+import Link from "next/link";
 
 const Navbar = () => {
   const router = useRouter();
@@ -52,9 +53,11 @@ const Navbar = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="text-white text-xl font-bold mb-4 md:mb-0">
-          DiscordHub
-        </div>
+        <Link href="/">
+          <div className="text-white text-xl font-bold mb-4 md:mb-0 cursor-pointer">
+            DiscordHub
+          </div>
+        </Link>
         <div className="hidden md:flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
           <Button
             variant="secondary"
