@@ -3,7 +3,6 @@ import "./globals.css";
 import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/ui/website/Navbar";
-import Footer from "@/components/ui/website/Footer";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
@@ -49,7 +48,6 @@ export default async function RootLayout({
                 <SidebarInset className="flex-grow flex flex-col">
                   <Navbar />
                   <div className="flex-grow">{children}</div>
-                  <Footer />
                 </SidebarInset>
               </main>
             </SidebarProvider>
