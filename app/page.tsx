@@ -1,31 +1,36 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ServerList from "@/components/server-list"
-import FeaturedServers from "@/components/featured-servers"
-import CategoryFilter from "@/components/category-filter"
-import CategorySearch from "@/components/category-search"
-import MobileCategoryFilter from "@/components/mobile-category-filter"
-import MobileMenu from "@/components/mobile-menu"
-import { servers as allServers, categories as initialCategories } from "@/lib/mock-data"
-import type { ServerType, CategoryType } from "@/lib/types"
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ServerList from "@/components/server-list";
+import FeaturedServers from "@/components/featured-servers";
+import CategoryFilter from "@/components/category-filter";
+import CategorySearch from "@/components/category-search";
+import MobileCategoryFilter from "@/components/mobile-category-filter";
+import MobileMenu from "@/components/mobile-menu";
+import {
+  servers as allServers,
+  categories as initialCategories,
+} from "@/lib/mock-data";
+import type { ServerType, CategoryType } from "@/lib/types";
+import Link from "next/link";
 
 export default function DiscordServerListPage() {
-  const [servers, setServers] = useState<ServerType[]>(allServers)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categories, setCategories] = useState<CategoryType[]>(initialCategories)
+  const [servers, setServers] = useState<ServerType[]>(allServers);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] =
+    useState<CategoryType[]>(initialCategories);
 
   // 處理分類過濾
   const handleCategoryChange = (selectedCategoryIds: string[]) => {
     if (selectedCategoryIds.length === 0) {
       // 如果沒有選擇任何分類，顯示所有伺服器
-      setServers(allServers)
+      setServers(allServers);
     } else {
       // 根據選擇的分類過濾伺服器
       const filteredServers = allServers.filter((server) => {
@@ -33,21 +38,25 @@ export default function DiscordServerListPage() {
         // 實際應用中可能需要更複雜的邏輯
         const categoryNames = categories
           .filter((cat) => selectedCategoryIds.includes(cat.id))
-          .map((cat) => cat.name.toLowerCase())
+          .map((cat) => cat.name.toLowerCase());
 
-        return server.tags.some((tag) => categoryNames.some((catName) => tag.toLowerCase().includes(catName)))
-      })
+        return server.tags.some((tag) =>
+          categoryNames.some((catName) => tag.toLowerCase().includes(catName))
+        );
+      });
 
-      setServers(filteredServers)
+      setServers(filteredServers);
     }
-  }
+  };
 
   // 添加自定義分類
   const handleAddCustomCategory = (categoryName: string) => {
     // 檢查是否已存在相同名稱的分類
-    const exists = categories.some((cat) => cat.name.toLowerCase() === categoryName.toLowerCase())
+    const exists = categories.some(
+      (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
+    );
 
-    if (exists) return
+    if (exists) return;
 
     // 創建新分類
     const newCategory: CategoryType = {
@@ -55,35 +64,38 @@ export default function DiscordServerListPage() {
       name: categoryName,
       color: `bg-[#${Math.floor(Math.random() * 16777215).toString(16)}]`, // 隨機顏色
       selected: true,
-    }
+    };
 
     // 更新分類列表
-    const updatedCategories = [...categories, newCategory]
-    setCategories(updatedCategories)
+    const updatedCategories = [...categories, newCategory];
+    setCategories(updatedCategories);
 
     // 自動選中新分類
-    handleCategoryChange([...categories.filter((c) => c.selected).map((c) => c.id), newCategory.id])
-  }
+    handleCategoryChange([
+      ...categories.filter((c) => c.selected).map((c) => c.id),
+      newCategory.id,
+    ]);
+  };
 
   // 處理搜索
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!searchQuery.trim()) {
-      setServers(allServers)
-      return
+      setServers(allServers);
+      return;
     }
 
-    const query = searchQuery.toLowerCase()
+    const query = searchQuery.toLowerCase();
     const searchResults = allServers.filter(
       (server) =>
         server.name.toLowerCase().includes(query) ||
         server.description.toLowerCase().includes(query) ||
-        server.tags.some((tag) => tag.toLowerCase().includes(query)),
-    )
+        server.tags.some((tag) => tag.toLowerCase().includes(query))
+    );
 
-    setServers(searchResults)
-  }
+    setServers(searchResults);
+  };
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -93,7 +105,10 @@ export default function DiscordServerListPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-white flex items-center">
+                <Link
+                  href="/"
+                  className="text-xl font-bold text-white flex items-center"
+                >
                   <span className="text-[#5865f2] mr-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -113,28 +128,46 @@ export default function DiscordServerListPage() {
                       <path d="M16 10h.01" />
                     </svg>
                   </span>
-                  DiscordList
-                </h1>
+                  DiscordHubs
+                </Link>
               </div>
               <div className="hidden md:block ml-10">
                 <div className="flex items-center space-x-4">
-                  <Button variant="ghost" className="text-white hover:bg-[#36393f]">
-                    首頁
-                  </Button>
-                  <Button variant="ghost" className="text-white hover:bg-[#36393f]">
-                    熱門伺服器
-                  </Button>
-                  <Button variant="ghost" className="text-white hover:bg-[#36393f]">
+                  <Link href="/" passHref>
+                    <Button
+                      variant="ghost"
+                      className="text-white hover:bg-[#36393f] bg-[#36393f]"
+                    >
+                      伺服器列表
+                    </Button>
+                  </Link>
+                  <Link href="/bots" passHref>
+                    <Button
+                      variant="ghost"
+                      className="text-white hover:bg-[#36393f]"
+                    >
+                      機器人列表
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="text-white hover:bg-[#36393f]"
+                  >
                     新增伺服器
                   </Button>
-                  <Button variant="ghost" className="text-white hover:bg-[#36393f]">
+                  <Button
+                    variant="ghost"
+                    className="text-white hover:bg-[#36393f]"
+                  >
                     關於我們
                   </Button>
                 </div>
               </div>
             </div>
             <div className="hidden md:block">
-              <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">登入</Button>
+              <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                登入
+              </Button>
             </div>
             <MobileMenu />
           </div>
@@ -146,15 +179,27 @@ export default function DiscordServerListPage() {
         <div className="absolute inset-0 opacity-10">
           <svg className="h-full w-full" viewBox="0 0 800 800">
             <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+              <pattern
+                id="grid"
+                width="40"
+                height="40"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 40 0 L 0 0 0 40"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1"
+                />
               </pattern>
             </defs>
             <rect width="800" height="800" fill="url(#grid)" />
           </svg>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">發現最棒的 Discord 社群</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            發現最棒的 Discord 社群
+          </h1>
           <p className="text-xl text-white/80 mb-8 max-w-3xl mx-auto">
             加入數千個有趣的伺服器，找到您的興趣社群，與志同道合的朋友一起交流
           </p>
@@ -167,7 +212,10 @@ export default function DiscordServerListPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
+              size={20}
+            />
             <Button
               type="submit"
               className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-[#5865f2] hover:bg-white/90 hidden sm:flex"
@@ -200,13 +248,22 @@ export default function DiscordServerListPage() {
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs defaultValue="featured" className="mb-8">
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full overflow-x-auto">
-                <TabsTrigger value="featured" className="data-[state=active]:bg-[#36393f]">
+                <TabsTrigger
+                  value="featured"
+                  className="data-[state=active]:bg-[#36393f]"
+                >
                   精選伺服器
                 </TabsTrigger>
-                <TabsTrigger value="popular" className="data-[state=active]:bg-[#36393f]">
+                <TabsTrigger
+                  value="popular"
+                  className="data-[state=active]:bg-[#36393f]"
+                >
                   熱門伺服器
                 </TabsTrigger>
-                <TabsTrigger value="new" className="data-[state=active]:bg-[#36393f]">
+                <TabsTrigger
+                  value="new"
+                  className="data-[state=active]:bg-[#36393f]"
+                >
                   最新伺服器
                 </TabsTrigger>
               </TabsList>
@@ -220,13 +277,17 @@ export default function DiscordServerListPage() {
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
-                <ServerList servers={[...servers].sort((a, b) => b.members - a.members)} />
+                <ServerList
+                  servers={[...servers].sort((a, b) => b.members - a.members)}
+                />
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
                 <ServerList
                   servers={[...servers].sort(
-                    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
                   )}
                 />
               </TabsContent>
@@ -248,7 +309,10 @@ export default function DiscordServerListPage() {
               </div>
 
               <div className="mt-4">
-                <CategoryFilter categories={categories} onCategoryChange={handleCategoryChange} />
+                <CategoryFilter
+                  categories={categories}
+                  onCategoryChange={handleCategoryChange}
+                />
               </div>
             </div>
 
@@ -273,9 +337,12 @@ export default function DiscordServerListPage() {
             <div className="bg-[#2b2d31] rounded-lg p-5">
               <h3 className="text-lg font-semibold mb-4">新增您的伺服器</h3>
               <p className="text-gray-300 text-sm mb-4">
-                想要推廣您的 Discord 伺服器嗎？立即加入我們的平台，讓更多人發現您的社群！
+                想要推廣您的 Discord
+                伺服器嗎？立即加入我們的平台，讓更多人發現您的社群！
               </p>
-              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">新增伺服器</Button>
+              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+                新增伺服器
+              </Button>
             </div>
           </div>
         </div>
@@ -285,9 +352,12 @@ export default function DiscordServerListPage() {
           <div className="bg-[#2b2d31] rounded-lg p-5">
             <h3 className="text-lg font-semibold mb-4">新增您的伺服器</h3>
             <p className="text-gray-300 text-sm mb-4">
-              想要推廣您的 Discord 伺服器嗎？立即加入我們的平台，讓更多人發現您的社群！
+              想要推廣您的 Discord
+              伺服器嗎？立即加入我們的平台，讓更多人發現您的社群！
             </p>
-            <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">新增伺服器</Button>
+            <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+              新增伺服器
+            </Button>
           </div>
         </div>
       </div>
@@ -297,21 +367,23 @@ export default function DiscordServerListPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-lg font-semibold mb-4">DiscordList</h3>
-              <p className="text-gray-400 text-sm">最佳的 Discord 伺服器列表平台，幫助您發現和加入有趣的社群。</p>
+              <h3 className="text-lg font-semibold mb-4">DiscordHubs</h3>
+              <p className="text-gray-400 text-sm">
+                最佳的 Discord 伺服器列表平台，幫助您發現和加入有趣的社群。
+              </p>
             </div>
             <div>
               <h4 className="font-medium mb-4">連結</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white">
+                  <Link href="/" className="hover:text-white">
                     首頁
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white">
-                    伺服器列表
-                  </a>
+                  <Link href="/bots" className="hover:text-white">
+                    機器人列表
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white">
@@ -377,7 +449,9 @@ export default function DiscordServerListPage() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-[#1e1f22] flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">© 2025 DiscordList. 保留所有權利。</p>
+            <p className="text-gray-400 text-sm">
+              © 2025 DiscordHubs. 保留所有權利。
+            </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <a href="#" className="text-gray-400 hover:text-white">
                 <svg
@@ -429,13 +503,11 @@ export default function DiscordServerListPage() {
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
-                \
               </a>
             </div>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }
-

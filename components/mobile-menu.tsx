@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
+import Link from "next/link"
 
 export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false)
@@ -16,12 +17,16 @@ export default function MobileMenu() {
       {isOpen && (
         <div className="absolute top-16 left-0 right-0 z-50 bg-[#2b2d31] border-b border-[#1e1f22] shadow-lg">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#36393f]">
-              首頁
-            </Button>
-            <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#36393f]">
-              熱門伺服器
-            </Button>
+            <Link href="/" passHref>
+              <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#36393f]">
+                伺服器列表
+              </Button>
+            </Link>
+            <Link href="/bots" passHref>
+              <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#36393f]">
+                機器人列表
+              </Button>
+            </Link>
             <Button variant="ghost" className="w-full justify-start text-white hover:bg-[#36393f]">
               新增伺服器
             </Button>

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { FaAddressBook, FaBook, FaRobot, FaServer } from "react-icons/fa";
+import { FaBook, FaRobot, FaServer } from "react-icons/fa";
 
 const Navbar = () => {
   return (
