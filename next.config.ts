@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  images: {
+    domains: ["cdn.discordapp.com"],
+  },
 };
 
 export default nextConfig;

@@ -1,128 +1,80 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Search, Users, ArrowUp, Bot } from "lucide-react"
-import VoteCard from "@/components/vote-card"
-import { servers, bots } from "@/lib/mock-data"
-import MobileMenu from "@/components/mobile-menu"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Search, Users, ArrowUp, Bot } from "lucide-react";
+import VoteCard from "@/components/vote-card";
+import { servers, bots } from "@/lib/mock-data";
+import MobileMenu from "@/components/mobile-menu";
 
 export default function VotePage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filteredServers, setFilteredServers] = useState(servers)
-  const [filteredBots, setFilteredBots] = useState(bots)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredServers, setFilteredServers] = useState(servers);
+  const [filteredBots, setFilteredBots] = useState(bots);
 
   // 處理搜索
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const query = searchQuery.toLowerCase()
+    const query = searchQuery.toLowerCase();
 
     if (!query.trim()) {
-      setFilteredServers(servers)
-      setFilteredBots(bots)
-      return
+      setFilteredServers(servers);
+      setFilteredBots(bots);
+      return;
     }
 
     // 過濾伺服器
     const matchedServers = servers.filter(
-      (server) => server.name.toLowerCase().includes(query) || server.description.toLowerCase().includes(query),
-    )
+      (server) =>
+        server.name.toLowerCase().includes(query) ||
+        server.description.toLowerCase().includes(query)
+    );
 
     // 過濾機器人
     const matchedBots = bots.filter(
-      (bot) => bot.name.toLowerCase().includes(query) || bot.description.toLowerCase().includes(query),
-    )
+      (bot) =>
+        bot.name.toLowerCase().includes(query) ||
+        bot.description.toLowerCase().includes(query)
+    );
 
-    setFilteredServers(matchedServers)
-    setFilteredBots(matchedBots)
-  }
+    setFilteredServers(matchedServers);
+    setFilteredBots(matchedBots);
+  };
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
-      {/* Navigation */}
-      <nav className="bg-[#2b2d31] border-b border-[#1e1f22]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Link href="/" className="text-xl font-bold text-white flex items-center">
-                  <span className="text-[#5865f2] mr-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-message-square-more"
-                    >
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      <path d="M8 10h.01" />
-                      <path d="M12 10h.01" />
-                      <path d="M16 10h.01" />
-                    </svg>
-                  </span>
-                  DiscordList
-                </Link>
-              </div>
-              <div className="hidden md:block ml-10">
-                <div className="flex items-center space-x-4">
-                  <Link href="/" passHref>
-                    <Button variant="ghost" className="text-white hover:bg-[#36393f]">
-                      伺服器列表
-                    </Button>
-                  </Link>
-                  <Link href="/bots" passHref>
-                    <Button variant="ghost" className="text-white hover:bg-[#36393f]">
-                      機器人列表
-                    </Button>
-                  </Link>
-                  <Link href="/vote" passHref>
-                    <Button variant="ghost" className="text-white hover:bg-[#36393f] bg-[#36393f]">
-                      投票
-                    </Button>
-                  </Link>
-                  <Link href="/add-server" passHref>
-                    <Button variant="ghost" className="text-white hover:bg-[#36393f]">
-                      新增伺服器
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <Link href="/profile">
-                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">個人資料</Button>
-              </Link>
-            </div>
-            <MobileMenu />
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Banner */}
       <div className="relative bg-gradient-to-br from-[#5865f2] to-[#8c54ff] py-16 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <svg className="h-full w-full" viewBox="0 0 800 800">
             <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+              <pattern
+                id="grid"
+                width="40"
+                height="40"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 40 0 L 0 0 0 40"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1"
+                />
               </pattern>
             </defs>
             <rect width="800" height="800" fill="url(#grid)" />
           </svg>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">為您喜愛的伺服器和機器人投票</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            為您喜愛的伺服器和機器人投票
+          </h1>
           <p className="text-xl text-white/80 mb-8 max-w-3xl mx-auto">
             支持您喜愛的 Discord 伺服器和機器人，幫助它們獲得更多曝光和關注
           </p>
@@ -135,7 +87,10 @@ export default function VotePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
+              size={20}
+            />
             <Button
               type="submit"
               className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-[#5865f2] hover:bg-white/90 hidden sm:flex"
@@ -157,13 +112,22 @@ export default function VotePage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="servers" className="mb-8">
           <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full overflow-x-auto">
-            <TabsTrigger value="servers" className="data-[state=active]:bg-[#36393f]">
+            <TabsTrigger
+              value="servers"
+              className="data-[state=active]:bg-[#36393f]"
+            >
               伺服器投票
             </TabsTrigger>
-            <TabsTrigger value="bots" className="data-[state=active]:bg-[#36393f]">
+            <TabsTrigger
+              value="bots"
+              className="data-[state=active]:bg-[#36393f]"
+            >
               機器人投票
             </TabsTrigger>
-            <TabsTrigger value="top" className="data-[state=active]:bg-[#36393f]">
+            <TabsTrigger
+              value="top"
+              className="data-[state=active]:bg-[#36393f]"
+            >
               排行榜
             </TabsTrigger>
           </TabsList>
@@ -222,14 +186,21 @@ export default function VotePage() {
                       .sort((a, b) => b.upvotes - a.upvotes)
                       .slice(0, 5)
                       .map((server, index) => (
-                        <Link href={`/servers/${server.id}`} key={server.id} className="block">
+                        <Link
+                          href={`/servers/${server.id}`}
+                          key={server.id}
+                          className="block"
+                        >
                           <div className="p-4 hover:bg-[#36393f] transition-colors flex items-center">
                             <div className="w-8 h-8 flex items-center justify-center font-bold text-gray-400 mr-3">
                               #{index + 1}
                             </div>
                             <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden mr-3">
                               <img
-                                src={server.icon || "/placeholder.svg?height=40&width=40"}
+                                src={
+                                  server.icon ||
+                                  "/placeholder.svg?height=40&width=40"
+                                }
                                 alt={server.name}
                                 className="w-full h-full object-cover"
                               />
@@ -238,19 +209,26 @@ export default function VotePage() {
                               <div className="font-medium">{server.name}</div>
                               <div className="text-xs text-gray-400 flex items-center">
                                 <Users size={12} className="mr-1" />
-                                <span>{server.members.toLocaleString()} 成員</span>
+                                <span>
+                                  {server.members.toLocaleString()} 成員
+                                </span>
                               </div>
                             </div>
                             <div className="flex items-center text-[#5865f2]">
                               <ArrowUp size={14} className="mr-1" />
-                              <span className="font-bold">{server.upvotes.toLocaleString()}</span>
+                              <span className="font-bold">
+                                {server.upvotes.toLocaleString()}
+                              </span>
                             </div>
                           </div>
                         </Link>
                       ))}
                   </div>
                   <div className="p-3 border-t border-[#1e1f22] bg-[#36393f]">
-                    <Link href="/" className="text-sm text-[#5865f2] hover:underline">
+                    <Link
+                      href="/"
+                      className="text-sm text-[#5865f2] hover:underline"
+                    >
                       查看所有伺服器
                     </Link>
                   </div>
@@ -269,14 +247,21 @@ export default function VotePage() {
                       .sort((a, b) => b.upvotes - a.upvotes)
                       .slice(0, 5)
                       .map((bot, index) => (
-                        <Link href={`/bots/${bot.id}`} key={bot.id} className="block">
+                        <Link
+                          href={`/bots/${bot.id}`}
+                          key={bot.id}
+                          className="block"
+                        >
                           <div className="p-4 hover:bg-[#36393f] transition-colors flex items-center">
                             <div className="w-8 h-8 flex items-center justify-center font-bold text-gray-400 mr-3">
                               #{index + 1}
                             </div>
                             <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden mr-3">
                               <img
-                                src={bot.icon || "/placeholder.svg?height=40&width=40"}
+                                src={
+                                  bot.icon ||
+                                  "/placeholder.svg?height=40&width=40"
+                                }
                                 alt={bot.name}
                                 className="w-full h-full object-cover"
                               />
@@ -307,20 +292,27 @@ export default function VotePage() {
                                 </div>
                                 <div className="text-xs text-gray-400 flex items-center">
                                   <Bot size={12} className="mr-1" />
-                                  <span>{bot.servers.toLocaleString()} 伺服器</span>
+                                  <span>
+                                    {bot.servers.toLocaleString()} 伺服器
+                                  </span>
                                 </div>
                               </div>
                             </div>
                             <div className="flex items-center text-[#5865f2]">
                               <ArrowUp size={14} className="mr-1" />
-                              <span className="font-bold">{bot.upvotes.toLocaleString()}</span>
+                              <span className="font-bold">
+                                {bot.upvotes.toLocaleString()}
+                              </span>
                             </div>
                           </div>
                         </Link>
                       ))}
                   </div>
                   <div className="p-3 border-t border-[#1e1f22] bg-[#36393f]">
-                    <Link href="/bots" className="text-sm text-[#5865f2] hover:underline">
+                    <Link
+                      href="/bots"
+                      className="text-sm text-[#5865f2] hover:underline"
+                    >
                       查看所有機器人
                     </Link>
                   </div>
@@ -338,7 +330,8 @@ export default function VotePage() {
             <div className="col-span-2 md:col-span-1">
               <h3 className="text-lg font-semibold mb-4">DiscordList</h3>
               <p className="text-gray-400 text-sm">
-                最佳的 Discord 伺服器和機器人列表平台，幫助您發現和加入有趣的社群，為伺服器增添功能。
+                最佳的 Discord
+                伺服器和機器人列表平台，幫助您發現和加入有趣的社群，為伺服器增添功能。
               </p>
             </div>
             <div>
@@ -418,7 +411,9 @@ export default function VotePage() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-[#1e1f22] flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">© 2025 DiscordList. 保留所有權利。</p>
+            <p className="text-gray-400 text-sm">
+              © 2025 DiscordList. 保留所有權利。
+            </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <a href="#" className="text-gray-400 hover:text-white">
                 <svg
@@ -476,6 +471,5 @@ export default function VotePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
-

@@ -7,14 +7,13 @@ import { useState, useEffect } from "react";
 function transformNotification(n: any) {
   return {
     id: n.id,
-    name: "系統通知",
-    date: new Date(n.createdAt).toISOString().split("T")[0],
-    subject: n.title,
-    teaser: n.message ?? "",
-    level: n.level,
+    name: n.name ?? "系統通知",
+    createdAt: new Date(n.createdAt).toISOString().split("T")[0],
+    subject: n.subject,
+    teaser: n.teaser ?? "",
+    priority: n.priority,
     isSystem: n.userId === null,
     read: n.read,
-    raw: n,
   };
 }
 
@@ -32,9 +31,15 @@ export function useInbox() {
   };
 
   const deleteMail = async (mailId: string) => {
-    const { error } = await supabase.from("Notification").delete().eq("id", mailId);
+    const { error } = await supabase
+      .from("Notification")
+      .delete()
+      .eq("id", mailId);
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ 刪除失敗：", error);
+      throw error;
+    }
 
     setMails((prev) => prev.filter((mail) => mail.id !== mailId));
   };
@@ -59,6 +64,7 @@ export function useInbox() {
   }, [data]);
 
   const addMail = (newRawMail: any) => {
+    console.log("newMail", newRawMail);
     const newMail = transformNotification(newRawMail);
     setMails((prev) => [newMail, ...prev]);
   };

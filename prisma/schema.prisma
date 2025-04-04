@@ -8,55 +8,115 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
-enum NotificationLevel {
-  SUCCESS   // 完成或通過
-  INFO      // 一般通知
-  WARNING   // 較重要
-  DANGER    // 嚴重錯誤
+model User {
+  id        String   @id @default(cuid())
+  username  String
+  avatar    String
+  banner    String?
+  banner_color String?
+  bio       String?
+  joinedAt  DateTime @default(now())
+
+  favoriteServers Server[] @relation("UserFavoriteServers")
+  favoriteBots    Bot[]    @relation("UserFavoriteBots")
+
+  ownedServers    Server[] @relation("OwnedServers")
+  developedBots Bot[]    @relation("BotDevelopers")
+
+  // 使用者社群資訊（彈性 json 欄位）
+  social Json?  // 儲存如：{ "twitter": "dawngs", "github": "dgsbot" }
+}
+
+enum EmailPriority {
+  success
+  info
+  warning
+  danger
+}
+
+enum Status {
+  pending
+  approved
+  rejected
 }
 
 model Notification {
-  id         String   @id @default(cuid())
-  userId     String?     // null = broadcast
-  type       String      // ex: 'system',
-  level     NotificationLevel  @default(INFO)
-  title      String
-  message    String?
-  data       Json?
-  read       Boolean     @default(false)
-  createdAt  DateTime    @default(now())
+  id        String        @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  subject   String
+  teaser    String
+  userId BigInt? // null is global broadcast
+  priority  EmailPriority @default(info)
+  isSystem  Boolean       @default(false)
+  read      Boolean       @default(false)
+}
+
+
+model Server {
+  id              String   @id @default(uuid())
+  name            String
+  description     String
+  longDescription String?   // optional
+  tags            String[] 
+  members         Int
+  online          Int?
+  upvotes         Int
+  icon            String?
+  banner          String?
+  featured        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  ownerId String?
+  owner     User?       @relation("OwnedServers", fields: [ownerId], references: [id])
+  website         String?
+  inviteUrl       String?
+  rules           String[] 
+  features        String[]
+  screenshots     String[]
+
+  favoritedBy User[] @relation("UserFavoriteServers")
+
+  Review Review[]
 }
 
 model Bot {
-  id       String   @id @default(cuid())
-  name     String
-  bot_description String // 機器人短介紹
-  content String // 長介紹
-  avatar   String
-  banner   String?
-  prefix String?
-  website String
+  id              String   @id
+  name            String
+  description     String
+  longDescription String?
+  tags            String[]
+  servers         Int
+  users           Int
+  upvotes         Int
+  icon            String?
+  banner          String?
+  featured        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  approvedAt DateTime?
+  prefix          String?
+  developers User[]   @relation("BotDevelopers")
+  website         String?
+  inviteUrl       String?
+  supportServer   String?
+  verified Boolean @default(false)
+  status Status @default(pending)
+  features        String[]
+  screenshots     String[]
 
-  support_server String?
-  authors  String[]
-  have_slash Boolean
-  verfied  Boolean // 已驗證: True, 否則 False
+  favoritedBy User[]   @relation("UserFavoriteBots")
 
-  reviews  Review[]
+  commands        BotCommand[]  // One-to-many relation
+  Review Review[]
 }
 
-model Server {
-  id       String   @id @default(cuid())
-  name     String
-  server_description String // 伺服器短介紹
-  content String // 長介紹
+model BotCommand {
+  id        String   @id @default(cuid())
+  name      String
   description String
-  avatar   String
-  banner   String?
-  owner    String
-
-
-  reviews  Review[]
+  usage     String
+  category  String?
+  botId     String
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
 }
 
 model Review {

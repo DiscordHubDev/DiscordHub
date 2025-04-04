@@ -1,16 +1,17 @@
-import type { BotType } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Users } from "lucide-react"
-import Link from "next/link"
+import type { BotType } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Users } from "lucide-react";
+import Link from "next/link";
+import { BotWithRelations } from "@/lib/prisma_type";
 
 interface FeaturedBotsProps {
-  bots: BotType[]
+  bots: BotWithRelations[];
 }
 
 export default function FeaturedBots({ bots }: FeaturedBotsProps) {
   // Only show up to 3 featured bots
-  const featuredBots = bots.slice(0, 3)
+  const featuredBots = bots.slice(0, 3);
 
   return (
     <div>
@@ -21,11 +22,16 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
             <div className="bg-[#2b2d31] rounded-lg overflow-hidden border border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200 flex flex-col h-full">
               {/* Banner */}
               <div className="h-32 bg-[#36393f] relative">
-                <img
-                  src={bot.banner || "/placeholder.svg?height=128&width=256"}
-                  alt={bot.name}
-                  className="w-full h-full object-cover"
-                />
+                {bot.banner ? (
+                  <div className="relative w-full h-48 overflow-hidden">
+                    <div
+                      className="absolute inset-0 bg-center bg-cover blur-sm scale-110"
+                      style={{ backgroundColor: bot.banner }}
+                    ></div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-r from-[#5865f2] to-[#8c54ff]"></div>
+                )}
                 {/* Bot Icon */}
                 <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-full bg-[#36393f] border-4 border-[#2b2d31] overflow-hidden">
                   <img
@@ -59,7 +65,9 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                     </span>
                   )}
                 </div>
-                <p className="text-gray-300 text-sm mb-3 line-clamp-2">{bot.description}</p>
+                <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                  {bot.description}
+                </p>
 
                 <div className="flex flex-wrap gap-2 mb-3">
                   {bot.tags.slice(0, 3).map((tag) => (
@@ -72,7 +80,10 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                     </Badge>
                   ))}
                   {bot.tags.length > 3 && (
-                    <Badge variant="secondary" className="bg-[#36393f] text-gray-300 text-xs">
+                    <Badge
+                      variant="secondary"
+                      className="bg-[#36393f] text-gray-300 text-xs"
+                    >
                       +{bot.tags.length - 3}
                     </Badge>
                   )}
@@ -85,7 +96,9 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                     <>
                       <div className="mx-2">•</div>
                       <div className="flex items-center">
-                        <span className="font-mono bg-[#36393f] px-1.5 py-0.5 rounded text-xs">{bot.prefix}</span>
+                        <span className="font-mono bg-[#36393f] px-1.5 py-0.5 rounded text-xs">
+                          {bot.prefix}
+                        </span>
                       </div>
                     </>
                   )}
@@ -93,7 +106,10 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
               </div>
 
               <div className="p-4 pt-0 mt-auto">
-                <Button size="sm" className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                <Button
+                  size="sm"
+                  className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                >
                   邀請機器人
                 </Button>
               </div>
@@ -102,6 +118,5 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }
-

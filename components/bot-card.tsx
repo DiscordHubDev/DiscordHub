@@ -1,13 +1,14 @@
-import { Users, ArrowUp, Clock } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import type { BotType } from "@/lib/types"
-import { formatDistanceToNow } from "date-fns"
-import { zhTW } from "date-fns/locale"
-import Link from "next/link"
+import { Users, ArrowUp, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { BotType } from "@/lib/types";
+import { formatDistanceToNow } from "date-fns";
+import { zhTW } from "date-fns/locale";
+import Link from "next/link";
+import { BotWithRelations } from "@/lib/prisma_type";
 
 interface BotCardProps {
-  bot: BotType
+  bot: BotWithRelations;
 }
 
 export default function BotCard({ bot }: BotCardProps) {
@@ -98,19 +99,28 @@ export default function BotCard({ bot }: BotCardProps) {
                     )}
                   </div>
                   <div className="flex items-center">
-                    <Button size="sm" className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                    <Button
+                      size="sm"
+                      className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                    >
                       邀請機器人
                     </Button>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-gray-300 mb-4 line-clamp-2">{bot.description}</p>
+                <p className="text-gray-300 mb-4 line-clamp-2">
+                  {bot.description}
+                </p>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {bot.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-[#36393f] hover:bg-[#4f545c] text-gray-300">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="bg-[#36393f] hover:bg-[#4f545c] text-gray-300"
+                    >
                       {tag}
                     </Badge>
                   ))}
@@ -128,13 +138,15 @@ export default function BotCard({ bot }: BotCardProps) {
                   </div>
                   {bot.prefix && (
                     <div className="flex items-center">
-                      <span className="font-mono bg-[#36393f] px-1.5 py-0.5 rounded text-xs">{bot.prefix}</span>
+                      <span className="font-mono bg-[#36393f] px-1.5 py-0.5 rounded text-xs">
+                        {bot.prefix}
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center">
                     <Clock size={16} className="mr-1" />
                     <span>
-                      {formatDistanceToNow(new Date(bot.createdAt), {
+                      {formatDistanceToNow(bot.approvedAt!, {
                         addSuffix: true,
                         locale: zhTW,
                       })}
@@ -144,7 +156,10 @@ export default function BotCard({ bot }: BotCardProps) {
 
                 {/* Mobile Button */}
                 <div className="mt-4 md:hidden">
-                  <Button size="sm" className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                  <Button
+                    size="sm"
+                    className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                  >
                     邀請機器人
                   </Button>
                 </div>
@@ -165,6 +180,5 @@ export default function BotCard({ bot }: BotCardProps) {
         </div>
       </div>
     </Link>
-  )
+  );
 }
-

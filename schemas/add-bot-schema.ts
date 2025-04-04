@@ -1,8 +1,71 @@
 import { z } from "zod";
 
-export const addBotSchema = z.object({
-  name: z.string().min(2, "名稱至少要 2 個字"),
-  description: z.string().min(10, "請輸入機器人簡介（支援 Markdown）"),
-  tags: z.array(z.string().min(1)).min(1, "請至少輸入一個分類"),
-  category: z.string().min(1, "請選擇分類"),
+export const botFormSchema = z.object({
+  botName: z.string().min(1, { message: "機器人名稱為必填" }),
+  botPrefix: z.string().min(1, { message: "機器人前綴為必填" }),
+  botDescription: z
+    .string()
+    .min(1, { message: "簡短描述為必填" })
+    .max(200, { message: "簡短描述最多 200 字" }),
+  botLongDescription: z
+    .string()
+    .max(2000, { message: "詳細描述最多 2000 字" })
+    .optional(),
+  botInvite: z
+    .string()
+    .url({ message: "必須是有效的網址" })
+    .refine(
+      (url) => {
+        try {
+          const u = new URL(url);
+          return (
+            u.hostname === "discord.com" &&
+            u.pathname === "/oauth2/authorize" &&
+            u.searchParams.has("client_id")
+          );
+        } catch {
+          return false;
+        }
+      },
+      {
+        message: "請輸入有效的 Discord 機器人邀請連結",
+      }
+    ),
+  botWebsite: z
+    .string()
+    .url({ message: "請輸入有效的網站連結" })
+    .or(z.literal(""))
+    .optional(),
+  botSupport: z
+    .string()
+    .url({ message: "請輸入有效的支援伺服器連結" })
+    .or(z.literal(""))
+    .optional(),
+  developers: z
+    .array(
+      z.object({
+        name: z.string(),
+      })
+    )
+    .superRefine((developers, ctx) => {
+      if (developers.length === 1 && !developers[0].name.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "請至少輸入一位開發者",
+          path: [0, "name"],
+        });
+      }
+    }),
+  commands: z.array(
+    z.object({
+      name: z.string().min(1, { message: "指令名稱為必填" }),
+      description: z.string().min(1, { message: "描述為必填" }),
+      usage: z.string().min(1, { message: "用法為必填" }),
+      category: z.string().optional(),
+    })
+  ),
+  tags: z
+    .array(z.string())
+    .min(1, { message: "請至少選擇一個標籤" })
+    .max(5, { message: "最多選擇 5 個標籤" }),
 });

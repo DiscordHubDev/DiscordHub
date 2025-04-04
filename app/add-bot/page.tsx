@@ -1,645 +1,413 @@
 "use client";
-
-import type React from "react";
-
-import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+import {
+  useForm,
+  Controller,
+  UseFormRegister,
+  useFormContext,
+  useWatch,
+} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Upload, Plus, Info, Trash2 } from "lucide-react";
+import { Plus, X, Trash, Trash2, Upload, Info } from "lucide-react";
+import { botFormSchema } from "@/schemas/add-bot-schema";
 import { botCategories } from "@/lib/bot-categories";
+import { z } from "zod";
+import { TagField } from "@/components/ui/form/bot-form/TagField";
+import { CommandListField } from "@/components/ui/form/bot-form/CommandListField";
+import { DeveloperListField } from "@/components/ui/form/bot-form/DeveloperListField";
+import { DiscordBotRPCInfo } from "@/lib/types";
+import { submitBot } from "@/lib/actions/submit-bot";
+import { BotWithRelationsInput } from "@/lib/prisma_type";
+import { getColorFromURL } from "color-thief-node";
+import { rgbToHex } from "@/lib/utils";
 
-export default function AddBotPage() {
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [customTag, setCustomTag] = useState("");
-  const [iconPreview, setIconPreview] = useState<string | null>(null);
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+type FormData = z.infer<typeof botFormSchema>;
+
+const BotForm: React.FC = () => {
   const [screenshotPreviews, setScreenshotPreviews] = useState<string[]>([]);
-  const [commands, setCommands] = useState<
-    { name: string; description: string; usage: string; category?: string }[]
-  >([]);
-  const [newCommand, setNewCommand] = useState({
-    name: "",
-    description: "",
-    usage: "",
-    category: "",
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(botFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      botName: "",
+      botPrefix: "",
+      botDescription: "",
+      botLongDescription: "",
+      botInvite: "",
+      botWebsite: "",
+      botSupport: "",
+      developers: [],
+      commands: [],
+      tags: [],
+    },
   });
 
-  // 處理標籤選擇
-  const handleTagToggle = (tagName: string) => {
-    if (selectedTags.includes(tagName)) {
-      setSelectedTags(selectedTags.filter((tag) => tag !== tagName));
-    } else {
-      setSelectedTags([...selectedTags, tagName]);
+  const [loading, setLoading] = useState(false);
+  const [botInfo, setBotInfo] = useState<DiscordBotRPCInfo | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const { handleSubmit, control, formState, register, reset } = form;
+
+  const handleScreenshotUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (files) {
+      const previews = Array.from(files).map((file) =>
+        URL.createObjectURL(file)
+      );
+      setScreenshotPreviews([...screenshotPreviews, ...previews]);
     }
   };
 
-  // 處理自定義標籤添加
-  const handleAddCustomTag = () => {
-    if (customTag.trim() && !selectedTags.includes(customTag.trim())) {
-      setSelectedTags([...selectedTags, customTag.trim()]);
-      setCustomTag("");
-    }
-  };
-
-  // 處理圖標上傳
-  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setIconPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 處理橫幅上傳
-  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setBannerPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 處理截圖上傳
-  const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const newPreviews: string[] = [];
-
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (e.target?.result) {
-            newPreviews.push(e.target.result as string);
-            if (newPreviews.length === files.length) {
-              setScreenshotPreviews([...screenshotPreviews, ...newPreviews]);
-            }
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
-
-  // 移除截圖
   const removeScreenshot = (index: number) => {
-    setScreenshotPreviews(screenshotPreviews.filter((_, i) => i !== index));
+    const newPreviews = [...screenshotPreviews];
+    newPreviews.splice(index, 1);
+    setScreenshotPreviews(newPreviews);
   };
 
-  // 處理新增指令
-  const handleAddCommand = () => {
-    if (
-      newCommand.name.trim() &&
-      newCommand.description.trim() &&
-      newCommand.usage.trim()
-    ) {
-      setCommands([...commands, { ...newCommand }]);
-      setNewCommand({ name: "", description: "", usage: "", category: "" });
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    setError(null);
+
+    const client_id = new URL(data.botInvite).searchParams.get("client_id");
+
+    if (!client_id) {
+      setError(":x: 無法解析 bot invite link 中的 client_id");
+      setLoading(false);
+      return;
     }
-  };
 
-  // 移除指令
-  const removeCommand = (index: number) => {
-    setCommands(commands.filter((_, i) => i !== index));
-  };
+    try {
+      const res = await fetch(
+        `https://discord.com/api/v10/applications/${client_id.trim()}/rpc`,
+        {
+          headers: {
+            "User-Agent": "DiscordHubs/1.0",
+          },
+        }
+      );
 
-  // 提交表單
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // 在實際應用中，這裡會處理表單提交邏輯
-    alert("機器人提交成功！（模擬）");
+      if (!res.ok) {
+        throw new Error(
+          `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`
+        );
+      }
+
+      const rpcData: DiscordBotRPCInfo = await res.json();
+      setBotInfo(rpcData);
+
+      const commandPayload = data.commands.map((cmd) => ({
+        name: cmd.name,
+        description: cmd.description,
+        usage: cmd.usage,
+        category: cmd.category ?? null,
+        botId: client_id,
+      }));
+
+      const icon = `https://cdn.discordapp.com/app-icons/${client_id}/${rpcData.icon}.png`;
+
+      const hexColor = await getColorFromURL(icon).then((rgb) => rgbToHex(rgb));
+
+      const botData: BotWithRelationsInput = {
+        id: client_id,
+        name: data.botName,
+        description: data.botDescription,
+        longDescription: data.botLongDescription || null,
+        tags: data.tags,
+        servers: 0,
+        users: 0,
+        upvotes: 0,
+        icon: icon,
+        banner: hexColor,
+        featured: false,
+        createdAt: new Date(),
+        prefix: data.botPrefix,
+        developers: data.developers.map((dev) => ({ id: dev.name })),
+        website: data.botWebsite || null,
+        status: "pending",
+        inviteUrl: data.botInvite,
+        supportServer: data.botSupport || null,
+        verified: false,
+        features: [],
+        screenshots: screenshotPreviews,
+        commands: commandPayload,
+      };
+
+      try {
+        await submitBot(botData);
+        reset();
+        setSuccess(true);
+      } catch (err) {
+        console.error(err);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message ?? "發生未知錯誤");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
-      {/* Navigation */}
-      <nav className="bg-[#2b2d31] border-b border-[#1e1f22]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Link
-                  href="/"
-                  className="text-xl font-bold text-white flex items-center"
-                >
-                  <span className="text-[#5865f2] mr-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-message-square-more"
-                    >
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      <path d="M8 10h.01" />
-                      <path d="M12 10h.01" />
-                      <path d="M16 10h.01" />
-                    </svg>
-                  </span>
-                  DiscordHubs
-                </Link>
-              </div>
-              <div className="hidden md:block ml-10">
-                <div className="flex items-center space-x-4">
-                  <Link href="/" passHref>
-                    <Button
-                      variant="ghost"
-                      className="text-white hover:bg-[#36393f]"
-                    >
-                      伺服器列表
-                    </Button>
-                  </Link>
-                  <Link href="/bots" passHref>
-                    <Button
-                      variant="ghost"
-                      className="text-white hover:bg-[#36393f]"
-                    >
-                      機器人列表
-                    </Button>
-                  </Link>
-                  <Link href="/add-server" passHref>
-                    <Button
-                      variant="ghost"
-                      className="text-white hover:bg-[#36393f]"
-                    >
-                      新增伺服器
-                    </Button>
-                  </Link>
-                  <Link href="/add-bot" passHref>
-                    <Button
-                      variant="ghost"
-                      className="text-white hover:bg-[#36393f] bg-[#36393f]"
-                    >
-                      新增機器人
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <Link href="/profile">
-                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
-                  個人資料
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-[#2b2d31] rounded-lg p-6 shadow-lg">
           <h1 className="text-2xl font-bold mb-6">新增您的 Discord 機器人</h1>
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* 基本資訊 */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">基本資訊</h2>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 基本資訊 */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">基本資訊</h2>
-
-              <div className="space-y-2">
-                <Label htmlFor="bot-name">機器人名稱 *</Label>
-                <Input
-                  id="bot-name"
-                  placeholder="輸入您的機器人名稱"
-                  required
-                  className="bg-[#36393f] border-[#1e1f22] text-white"
+                <FormField
+                  control={control}
+                  name="botName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>機器人名稱 *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="輸入您的機器人名稱" {...field} />
+                      </FormControl>
+                      <FormMessage>
+                        {formState.errors.botName?.message}
+                      </FormMessage>
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bot-prefix">機器人前綴 *</Label>
-                <Input
-                  id="bot-prefix"
-                  placeholder="例如：! 或 /"
-                  required
-                  className="bg-[#36393f] border-[#1e1f22] text-white"
+                <FormField
+                  control={control}
+                  name="botPrefix"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>機器人前綴 *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="例如：! 或 /" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <p className="text-xs text-gray-400">
-                  用戶用來觸發機器人指令的前綴
-                </p>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bot-description">簡短描述 *</Label>
-                <Textarea
-                  id="bot-description"
-                  placeholder="簡短描述您的機器人功能（最多 200 字）"
-                  maxLength={200}
-                  required
-                  className="bg-[#36393f] border-[#1e1f22] text-white resize-none h-20"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bot-long-description">詳細描述</Label>
-                <Textarea
-                  id="bot-long-description"
-                  placeholder="詳細描述您的機器人功能、特色等（最多 2000 字）"
-                  maxLength={2000}
-                  className="bg-[#36393f] border-[#1e1f22] text-white resize-none h-32"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bot-invite">機器人邀請連結 *</Label>
-                <Input
-                  id="bot-invite"
-                  placeholder="例如：https://discord.com/oauth2/authorize?client_id=..."
-                  required
-                  className="bg-[#36393f] border-[#1e1f22] text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bot-website">網站連結</Label>
-                  <Input
-                    id="bot-website"
-                    placeholder="例如：https://example.com"
-                    className="bg-[#36393f] border-[#1e1f22] text-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bot-support">支援伺服器連結</Label>
-                  <Input
-                    id="bot-support"
-                    placeholder="例如：https://discord.gg/example"
-                    className="bg-[#36393f] border-[#1e1f22] text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bot-developer">開發者名稱 *</Label>
-                <Input
-                  id="bot-developer"
-                  placeholder="輸入開發者或團隊名稱"
-                  required
-                  className="bg-[#36393f] border-[#1e1f22] text-white"
-                />
-              </div>
-            </div>
-
-            {/* 標籤 */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">標籤</h2>
-              <p className="text-sm text-gray-400">
-                選擇最能描述您機器人的標籤（最多 5 個）
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {botCategories.map((category) => (
-                  <Badge
-                    key={category.id}
-                    variant={
-                      selectedTags.includes(category.name)
-                        ? "default"
-                        : "secondary"
-                    }
-                    className={`cursor-pointer ${
-                      selectedTags.includes(category.name)
-                        ? "bg-[#5865f2] hover:bg-[#4752c4]"
-                        : "bg-[#36393f] hover:bg-[#4f545c]"
-                    }`}
-                    onClick={() => handleTagToggle(category.name)}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full mr-1.5 ${category.color}`}
-                    ></span>
-                    {category.name}
-                  </Badge>
-                ))}
-              </div>
-
-              <div className="flex gap-2">
-                <Input
-                  placeholder="添加自定義標籤"
-                  value={customTag}
-                  onChange={(e) => setCustomTag(e.target.value)}
-                  className="bg-[#36393f] border-[#1e1f22] text-white"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddCustomTag();
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  onClick={handleAddCustomTag}
-                  className="bg-[#5865f2] hover:bg-[#4752c4]"
-                >
-                  <Plus size={16} />
-                </Button>
-              </div>
-
-              {selectedTags.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm font-medium mb-2">已選擇的標籤：</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedTags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        className="bg-[#5865f2] hover:bg-[#4752c4] flex items-center gap-1"
-                      >
-                        {tag}
-                        <X
-                          size={14}
-                          className="cursor-pointer"
-                          onClick={() => handleTagToggle(tag)}
+                <FormField
+                  control={control}
+                  name="botDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>簡短描述 *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="簡短描述您的機器人功能（最多 200 字）"
+                          maxLength={200}
+                          {...field}
                         />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* 指令列表 */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">指令列表</h2>
-              <p className="text-sm text-gray-400">
-                添加您機器人的主要指令，幫助用戶了解如何使用
-              </p>
-
-              <div className="bg-[#36393f] rounded-lg p-4 border border-[#1e1f22]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="command-name">指令名稱</Label>
-                    <Input
-                      id="command-name"
-                      placeholder="例如：help"
-                      value={newCommand.name}
-                      onChange={(e) =>
-                        setNewCommand({ ...newCommand, name: e.target.value })
-                      }
-                      className="bg-[#2b2d31] border-[#1e1f22] text-white"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="command-category">分類（可選）</Label>
-                    <Input
-                      id="command-category"
-                      placeholder="例如：管理、音樂"
-                      value={newCommand.category}
-                      onChange={(e) =>
-                        setNewCommand({
-                          ...newCommand,
-                          category: e.target.value,
-                        })
-                      }
-                      className="bg-[#2b2d31] border-[#1e1f22] text-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <Label htmlFor="command-description">描述</Label>
-                  <Input
-                    id="command-description"
-                    placeholder="描述這個指令的功能"
-                    value={newCommand.description}
-                    onChange={(e) =>
-                      setNewCommand({
-                        ...newCommand,
-                        description: e.target.value,
-                      })
-                    }
-                    className="bg-[#2b2d31] border-[#1e1f22] text-white"
-                  />
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <Label htmlFor="command-usage">用法</Label>
-                  <Input
-                    id="command-usage"
-                    placeholder="例如：!help [指令名稱]"
-                    value={newCommand.usage}
-                    onChange={(e) =>
-                      setNewCommand({ ...newCommand, usage: e.target.value })
-                    }
-                    className="bg-[#2b2d31] border-[#1e1f22] text-white"
-                  />
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={handleAddCommand}
-                  className="bg-[#5865f2] hover:bg-[#4752c4] w-full"
-                >
-                  <Plus size={16} className="mr-2" />
-                  添加指令
-                </Button>
-              </div>
-
-              {commands.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-lg font-medium mb-2">已添加的指令：</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b border-[#1e1f22]">
-                          <th className="py-2 px-4 text-gray-300">指令</th>
-                          <th className="py-2 px-4 text-gray-300">描述</th>
-                          <th className="py-2 px-4 text-gray-300">用法</th>
-                          <th className="py-2 px-4 text-gray-300">分類</th>
-                          <th className="py-2 px-4 text-gray-300">操作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {commands.map((command, index) => (
-                          <tr key={index} className="border-b border-[#1e1f22]">
-                            <td className="py-2 px-4 font-mono text-[#5865f2]">
-                              {command.name}
-                            </td>
-                            <td className="py-2 px-4 text-gray-300">
-                              {command.description}
-                            </td>
-                            <td className="py-2 px-4 font-mono text-xs text-gray-400">
-                              {command.usage}
-                            </td>
-                            <td className="py-2 px-4 text-gray-300">
-                              {command.category || "-"}
-                            </td>
-                            <td className="py-2 px-4">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeCommand(index)}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-1 h-auto"
-                              >
-                                <Trash2 size={16} />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 圖片上傳 */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">圖片上傳</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 機器人圖標 */}
-                <div className="space-y-2">
-                  <Label htmlFor="bot-icon">機器人圖標 *</Label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 bg-[#36393f] rounded-full overflow-hidden flex items-center justify-center border border-[#1e1f22]">
-                      {iconPreview ? (
-                        <img
-                          src={iconPreview || "/placeholder.svg"}
-                          alt="Bot icon preview"
-                          className="w-full h-full object-cover"
+                <FormField
+                  control={control}
+                  name="botLongDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>詳細描述</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="詳細描述您的機器人功能、特色等（最多 2000 字）"
+                          maxLength={2000}
+                          {...field}
                         />
-                      ) : (
-                        <Upload size={24} className="text-gray-400" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        id="bot-icon"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleIconUpload}
-                        required
-                      />
-                      <Label
-                        htmlFor="bot-icon"
-                        className="bg-[#36393f] text-white hover:bg-[#4f545c] px-4 py-2 rounded cursor-pointer inline-block"
-                      >
-                        選擇圖片
-                      </Label>
-                      <p className="text-xs text-gray-400 mt-1">
-                        建議尺寸：512x512 像素
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                {/* 機器人橫幅 */}
-                <div className="space-y-2">
-                  <Label htmlFor="bot-banner">機器人橫幅</Label>
-                  <div className="flex flex-col gap-2">
-                    <div className="h-32 bg-[#36393f] rounded overflow-hidden flex items-center justify-center border border-[#1e1f22]">
-                      {bannerPreview ? (
-                        <img
-                          src={bannerPreview || "/placeholder.svg"}
-                          alt="Bot banner preview"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Upload size={24} className="text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <Input
-                        id="bot-banner"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleBannerUpload}
-                      />
-                      <Label
-                        htmlFor="bot-banner"
-                        className="bg-[#36393f] text-white hover:bg-[#4f545c] px-4 py-2 rounded cursor-pointer inline-block"
-                      >
-                        選擇圖片
-                      </Label>
-                      <p className="text-xs text-gray-400 mt-1">
-                        建議尺寸：960x540 像素
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 機器人截圖 */}
-              <div className="space-y-2 mt-4">
-                <Label htmlFor="bot-screenshots">機器人截圖（最多 5 張）</Label>
-                <div className="flex flex-col gap-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {screenshotPreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview || "/placeholder.svg"}
-                          alt={`Screenshot ${index + 1}`}
-                          className="w-full h-32 object-cover rounded border border-[#1e1f22]"
-                        />
-                        <button
-                          type="button"
-                          className="absolute top-2 right-2 bg-[#1e1f22] text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => removeScreenshot(index)}
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))}
-                    {screenshotPreviews.length < 5 && (
-                      <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
+                <FormField
+                  control={control}
+                  name="botInvite"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>機器人邀請連結 *</FormLabel>
+                      <FormControl>
                         <Input
-                          id="bot-screenshots"
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="hidden"
-                          onChange={handleScreenshotUpload}
+                          placeholder="例如：https://discord.com/oauth2/authorize?client_id=..."
+                          {...field}
                         />
-                        <Label
-                          htmlFor="bot-screenshots"
-                          className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white"
-                        >
-                          <Upload size={24} />
-                          <span className="mt-2 text-sm">上傳截圖</span>
-                        </Label>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    上傳您機器人的截圖，展示機器人的功能和使用場景
-                  </p>
-                </div>
-              </div>
-            </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* 提交按鈕 */}
-            <div className="flex items-center justify-between pt-4 border-t border-[#1e1f22]">
-              <div className="flex items-start gap-2">
-                <Info size={16} className="text-[#5865f2] mt-0.5" />
-                <p className="text-sm text-gray-400">
-                  提交後，我們將審核您的機器人。審核通常需要 1-2 個工作日。
-                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={control}
+                    name="botWebsite"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>網站連結</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="例如：https://example.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={control}
+                    name="botSupport"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>支援伺服器連結</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="例如：https://discord.gg/example"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* 開發者列表 */}
+                <DeveloperListField />
+
+                {/* 標籤 */}
+                <TagField name="tags" categories={botCategories} />
+
+                {/* 指令列表 */}
+                <CommandListField />
+
+                {/* 圖片上傳 */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold">圖片上傳</h2>
+
+                  {/* 機器人截圖 */}
+                  <div className="space-y-10 mt-4">
+                    <FormLabel htmlFor="bot-screenshots">
+                      機器人截圖（最多 5 張）
+                    </FormLabel>
+                    <div className="flex flex-col gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {screenshotPreviews.map((preview, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={preview || "/placeholder.svg"}
+                              alt={`Screenshot ${index + 1}`}
+                              className="w-full h-32 object-cover rounded border border-[#1e1f22]"
+                            />
+                            <button
+                              type="button"
+                              className="absolute top-2 right-2 bg-[#1e1f22] text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removeScreenshot(index)}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                        {screenshotPreviews.length < 5 && (
+                          <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
+                            <Input
+                              id="bot-screenshots"
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              onChange={handleScreenshotUpload}
+                            />
+                            <FormLabel
+                              htmlFor="bot-screenshots"
+                              className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white"
+                            >
+                              <Upload size={24} />
+                              <span className="mt-2 text-sm">上傳截圖</span>
+                            </FormLabel>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        上傳您機器人的截圖，展示機器人的功能和使用場景
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 提交按鈕 */}
+                <div className="flex items-center justify-between pt-4 border-t border-[#1e1f22]">
+                  <div className="flex items-start gap-2">
+                    <Info size={16} className="text-[#5865f2] mt-0.5" />
+                    <p className="text-sm text-gray-400">
+                      提交後，我們將審核您的機器人。審核通常需要 1-2 個工作日。
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="relative discord text-white px-4 py-2 rounded disabled:opacity-50 flex items-center justify-center"
+                  >
+                    {loading && (
+                      <svg
+                        className="animate-spin h-5 w-5 mr-2 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        />
+                      </svg>
+                    )}
+                    {loading ? "提交中..." : "提交機器人"}
+                  </Button>
+                </div>
+                {error && <p className="text-red-500">{error}</p>}
               </div>
-              <Button type="submit" className="bg-[#5865f2] hover:bg-[#4752c4]">
-                提交機器人
-              </Button>
+            </form>
+          </Form>
+          {success && (
+            <div className="mt-4 text-green-500 text-sm border border-green-500 bg-green-100/10 rounded p-3">
+              ✅ 機器人已成功新增，請等待管理員審核！
             </div>
-          </form>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default BotForm;

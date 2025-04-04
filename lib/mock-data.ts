@@ -1,16 +1,18 @@
-import type { ServerType, CategoryType, BotType } from "./types"
+import type { ServerType, CategoryType, BotType } from "./types";
 
 export const servers: ServerType[] = [
   {
     id: "1",
     name: "遊戲玩家聯盟",
-    description: "台灣最大的遊戲玩家社群，討論各種遊戲、分享攻略、組隊開黑，歡迎所有遊戲愛好者加入！",
+    description:
+      "台灣最大的遊戲玩家社群，討論各種遊戲、分享攻略、組隊開黑，歡迎所有遊戲愛好者加入！",
     tags: ["遊戲", "電競", "組隊", "攻略"],
     members: 15872,
     online: 3241,
     upvotes: 1287,
     icon: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=200&fit=crop&auto=format",
     featured: true,
     createdAt: "2023-05-15T08:30:00Z",
     owner: "遊戲達人",
@@ -48,7 +50,8 @@ export const servers: ServerType[] = [
     online: 1256,
     upvotes: 932,
     icon: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=200&fit=crop&auto=format",
     featured: true,
     createdAt: "2023-07-22T14:15:00Z",
     owner: "程式大師",
@@ -86,7 +89,8 @@ export const servers: ServerType[] = [
     online: 2187,
     upvotes: 1045,
     icon: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=400&h=200&fit=crop&auto=format",
     featured: true,
     createdAt: "2023-03-10T10:45:00Z",
     owner: "動漫控",
@@ -124,7 +128,8 @@ export const servers: ServerType[] = [
     online: 945,
     upvotes: 687,
     icon: "https://images.unsplash.com/photo-1587573089734-599d584d49e7?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1607513746994-51f730a44832?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1607513746994-51f730a44832?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-08-05T16:20:00Z",
     owner: "方塊大師",
@@ -155,13 +160,15 @@ export const servers: ServerType[] = [
   {
     id: "5",
     name: "音樂分享俱樂部",
-    description: "分享你喜愛的音樂，發現新的音樂風格，討論音樂製作和樂器演奏，還有定期的線上音樂會和DJ表演！",
+    description:
+      "分享你喜愛的音樂，發現新的音樂風格，討論音樂製作和樂器演奏，還有定期的線上音樂會和DJ表演！",
     tags: ["音樂", "分享", "DJ", "樂器"],
     members: 5467,
     online: 732,
     upvotes: 421,
     icon: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-09-18T12:10:00Z",
     owner: "音樂達人",
@@ -199,7 +206,8 @@ export const servers: ServerType[] = [
     online: 843,
     upvotes: 512,
     icon: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-10-25T09:30:00Z",
     owner: "影評人",
@@ -237,7 +245,8 @@ export const servers: ServerType[] = [
     online: 621,
     upvotes: 378,
     icon: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-11-12T15:45:00Z",
     owner: "攝影師",
@@ -275,7 +284,8 @@ export const servers: ServerType[] = [
     online: 1432,
     upvotes: 876,
     icon: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-06-30T11:20:00Z",
     owner: "語言達人",
@@ -313,7 +323,8 @@ export const servers: ServerType[] = [
     online: 987,
     upvotes: 432,
     icon: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2024-01-15T18:30:00Z",
     owner: "Valorant大師",
@@ -351,7 +362,8 @@ export const servers: ServerType[] = [
     online: 412,
     upvotes: 287,
     icon: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2024-02-20T14:10:00Z",
     owner: "創業導師",
@@ -379,9 +391,9 @@ export const servers: ServerType[] = [
       "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop&auto=format",
     ],
   },
-]
+];
 
-export const categories: CategoryType[] = [
+export const Servercategories: CategoryType[] = [
   {
     id: "1",
     name: "遊戲",
@@ -442,7 +454,7 @@ export const categories: CategoryType[] = [
     color: "bg-cyan-500",
     selected: false,
   },
-]
+];
 
 export const bots: BotType[] = [
   {
@@ -455,7 +467,8 @@ export const bots: BotType[] = [
     users: 980000,
     upvotes: 4567,
     icon: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=200&fit=crop&auto=format",
     featured: true,
     createdAt: "2022-03-15T10:30:00Z",
     prefix: "!music",
@@ -522,7 +535,8 @@ export const bots: BotType[] = [
     users: 1250000,
     upvotes: 6234,
     icon: "https://images.unsplash.com/photo-1633409361618-c73427e4e206?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1586892477838-2b96e85e0f96?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1586892477838-2b96e85e0f96?w=400&h=200&fit=crop&auto=format",
     featured: true,
     createdAt: "2021-11-20T14:45:00Z",
     prefix: "!admin",
@@ -589,7 +603,8 @@ export const bots: BotType[] = [
     users: 820000,
     upvotes: 3789,
     icon: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=200&fit=crop&auto=format",
     featured: true,
     createdAt: "2022-05-08T09:15:00Z",
     prefix: "!game",
@@ -656,7 +671,8 @@ export const bots: BotType[] = [
     users: 650000,
     upvotes: 2876,
     icon: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1565514020179-026b92b4a0b0?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1565514020179-026b92b4a0b0?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2022-08-12T16:40:00Z",
     prefix: "!eco",
@@ -723,7 +739,8 @@ export const bots: BotType[] = [
     users: 580000,
     upvotes: 2345,
     icon: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2022-10-05T11:25:00Z",
     prefix: "!event",
@@ -790,7 +807,8 @@ export const bots: BotType[] = [
     users: 490000,
     upvotes: 2123,
     icon: "https://images.unsplash.com/photo-1561948955-570b270e7c36?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1579547621113-e4bb2a19bdd6?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1579547621113-e4bb2a19bdd6?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-01-18T13:50:00Z",
     prefix: "!art",
@@ -850,13 +868,15 @@ export const bots: BotType[] = [
   {
     id: "7",
     name: "學習助手",
-    description: "專為學生和學習者設計的機器人，提供筆記管理、提醒功能、知識問答、翻譯工具、計算器等學習輔助功能。",
+    description:
+      "專為學生和學習者設計的機器人，提供筆記管理、提醒功能、知識問答、翻譯工具、計算器等學習輔助功能。",
     tags: ["學習", "教育", "筆記", "實用工具"],
     servers: 4800,
     users: 420000,
     upvotes: 1876,
     icon: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-03-22T10:15:00Z",
     prefix: "!study",
@@ -923,7 +943,8 @@ export const bots: BotType[] = [
     users: 780000,
     upvotes: 3456,
     icon: "https://images.unsplash.com/photo-1530811761207-8d9d22f0a141?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2022-12-10T15:30:00Z",
     prefix: "!welcome",
@@ -990,7 +1011,8 @@ export const bots: BotType[] = [
     users: 460000,
     upvotes: 2012,
     icon: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1603739903239-8b6e64c3b185?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1603739903239-8b6e64c3b185?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2023-02-05T17:20:00Z",
     prefix: "!stream",
@@ -1057,7 +1079,8 @@ export const bots: BotType[] = [
     users: 630000,
     upvotes: 2789,
     icon: "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=64&h=64&fit=crop&auto=format",
-    banner: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=200&fit=crop&auto=format",
+    banner:
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=200&fit=crop&auto=format",
     featured: false,
     createdAt: "2022-09-28T12:35:00Z",
     prefix: "!translate",
@@ -1114,5 +1137,4 @@ export const bots: BotType[] = [
       "https://images.unsplash.com/photo-1526378722484-bd91ca387e72?w=600&h=400&fit=crop&auto=format",
     ],
   },
-]
-
+];

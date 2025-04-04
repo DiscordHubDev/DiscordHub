@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import SessionProvider from "./providers/SessionProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
+
+import ClientLayout from "./client_layout";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -30,7 +31,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "h-screen w-full font-sans antialiased bg-black text-white",
+          "h-screen w-full font-sans antialiased bg-[#1e1f22] text-white",
           fontSans.variable
         )}
       >
@@ -42,12 +43,7 @@ export default async function RootLayout({
         >
           <SessionProvider session={session}>
             <SidebarProvider>
-              <main className="h-full w-full flex flex-col md:flex-row overflow-auto">
-                <AppSidebar className="md:w-64 flex-shrink-0" />
-                <SidebarInset className="flex-grow flex flex-col">
-                  <div className="flex-grow">{children}</div>
-                </SidebarInset>
-              </main>
+              <ClientLayout>{children}</ClientLayout>
             </SidebarProvider>
           </SessionProvider>
         </ThemeProvider>

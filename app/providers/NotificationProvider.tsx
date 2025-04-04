@@ -15,41 +15,30 @@ export function NotificationListener({
   useEffect(() => {
     if (!userId) return;
 
-    const personal = supabase
-      .channel(`user-notifications-${userId}`)
+    const channel = supabase
+      .channel(`notifications-all`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "Notification",
-          filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          onNotify(payload.new);
-        }
-      )
-      .subscribe();
+          const data = payload.new;
+          const isForMe = data.user_id === userId;
+          const isBroadcast = data.user_id === null;
 
-    const global = supabase
-      .channel("global-notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "Notification",
-          filter: "user_id=is.null",
-        },
-        (payload) => {
-          onNotify(payload.new);
+          if (isForMe || isBroadcast) {
+            console.log("📩 收到通知：", data);
+            onNotify(data);
+          }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(personal);
-      supabase.removeChannel(global);
+      supabase.removeChannel(channel);
     };
   }, [userId, onNotify]);
 

@@ -4,11 +4,11 @@ import { DiscordProfile } from "next-auth/providers/discord";
 import { Profile } from "next-auth";
 
 interface NewDiscordProfile extends DiscordProfile {
-  global_name?: string | null | undefined;
+  global_name: string;
 }
 
 interface JWTDiscordProfile extends Profile {
-  global_name?: string | null | undefined;
+  global_name: string;
 }
 
 declare module "next-auth/jwt" {
@@ -21,6 +21,7 @@ declare module "next-auth/jwt" {
 
 declare module "next-auth" {
   interface Session {
+    access_token?: string;
     discordProfile?: JWTDiscordProfile;
   }
 
@@ -33,7 +34,9 @@ declare module "next-auth" {
     email: string;
     flags: number;
     id: string;
+    image: string;
     image_url: string;
+    banner_url: string?;
     locale: string;
     mfa_enabled: boolean;
     premium_type: number;

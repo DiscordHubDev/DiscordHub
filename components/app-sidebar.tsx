@@ -14,6 +14,7 @@ import {
   LifeBuoy,
   Send,
   SquareTerminal,
+  ShieldPlus,
   Home,
   Inbox,
   Search,
@@ -39,10 +40,15 @@ import { NavItem } from "./nav-item";
 import { Separator } from "@radix-ui/react-separator";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { Switch } from "./ui/switch";
-import { Mail, MailItem } from "./ui/website/mail/MailItem";
-import { MailViewer } from "./ui/website/mail/MailViewer";
 import { useInbox } from "@/hooks/use-inbox";
 import { NotificationListener } from "@/app/providers/NotificationProvider";
+import { InboxSidebar } from "./ui/mail/inbox-sidebar";
+import { EmailDialog } from "./ui/mail/mail-dialog";
+import { Mail } from "@/lib/types";
+import { stat } from "fs";
+import { Session } from "next-auth";
+
+const ADMIN_ID = ["857502876108193812", "549056425943629825"];
 
 const data = {
   navMain: [
@@ -167,10 +173,16 @@ const data = {
       url: "#",
       icon: Send,
     },
+    {
+      title: "Admin",
+      url: "/admin",
+      icon: ShieldPlus,
+      onlyFor: ADMIN_ID,
+    },
   ],
 };
 
-export function DiscordUser(session?: any): DiscordUser {
+export function DiscordUser(session?: Session): DiscordUser {
   if (!session) {
     return {
       display_name: "Loading...",
@@ -184,7 +196,7 @@ export function DiscordUser(session?: any): DiscordUser {
       display_name: session.discordProfile?.global_name ?? "Unknown",
       username: session.discordProfile?.username ?? "Unknown",
       avatar:
-        session.discordProfile?.image_url ??
+        session.discordProfile?.image ??
         "https://cdn.discordapp.com/embed/avatars/0.png",
     };
   }
@@ -203,7 +215,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [selectedMail, setSelectedMail] = useState<Mail | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { mails, isLoading, addMail, markAsRead, deleteMail } = useInbox();
+  const { mails, addMail, markAsRead } = useInbox();
 
   const [search, setSearch] = useState("");
 
@@ -225,10 +237,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     });
   }, [search, mails, onlyUnread]);
 
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+
   const openMail = (mail: Mail) => {
-    console.log("openMail", mail);
-    console.log("id", mail.id);
-    console.log("read", mail.read);
     setSelectedMail({ ...mail, read: true });
     setDialogOpen(true);
     if (!mail.read && mail.id) {
@@ -242,16 +255,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           display_name: "Loading...",
           username: "Loading...",
           avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
+          id: "",
         }
       : {
           display_name: session?.discordProfile?.global_name ?? "Not Login",
           username: session?.discordProfile?.username ?? "Not Login",
           avatar:
-            session?.discordProfile?.image_url ??
+            session?.user?.image ??
             "https://cdn.discordapp.com/embed/avatars/0.png",
+          id: session?.discordProfile?.id,
         };
 
   console.log("status:", status, session);
+
+  const filterednavSecondary = data.navSecondary.filter((item) => {
+    if (!user?.id) return false;
+
+    if (!item.onlyFor) return true;
+
+    return item.onlyFor.includes(user.id);
+  });
 
   return (
     <div className="flex h-screen">
@@ -270,7 +293,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Separator className="h-[2px] bg-muted-foreground/30" />
         <SidebarContent>
           <NavMain items={data.navMain} />
-          <NavSecondary items={data.navSecondary} className="mt-auto" />
+          <NavSecondary items={filterednavSecondary} className="mt-auto" />
         </SidebarContent>
         <SidebarFooter>
           <NavUser
@@ -312,39 +335,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarGroupContent>
                   <NotificationListener
                     onNotify={(newMail) => {
+                      console.log("📩 收到新郵件：", newMail);
                       addMail(newMail);
                     }}
                   />
-                  {filteredMails.map((mail) => (
-                    <MailItem
-                      key={mail.id}
-                      mail={mail}
-                      onClick={() => {
-                        openMail(mail);
-                        console.log("開啟信件：", mail.subject);
-                      }}
-                      onDelete={async () => {
-                        if (confirm("確定要刪除這封郵件嗎？")) {
-                          try {
-                            await deleteMail(mail.id);
-                            alert("刪除成功！");
-                          } catch (error) {
-                            alert("刪除失敗！");
-                          }
-                        }
-                      }}
-                    />
-                  ))}
+                  <InboxSidebar
+                    Emails={filteredMails}
+                    onSelectEmail={(mail) => openMail(mail)}
+                  />
                 </SidebarGroupContent>
               </SidebarGroup>
             </SidebarContent>
           </Sidebar>
         )}
       </div>
-      <MailViewer
+      <EmailDialog
+        email={selectedMail}
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        mail={selectedMail}
+        onClose={handleCloseDialog}
       />
     </div>
   );
