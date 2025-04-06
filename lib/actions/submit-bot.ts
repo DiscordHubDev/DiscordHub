@@ -1,8 +1,8 @@
 "use server";
 
-import { BotWithRelations, BotWithRelationsInput } from "./get-pending-bot";
+import { BotWithRelations, BotWithRelationsInput } from "@/lib/prisma_type";
 import { getDevelopersByIds } from "../get-developers";
-import prisma from "../prisma";
+import { prisma } from "@/lib/prisma";
 
 const insertBot = async (data: BotWithRelations) => {
   const { commands, developers, ...bot } = data;

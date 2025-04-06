@@ -1,23 +1,36 @@
-import type { ServerType } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Users } from "lucide-react"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Users } from "lucide-react";
+import Link from "next/link";
+import { ServerType } from "@/lib/prisma_type";
 
 interface FeaturedServersProps {
-  servers: ServerType[]
+  servers: ServerType[];
 }
 
 export default function FeaturedServers({ servers }: FeaturedServersProps) {
-  // Only show up to 3 featured servers
-  const featuredServers = servers.slice(0, 3)
+  const featuredServers = servers.slice(0, 3);
+
+  if (featuredServers.length === 0) {
+    return (
+      <>
+        <div className="text-center text-gray-400 py-10">
+          <p className="text-sm">目前沒有任何精選伺服器 🙁</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {featuredServers.map((server) => (
-          <Link href={`/servers/${server.id}`} key={server.id} className="block">
+          <Link
+            href={`/servers/${server.id}`}
+            key={server.id}
+            className="block"
+          >
             <div className="bg-[#2b2d31] rounded-lg overflow-hidden border border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200 flex flex-col h-full">
               {/* Banner */}
               <div className="h-32 bg-[#36393f] relative">
@@ -38,7 +51,9 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
 
               <div className="p-4 pt-8 flex-grow">
                 <h3 className="text-lg font-bold mb-2">{server.name}</h3>
-                <p className="text-gray-300 text-sm mb-3 line-clamp-2">{server.description}</p>
+                <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                  {server.description}
+                </p>
 
                 <div className="flex flex-wrap gap-2 mb-3">
                   {server.tags.slice(0, 3).map((tag) => (
@@ -51,7 +66,10 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
                     </Badge>
                   ))}
                   {server.tags.length > 3 && (
-                    <Badge variant="secondary" className="bg-[#36393f] text-gray-300 text-xs">
+                    <Badge
+                      variant="secondary"
+                      className="bg-[#36393f] text-gray-300 text-xs"
+                    >
                       +{server.tags.length - 3}
                     </Badge>
                   )}
@@ -73,7 +91,10 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
               </div>
 
               <div className="p-4 pt-0 mt-auto">
-                <Button size="sm" className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                <Button
+                  size="sm"
+                  className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                >
                   加入伺服器
                 </Button>
               </div>
@@ -82,6 +103,5 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }
-

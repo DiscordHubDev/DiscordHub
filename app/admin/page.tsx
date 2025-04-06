@@ -1,15 +1,24 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BotApplications from "@/components/ui/admin/bot-applications";
-import BotServerManagement from "@/components/ui/admin/bot-server-management";
-import ReportInbox from "@/components/ui/admin/report-inbox";
+import BotApplications from "@/components/admin/bot-applications";
+import BotServerManagement from "@/components/admin/bot-server-management";
+import ReportInbox from "@/components/admin/report-inbox";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { getPendingBots } from "@/lib/actions/get-pending-bot";
+import { getPendingBots } from "@/lib/actions/bots";
+import { getAllBots } from "@/lib/actions/bots";
+import { getReports } from "@/lib/actions/report";
+import { getAllServers } from "@/lib/actions/servers";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   const bots = await getPendingBots();
+
+  const allBots = await getAllBots();
+
+  const allReports = await getReports();
+
+  const servers = await getAllServers();
 
   return (
     <div className="space-y-6 p-13">
@@ -47,11 +56,11 @@ export default async function DashboardPage() {
         </TabsContent>
 
         <TabsContent value="management" className="space-y-4">
-          <BotServerManagement />
+          <BotServerManagement servers={servers} bots={allBots} />
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-4">
-          <ReportInbox />
+          <ReportInbox reports={allReports} />
         </TabsContent>
       </Tabs>
     </div>

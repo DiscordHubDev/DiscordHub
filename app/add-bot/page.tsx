@@ -1,12 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  useForm,
-  Controller,
-  UseFormRegister,
-  useFormContext,
-  useWatch,
-} from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -17,26 +11,36 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  deleteCloudinaryImage,
+  getCloudinarySignature,
+} from "@/lib/actions/image";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, X, Trash, Trash2, Upload, Info } from "lucide-react";
+import { X, Upload, Info } from "lucide-react";
 import { botFormSchema } from "@/schemas/add-bot-schema";
 import { botCategories } from "@/lib/bot-categories";
 import { z } from "zod";
-import { TagField } from "@/components/ui/form/bot-form/TagField";
-import { CommandListField } from "@/components/ui/form/bot-form/CommandListField";
-import { DeveloperListField } from "@/components/ui/form/bot-form/DeveloperListField";
+import { TagField } from "@/components/form/bot-form/TagField";
+import { CommandListField } from "@/components/form/bot-form/CommandListField";
+import { DeveloperListField } from "@/components/form/bot-form/DeveloperListField";
 import { DiscordBotRPCInfo } from "@/lib/types";
 import { submitBot } from "@/lib/actions/submit-bot";
 import { BotWithRelationsInput } from "@/lib/prisma_type";
-import { getColorFromURL } from "color-thief-node";
-import { rgbToHex } from "@/lib/utils";
+import ScreenshotGrid from "@/components/form/bot-form/ScreenshotGrid";
 
 type FormData = z.infer<typeof botFormSchema>;
 
+type Screenshot = {
+  url: string;
+  public_id: string;
+};
+
 const BotForm: React.FC = () => {
-  const [screenshotPreviews, setScreenshotPreviews] = useState<string[]>([]);
+  const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
+    []
+  );
+  const [uploading, setUploading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(botFormSchema),
@@ -62,22 +66,73 @@ const BotForm: React.FC = () => {
 
   const { handleSubmit, control, formState, register, reset } = form;
 
-  const handleScreenshotUpload = (
+  const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = event.target.files;
-    if (files) {
-      const previews = Array.from(files).map((file) =>
-        URL.createObjectURL(file)
-      );
-      setScreenshotPreviews([...screenshotPreviews, ...previews]);
+    if (!files) return;
+
+    const fileArray = Array.from(files).slice(0, 5 - screenshotPreviews.length);
+    if (fileArray.length === 0) return;
+
+    setUploading(true);
+
+    const sig = await getCloudinarySignature();
+    console.log("簽名資訊", sig);
+
+    for (const file of fileArray) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", sig.apiKey);
+      formData.append("timestamp", sig.timestamp.toString());
+      formData.append("signature", sig.signature);
+      formData.append("upload_preset", sig.uploadPreset);
+
+      try {
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.error("上傳失敗", {
+            status: res.status,
+            statusText: res.statusText,
+            body: data,
+          });
+          continue;
+        }
+
+        const imageUrl = data.secure_url;
+        const publicId = data.public_id;
+
+        setScreenshotPreviews((prev) => [
+          ...prev,
+          { url: imageUrl, public_id: publicId },
+        ]);
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      }
     }
+
+    setUploading(false);
   };
 
-  const removeScreenshot = (index: number) => {
-    const newPreviews = [...screenshotPreviews];
-    newPreviews.splice(index, 1);
-    setScreenshotPreviews(newPreviews);
+  const removeScreenshot = async (index: number) => {
+    const toDelete = screenshotPreviews[index];
+    setScreenshotPreviews((prev) => prev.filter((_, i) => i !== index));
+
+    try {
+      await deleteCloudinaryImage(toDelete.public_id);
+      console.log("圖片已從 Cloudinary 刪除");
+    } catch (err) {
+      console.error("刪除失敗", err);
+    }
   };
 
   const onSubmit = async (data: FormData) => {
@@ -121,8 +176,6 @@ const BotForm: React.FC = () => {
 
       const icon = `https://cdn.discordapp.com/app-icons/${client_id}/${rpcData.icon}.png`;
 
-      const hexColor = await getColorFromURL(icon).then((rgb) => rgbToHex(rgb));
-
       const botData: BotWithRelationsInput = {
         id: client_id,
         name: data.botName,
@@ -133,7 +186,7 @@ const BotForm: React.FC = () => {
         users: 0,
         upvotes: 0,
         icon: icon,
-        banner: hexColor,
+        banner: null,
         featured: false,
         createdAt: new Date(),
         prefix: data.botPrefix,
@@ -144,13 +197,14 @@ const BotForm: React.FC = () => {
         supportServer: data.botSupport || null,
         verified: false,
         features: [],
-        screenshots: screenshotPreviews,
+        screenshots: screenshotPreviews.map((s) => s.url),
         commands: commandPayload,
       };
 
       try {
         await submitBot(botData);
         reset();
+        setScreenshotPreviews([]);
         setSuccess(true);
       } catch (err) {
         console.error(err);
@@ -170,7 +224,15 @@ const BotForm: React.FC = () => {
         <div className="bg-[#2b2d31] rounded-lg p-6 shadow-lg">
           <h1 className="text-2xl font-bold mb-6">新增您的 Discord 機器人</h1>
           <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
               {/* 基本資訊 */}
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">基本資訊</h2>
@@ -228,9 +290,10 @@ const BotForm: React.FC = () => {
                   name="botLongDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>詳細描述</FormLabel>
+                      <FormLabel>詳細描述 *</FormLabel>
                       <FormControl>
                         <Textarea
+                          rows={10}
                           placeholder="詳細描述您的機器人功能、特色等（最多 2000 字）"
                           maxLength={2000}
                           {...field}
@@ -313,43 +376,31 @@ const BotForm: React.FC = () => {
                       機器人截圖（最多 5 張）
                     </FormLabel>
                     <div className="flex flex-col gap-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {screenshotPreviews.map((preview, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={preview || "/placeholder.svg"}
-                              alt={`Screenshot ${index + 1}`}
-                              className="w-full h-32 object-cover rounded border border-[#1e1f22]"
-                            />
-                            <button
-                              type="button"
-                              className="absolute top-2 right-2 bg-[#1e1f22] text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => removeScreenshot(index)}
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        ))}
-                        {screenshotPreviews.length < 5 && (
-                          <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
-                            <Input
-                              id="bot-screenshots"
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              className="hidden"
-                              onChange={handleScreenshotUpload}
-                            />
-                            <FormLabel
-                              htmlFor="bot-screenshots"
-                              className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white"
-                            >
-                              <Upload size={24} />
-                              <span className="mt-2 text-sm">上傳截圖</span>
-                            </FormLabel>
-                          </div>
+                      <ScreenshotGrid
+                        screenshotPreviews={screenshotPreviews.map(
+                          (p) => p.url
                         )}
-                      </div>
+                        removeScreenshot={removeScreenshot}
+                      />
+                      {screenshotPreviews.length < 5 && (
+                        <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
+                          <Input
+                            id="bot-screenshots"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleScreenshotUpload}
+                          />
+                          <FormLabel
+                            htmlFor="bot-screenshots"
+                            className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white"
+                          >
+                            <Upload size={24} />
+                            <span className="mt-2 text-sm">上傳截圖</span>
+                          </FormLabel>
+                        </div>
+                      )}
                       <p className="text-xs text-gray-400">
                         上傳您機器人的截圖，展示機器人的功能和使用場景
                       </p>

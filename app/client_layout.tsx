@@ -19,13 +19,13 @@ export default function ClientLayout({
     <main className="h-full w-full flex flex-col md:flex-row overflow-auto">
       <AppSidebar />
       <SidebarInset className="flex-grow flex flex-col">
-        <div className="flex-grow">
+        <div className="flex-grow pb-20 bg-[#1e1f22]">
           {" "}
           <Navbar />
           {children}
           <ToastContainer position="bottom-right" autoClose={3000} />
-          {!isAdminPage && <Footer />}
         </div>
+        {!isAdminPage && <Footer className="mt-auto" />}
       </SidebarInset>
     </main>
   );

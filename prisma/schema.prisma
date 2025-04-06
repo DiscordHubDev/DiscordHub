@@ -3,28 +3,29 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String
-  avatar    String
-  banner    String?
+  id           String   @id @default(cuid())
+  username     String
+  avatar       String
+  banner       String?
   banner_color String?
-  bio       String?
-  joinedAt  DateTime @default(now())
+  bio          String?
+  joinedAt     DateTime @default(now())
 
   favoriteServers Server[] @relation("UserFavoriteServers")
   favoriteBots    Bot[]    @relation("UserFavoriteBots")
 
-  ownedServers    Server[] @relation("OwnedServers")
+  ownedServers  Server[] @relation("OwnedServers")
   developedBots Bot[]    @relation("BotDevelopers")
 
   // 使用者社群資訊（彈性 json 欄位）
-  social Json?  // 儲存如：{ "twitter": "dawngs", "github": "dgsbot" }
+  social  Json? // 儲存如：{ "twitter": "dawngs", "github": "dgsbot" }
+  reports Report[] @relation("UserReports")
 }
 
 enum EmailPriority {
@@ -43,34 +44,33 @@ enum Status {
 model Notification {
   id        String        @id @default(cuid())
   name      String
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
   subject   String
   teaser    String
-  userId BigInt? // null is global broadcast
+  userId    BigInt? // null is global broadcast
   priority  EmailPriority @default(info)
   isSystem  Boolean       @default(false)
   read      Boolean       @default(false)
 }
 
-
 model Server {
-  id              String   @id @default(uuid())
+  id              String   @id
   name            String
   description     String
-  longDescription String?   // optional
-  tags            String[] 
+  longDescription String? // optional
+  tags            String[]
   members         Int
   online          Int?
   upvotes         Int
   icon            String?
   banner          String?
-  featured        Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  ownerId String?
-  owner     User?       @relation("OwnedServers", fields: [ownerId], references: [id])
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  ownerId         String?
+  owner           User?    @relation("OwnedServers", fields: [ownerId], references: [id])
   website         String?
   inviteUrl       String?
-  rules           String[] 
+  rules           String[]
   features        String[]
   screenshots     String[]
 
@@ -80,7 +80,7 @@ model Server {
 }
 
 model Bot {
-  id              String   @id
+  id              String    @id
   name            String
   description     String
   longDescription String?
@@ -92,44 +92,79 @@ model Bot {
   banner          String?
   featured        Boolean   @default(false)
   createdAt       DateTime  @default(now())
-  approvedAt DateTime?
+  approvedAt      DateTime?
   prefix          String?
-  developers User[]   @relation("BotDevelopers")
+  developers      User[]    @relation("BotDevelopers")
   website         String?
   inviteUrl       String?
   supportServer   String?
-  verified Boolean @default(false)
-  status Status @default(pending)
+  verified        Boolean   @default(false)
+  status          Status    @default(pending)
   features        String[]
   screenshots     String[]
 
-  favoritedBy User[]   @relation("UserFavoriteBots")
+  favoritedBy User[] @relation("UserFavoriteBots")
 
-  commands        BotCommand[]  // One-to-many relation
-  Review Review[]
+  commands BotCommand[] // One-to-many relation
+  Review   Review[]
 }
 
 model BotCommand {
-  id        String   @id @default(cuid())
-  name      String
+  id          String  @id @default(cuid())
+  name        String
   description String
-  usage     String
-  category  String?
-  botId     String
-  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  usage       String
+  category    String?
+  botId       String
+  bot         Bot     @relation(fields: [botId], references: [id], onDelete: Cascade)
 }
 
 model Review {
-  id         String   @id @default(cuid())
-  rating     Int
-  vote Int
-  comment    String?
-  createdAt  DateTime @default(now())
-  userId     String
+  id        String   @id @default(cuid())
+  rating    Int
+  vote      Int
+  comment   String?
+  createdAt DateTime @default(now())
+  userId    String
 
-  botId      String? 
-  bot        Bot?     @relation(fields: [botId], references: [id])
-  
-  serverId   String?
-  server     Server?  @relation(fields: [serverId], references: [id])
+  botId String?
+  bot   Bot?    @relation(fields: [botId], references: [id])
+
+  serverId String?
+  server   Server? @relation(fields: [serverId], references: [id])
+}
+
+model Report {
+  id          String         @id @default(cuid())
+  subject     String
+  content     String
+  reportedAt  DateTime       @default(now())
+  status      ReportStatus   @default(pending)
+  severity    ReportSeverity @default(untagged)
+  attachments Json
+  type        ReportType
+  itemId      String
+  itemName    String
+
+  // 舉報者
+  reportedById String
+  reportedBy   User   @relation("UserReports", fields: [reportedById], references: [id])
+}
+
+enum ReportStatus {
+  pending
+  resolved
+  rejected
+}
+
+enum ReportSeverity {
+  severe
+  moderate
+  low
+  untagged
+}
+
+enum ReportType {
+  bot
+  server
 }

@@ -1,9 +1,9 @@
-import type { ServerType } from "@/lib/types"
-import ServerCard from "./server-card"
+import { ServerType } from "@/lib/prisma_type";
+import ServerCard from "./server-card";
 
-interface ServerListProps {
-  servers: ServerType[]
-}
+type ServerListProps = {
+  servers: ServerType[];
+};
 
 export default function ServerList({ servers }: ServerListProps) {
   return (
@@ -12,6 +12,5 @@ export default function ServerList({ servers }: ServerListProps) {
         <ServerCard key={server.id} server={server} />
       ))}
     </div>
-  )
+  );
 }
-

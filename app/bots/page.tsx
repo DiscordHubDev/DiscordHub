@@ -1,4 +1,4 @@
-import { getAllBots } from "@/lib/actions/get-all-bots";
+import { getAllBots } from "@/lib/actions/bots";
 import DiscordBotListPageClient from "./discord-bot-list";
 
 export default async function DiscordBotListPage() {

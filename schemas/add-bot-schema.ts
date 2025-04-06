@@ -5,10 +5,11 @@ export const botFormSchema = z.object({
   botPrefix: z.string().min(1, { message: "機器人前綴為必填" }),
   botDescription: z
     .string()
-    .min(1, { message: "簡短描述為必填" })
+    .min(20, { message: "簡短描述最少需20字" })
     .max(200, { message: "簡短描述最多 200 字" }),
   botLongDescription: z
     .string()
+    .min(50, { message: "詳細描述最少需50字" })
     .max(2000, { message: "詳細描述最多 2000 字" })
     .optional(),
   botInvite: z
@@ -44,18 +45,10 @@ export const botFormSchema = z.object({
   developers: z
     .array(
       z.object({
-        name: z.string(),
+        name: z.string().min(1, "請輸入開發者 ID"),
       })
     )
-    .superRefine((developers, ctx) => {
-      if (developers.length === 1 && !developers[0].name.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "請至少輸入一位開發者",
-          path: [0, "name"],
-        });
-      }
-    }),
+    .min(1, "至少需要一位開發者"),
   commands: z.array(
     z.object({
       name: z.string().min(1, { message: "指令名稱為必填" }),

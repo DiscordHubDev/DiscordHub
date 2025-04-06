@@ -1,6 +1,6 @@
 import { getUserGuildsWithBotStatus } from "@/lib/get-user-guild";
 
-import ServerClient from "@/components/ui/server/server-home";
+import ServerClient from "@/components/server/server-home";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -14,10 +14,8 @@ export default async function HomePage() {
     return redirect("/api/auth/signin?callbackUrl=/add-server");
   }
 
-  const botToken = process.env.BOT_TOKEN!;
   const { activeServers, inactiveServers } = await getUserGuildsWithBotStatus(
-    session!.access_token!,
-    botToken
+    session!.access_token!
   );
 
   return (

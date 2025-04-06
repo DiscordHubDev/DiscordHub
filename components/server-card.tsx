@@ -1,13 +1,13 @@
-import { Users, ArrowUp, Clock } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import type { ServerType } from "@/lib/types"
-import { formatDistanceToNow } from "date-fns"
-import { zhTW } from "date-fns/locale"
-import Link from "next/link"
+import { Users, ArrowUp, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
+import { zhTW } from "date-fns/locale";
+import Link from "next/link";
+import { ServerType } from "@/lib/prisma_type";
 
 interface ServerCardProps {
-  server: ServerType
+  server: ServerType;
 }
 
 export default function ServerCard({ server }: ServerCardProps) {
@@ -56,19 +56,28 @@ export default function ServerCard({ server }: ServerCardProps) {
                 <div className="hidden md:flex md:flex-row md:items-center justify-between mb-2">
                   <h3 className="text-xl font-bold">{server.name}</h3>
                   <div className="flex items-center">
-                    <Button size="sm" className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                    <Button
+                      size="sm"
+                      className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                    >
                       加入伺服器
                     </Button>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-gray-300 mb-4 line-clamp-2">{server.description}</p>
+                <p className="text-gray-300 mb-4 line-clamp-2">
+                  {server.description}
+                </p>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {server.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-[#36393f] hover:bg-[#4f545c] text-gray-300">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="bg-[#36393f] hover:bg-[#4f545c] text-gray-300"
+                    >
                       {tag}
                     </Badge>
                   ))}
@@ -103,7 +112,10 @@ export default function ServerCard({ server }: ServerCardProps) {
 
                 {/* Join Button (mobile) */}
                 <div className="mt-4 md:hidden">
-                  <Button size="sm" className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                  <Button
+                    size="sm"
+                    className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                  >
                     加入伺服器
                   </Button>
                 </div>
@@ -124,6 +136,5 @@ export default function ServerCard({ server }: ServerCardProps) {
         </div>
       </div>
     </Link>
-  )
+  );
 }
-

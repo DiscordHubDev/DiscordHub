@@ -1,6 +1,6 @@
 "use server";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { Session } from "next-auth";
 import { getUser, UserType } from "../get-user";
 

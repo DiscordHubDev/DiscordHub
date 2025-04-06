@@ -28,7 +28,7 @@ export default async function RootLayout({
 }>) {
   const session = await getServerSession(authOptions);
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning={true}>
       <body
         className={cn(
           "h-screen w-full font-sans antialiased bg-[#1e1f22] text-white",

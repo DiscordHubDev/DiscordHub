@@ -1,30 +1,17 @@
-export interface ServerType {
-  id: string;
-  name: string;
-  description: string;
-  tags: string[];
-  members: number;
-  online?: number;
-  upvotes: number;
-  icon?: string;
-  banner?: string;
-  featured: boolean;
-  createdAt: string;
-  owner?: string;
-  website?: string;
-  inviteUrl?: string;
-  longDescription?: string;
-  rules?: string[];
-  features?: string[];
-  screenshots?: string[];
-}
-
 export interface CategoryType {
   id: string;
   name: string;
   color: string;
   selected: boolean;
 }
+
+export type UploadedFile = {
+  url: string;
+  public_id: string;
+  format: string;
+  type: "image" | "video" | "raw";
+  original_filename: string;
+};
 
 export interface BotType {
   id: string;

@@ -15,7 +15,7 @@ import MobileCategoryFilter from "@/components/mobile-category-filter";
 import { botCategories as initialCategories } from "@/lib/bot-categories";
 import type { BotType, CategoryType } from "@/lib/types";
 import Link from "next/link";
-import { getAllBots } from "@/lib/actions/get-all-bots";
+import { getAllBots } from "@/lib/actions/bots";
 import { BotWithRelations } from "@/lib/prisma_type";
 
 export default function DiscordBotListPageClient({
@@ -218,12 +218,14 @@ export default function DiscordBotListPageClient({
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
+                <h2 className="text-2xl font-bold mb-4">熱門機器人</h2>
                 <BotList
                   bots={[...bots].sort((a, b) => b.servers - a.servers)}
                 />
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
+                <h2 className="text-2xl font-bold mb-4">最新機器人</h2>
                 <BotList
                   bots={[...bots].sort(
                     (a, b) =>
@@ -234,6 +236,7 @@ export default function DiscordBotListPageClient({
               </TabsContent>
 
               <TabsContent value="verified" className="mt-6">
+                <h2 className="text-2xl font-bold mb-4">驗證機器人</h2>
                 <BotList bots={bots.filter((b) => b.verified)} />
               </TabsContent>
             </Tabs>

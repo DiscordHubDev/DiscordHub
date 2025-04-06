@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 
-export default function Footer() {
+export default function Footer({ className = "" }: { className?: string }) {
   return (
-    <footer className="bg-[#2b2d31] mt-12 py-8 border-t border-[#1e1f22]">
+    <footer
+      className={`bg-[#2b2d31] py-8 border-t border-[#1e1f22] ${className}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 四欄內容 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
