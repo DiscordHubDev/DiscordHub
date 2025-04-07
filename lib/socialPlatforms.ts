@@ -1,6 +1,6 @@
 // lib/socialPlatforms.ts
 
-import { FaFacebook, FaThreads, FaX } from "react-icons/fa6";
+import { FaFacebook, FaThreads, FaX } from 'react-icons/fa6';
 
 import {
   FaDiscord,
@@ -10,9 +10,9 @@ import {
   FaYoutube,
   FaLinkedin,
   FaInstagram,
-} from "react-icons/fa";
+} from 'react-icons/fa';
 
-import { IconType } from "react-icons";
+import { IconType } from 'react-icons';
 
 export const SOCIAL_PLATFORMS: Record<
   string,
@@ -23,42 +23,42 @@ export const SOCIAL_PLATFORMS: Record<
   }
 > = {
   discord: {
-    name: "Discord",
+    name: 'Discord',
     icon: FaDiscord,
   },
   twitter: {
-    name: "Twitter (X)",
+    name: 'Twitter (X)',
     icon: FaX,
-    link: (val) => `https://x.com/${val}`,
+    link: val => `https://x.com/${val}`,
   },
   github: {
-    name: "GitHub",
+    name: 'GitHub',
     icon: FaGithub,
-    link: (val) => `https://github.com/${val}`,
+    link: val => `https://github.com/${val}`,
   },
   website: {
-    name: "Website",
+    name: 'Website',
     icon: FaGlobe,
-    link: (val) => val,
+    link: val => val,
   },
   instagram: {
-    name: "Instagram",
+    name: 'Instagram',
     icon: FaInstagram,
-    link: (val) => `https://instagram.com/${val}`,
+    link: val => `https://instagram.com/${val}`,
   },
   youtube: {
-    name: "YouTube",
+    name: 'YouTube',
     icon: FaYoutube,
-    link: (val) => `https://youtube.com/@${val}`,
+    link: val => `https://youtube.com/@${val}`,
   },
   threads: {
-    name: "Threads",
+    name: 'Threads',
     icon: FaThreads,
-    link: (val) => `https://www.threads.net/@${val.replace("@", "")}`,
+    link: val => `https://www.threads.net/@${val.replace('@', '')}`,
   },
   facebook: {
-    name: "Facebook",
+    name: 'Facebook',
     icon: FaFacebook,
-    link: (val) => `https://www.facebook.com/${val}`,
+    link: val => `https://www.facebook.com/${val}`,
   },
 };

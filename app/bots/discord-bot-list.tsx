@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { useState } from "react";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BotList from "@/components/bot-list";
-import FeaturedBots from "@/components/featured-bots";
-import CategoryFilter from "@/components/category-filter";
-import CategorySearch from "@/components/category-search";
-import MobileCategoryFilter from "@/components/mobile-category-filter";
-import { botCategories as initialCategories } from "@/lib/bot-categories";
-import type { BotType, CategoryType } from "@/lib/types";
-import Link from "next/link";
-import { getAllBots } from "@/lib/actions/bots";
-import { BotWithRelations } from "@/lib/prisma_type";
+import { useState } from 'react';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BotList from '@/components/bot-list';
+import FeaturedBots from '@/components/featured-bots';
+import CategoryFilter from '@/components/category-filter';
+import CategorySearch from '@/components/category-search';
+import MobileCategoryFilter from '@/components/mobile-category-filter';
+import { botCategories as initialCategories } from '@/lib/bot-categories';
+import type { BotType, CategoryType } from '@/lib/types';
+import Link from 'next/link';
+import { getAllBots } from '@/lib/actions/bots';
+import { BotWithRelations } from '@/lib/prisma_type';
 
 export default function DiscordBotListPageClient({
   allBots,
@@ -24,7 +24,7 @@ export default function DiscordBotListPageClient({
   allBots: BotWithRelations[];
 }) {
   const [bots, setBots] = useState<BotWithRelations[]>(allBots);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
 
@@ -35,15 +35,15 @@ export default function DiscordBotListPageClient({
       setBots(allBots);
     } else {
       // 根據選擇的分類過濾機器人
-      const filteredBots = allBots.filter((bot) => {
+      const filteredBots = allBots.filter(bot => {
         // 這裡假設機器人的標籤與分類名稱相關
         // 實際應用中可能需要更複雜的邏輯
         const categoryNames = categories
-          .filter((cat) => selectedCategoryIds.includes(cat.id))
-          .map((cat) => cat.name.toLowerCase());
+          .filter(cat => selectedCategoryIds.includes(cat.id))
+          .map(cat => cat.name.toLowerCase());
 
-        return bot.tags.some((tag) =>
-          categoryNames.some((catName) => tag.toLowerCase().includes(catName))
+        return bot.tags.some(tag =>
+          categoryNames.some(catName => tag.toLowerCase().includes(catName)),
         );
       });
 
@@ -55,7 +55,7 @@ export default function DiscordBotListPageClient({
   const handleAddCustomCategory = (categoryName: string) => {
     // 檢查是否已存在相同名稱的分類
     const exists = categories.some(
-      (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
+      cat => cat.name.toLowerCase() === categoryName.toLowerCase(),
     );
 
     if (exists) return;
@@ -74,7 +74,7 @@ export default function DiscordBotListPageClient({
 
     // 自動選中新分類
     handleCategoryChange([
-      ...categories.filter((c) => c.selected).map((c) => c.id),
+      ...categories.filter(c => c.selected).map(c => c.id),
       newCategory.id,
     ]);
   };
@@ -90,10 +90,10 @@ export default function DiscordBotListPageClient({
 
     const query = searchQuery.toLowerCase();
     const searchResults = allBots.filter(
-      (bot) =>
+      bot =>
         bot.name.toLowerCase().includes(query) ||
         bot.description.toLowerCase().includes(query) ||
-        bot.tags.some((tag) => tag.toLowerCase().includes(query))
+        bot.tags.some(tag => tag.toLowerCase().includes(query)),
     );
 
     setBots(searchResults);
@@ -137,7 +137,7 @@ export default function DiscordBotListPageClient({
               placeholder="搜尋機器人名稱、標籤或描述..."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
@@ -205,6 +205,12 @@ export default function DiscordBotListPageClient({
                 >
                   已驗證機器人
                 </TabsTrigger>
+                <TabsTrigger
+                  value="voted"
+                  className="data-[state=active]:bg-[#36393f]"
+                >
+                  票選機器人
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="mt-6">
@@ -213,7 +219,7 @@ export default function DiscordBotListPageClient({
               </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
-                <FeaturedBots bots={bots.filter((b) => b.featured)} />
+                <FeaturedBots bots={bots.filter(b => b.featured)} />
                 <div className="mt-8"></div>
               </TabsContent>
 
@@ -230,14 +236,21 @@ export default function DiscordBotListPageClient({
                   bots={[...bots].sort(
                     (a, b) =>
                       new Date(a.approvedAt!).getTime() -
-                      new Date(b.approvedAt!).getTime()
+                      new Date(b.approvedAt!).getTime(),
                   )}
                 />
               </TabsContent>
 
               <TabsContent value="verified" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">驗證機器人</h2>
-                <BotList bots={bots.filter((b) => b.verified)} />
+                <BotList bots={bots.filter(b => b.verified)} />
+              </TabsContent>
+
+              <TabsContent value="voted" className="mt-6">
+                <h2 className="text-2xl font-bold mb-4">票選機器人</h2>
+                <BotList
+                  bots={[...bots].sort((a, b) => b.upvotes - a.upvotes)}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -274,7 +287,7 @@ export default function DiscordBotListPageClient({
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">已驗證機器人</span>
                   <span className="font-medium">
-                    {allBots.filter((b) => b.verified).length}
+                    {allBots.filter(b => b.verified).length}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">

@@ -1,26 +1,28 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Bot, ExternalLink, Check, X, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { BotWithRelations } from "@/lib/prisma_type";
-import { updateBotStatus } from "@/lib/actions/update-bot-status";
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Bot, ExternalLink, Check, X, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { BotWithRelations } from '@/lib/prisma_type';
+import { updateBotStatus } from '@/lib/actions/update-bot-status';
+import { sendNotification } from '@/lib/actions/sendNotification';
+import RejectBotDialog from '@/components/RejectBotDialog';
 
 type BotApplicationsProps = {
   applications: BotWithRelations[];
@@ -32,25 +34,53 @@ export default function BotApplications({
   const [applications, setApplications] = useState(initialData);
   const [selectedApp, setSelectedApp] = useState<BotWithRelations | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleApprove = async (id: string) => {
-    await updateBotStatus(id, "approved");
-    setApplications(
-      applications.map((app) =>
-        app.id === id ? { ...app, status: "approved" } : app
-      )
-    );
-    setIsDialogOpen(false);
+  const [isRejectDialogOpen, setRejectDialogOpen] = useState(false);
+
+  const openRejectDialog = (app: BotWithRelations) => {
+    setSelectedApp(app);
+    setRejectDialogOpen(true);
   };
 
-  const handleReject = async (id: string) => {
-    await updateBotStatus(id, "rejected");
+  const handleRejectBot = (id: string, reason: string) => {
+    handleReview(id, 'rejected', reason);
+  };
+
+  const handleReview = async (
+    id: string,
+    status: 'approved' | 'rejected',
+    rejectionReason?: string,
+  ) => {
+    const isApproved = status === 'approved';
+
+    await updateBotStatus(id, status, rejectionReason);
+
     setApplications(
-      applications.map((app) =>
-        app.id === id ? { ...app, status: "rejected" } : app
-      )
+      applications.map(app => (app.id === id ? { ...app, status } : app)),
     );
+
+    const app = applications.find(app => app.id === id);
+    if (app) {
+      await Promise.all(
+        app.developers.map(dev =>
+          sendNotification({
+            subject: isApproved
+              ? '您的機器人申請已通過 ✅'
+              : '您的機器人申請未通過 ❌',
+            teaser: isApproved
+              ? `${app.name} 已通過審核`
+              : `${app.name} 的申請未被接受`,
+            content: isApproved
+              ? `您好！我們已審查您提交的機器人「${app.name}」，並已核准上架。感謝您的耐心等待，祝您的機器人越來越好！`
+              : `您好，我們已審查您提交的機器人「${app.name}」，很遺憾，未能通過審核。\n\n拒絕原因：${rejectionReason || '未提供原因'}\n若有疑問，歡迎再次申請。`,
+            priority: isApproved ? 'success' : 'warning',
+            userId: dev.id,
+          }),
+        ),
+      );
+    }
+
     setIsDialogOpen(false);
   };
 
@@ -64,16 +94,16 @@ export default function BotApplications({
 
   const filteredApplications = applications
     .filter(
-      (app) =>
+      app =>
         app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.developers.some((dev) =>
-          dev.username?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        app.developers.some(dev =>
+          dev.username?.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
     )
-    .map((app) => ({
+    .map(app => ({
       ...app,
-      tags: Array.isArray(app.tags) ? app.tags.map((tag) => tag.trim()) : [],
+      tags: Array.isArray(app.tags) ? app.tags.map(tag => tag.trim()) : [],
     }));
 
   return (
@@ -95,17 +125,17 @@ export default function BotApplications({
               placeholder="搜尋應用..."
               className="bg-[#202225] border-[#1E1F22] pl-9 text-white placeholder:text-gray-400 focus-visible:ring-[#5865F2]"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
 
           {filteredApplications.length === 0 ? (
             <div className="text-center py-6 text-gray-400">
-              {searchQuery ? "沒有符合搜尋的應用" : "沒有待處理的應用"}
+              {searchQuery ? '沒有符合搜尋的應用' : '沒有待處理的應用'}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-              {filteredApplications.map((app) => (
+              {filteredApplications.map(app => (
                 <div
                   key={app.id}
                   onClick={() => viewDetails(app)} // 👈 你自己的處理函式
@@ -116,18 +146,18 @@ export default function BotApplications({
                       <h3 className="font-semibold text-sm sm:text-base break-words line-clamp-1">
                         {app.name}
                       </h3>
-                      {app.status === "pending" && (
+                      {app.status === 'pending' && (
                         <Badge className="bg-[#FEE75C] text-black whitespace-nowrap">
                           待處理
                         </Badge>
                       )}
-                      {app.status === "approved" && (
+                      {app.status === 'approved' && (
                         <Badge className="bg-[#57F287] whitespace-nowrap">
                           已批准
                         </Badge>
                       )}
-                      {app.status === "rejected" && (
-                        <Badge className="bg-[#ED4245] whitespace-nowrap">
+                      {app.status === 'rejected' && (
+                        <Badge className="bg-red-700 whitespace-nowrap">
                           已拒絕
                         </Badge>
                       )}
@@ -135,18 +165,21 @@ export default function BotApplications({
                     <div className="text-xs sm:text-sm text-gray-400 break-words">
                       <p className="font-medium text-white">提交者：</p>
                       <ul className="ml-4 list-disc">
-                        {app.developers.map((dev) => (
+                        {app.developers.map(dev => (
                           <li key={dev.id}>{dev.username}</li>
                         ))}
                       </ul>
-                      <p>提交時間：{formatDate(app.createdAt!.toString())}</p>
+                      <p>
+                        提交時間：
+                        {formatDate(app.createdAt!.toString())}
+                      </p>
                     </div>
                     <p className="text-xs sm:text-sm mt-2 line-clamp-2 break-words">
                       {app.description}
                     </p>
 
                     <div className="flex flex-wrap gap-1 mt-2 overflow-hidden">
-                      {app.tags!.map((tag) => (
+                      {app.tags!.map(tag => (
                         <Badge
                           key={tag}
                           variant="outline"
@@ -159,19 +192,25 @@ export default function BotApplications({
                   </div>
 
                   <div className="flex justify-between items-center mt-2">
-                    {app.status === "pending" && (
+                    {app.status === 'pending' && (
                       <>
                         <Button
                           size="sm"
                           className="bg-[#57F287] hover:bg-[#57F287]/90 text-black"
-                          onClick={() => handleApprove(app.id)}
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            handleReview(app.id, 'approved');
+                          }}
                         >
                           <Check className="h-4 w-4 mr-1" /> 批准
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-[#ED4245] hover:bg-[#ED4245]/90"
-                          onClick={() => handleReject(app.id)}
+                          className="bg-red-700/80 hover:bg-red-700"
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            openRejectDialog(app);
+                          }}
                         >
                           <X className="h-4 w-4 mr-1" /> 拒絕
                         </Button>
@@ -205,7 +244,7 @@ export default function BotApplications({
                       開發者：
                     </h4>
                     <ul className="ml-4 list-disc">
-                      {selectedApp.developers.map((dev) => (
+                      {selectedApp.developers.map(dev => (
                         <li key={dev.id}>{dev.username}</li>
                       ))}
                     </ul>
@@ -258,7 +297,7 @@ export default function BotApplications({
               <div>
                 <h4 className="text-sm font-medium text-gray-400">標籤</h4>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {selectedApp.tags.map((tag) => (
+                  {selectedApp.tags.map(tag => (
                     <Badge
                       key={tag}
                       className="bg-[#5865f2] hover:bg-[#4752c4]"
@@ -271,23 +310,21 @@ export default function BotApplications({
             </div>
 
             <div className="flex justify-between items-center">
-              {selectedApp.status === "pending" && (
+              {selectedApp.status === 'pending' && (
                 <>
                   <Button
                     className="bg-[#57F287] hover:bg-[#57F287]/90 text-black"
-                    onClick={() => {
-                      handleApprove(selectedApp.id);
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleReview(selectedApp.id, 'approved');
                       setIsDialogOpen(false);
                     }}
                   >
                     <Check className="h-4 w-4 mr-1" /> 批准
                   </Button>
                   <Button
-                    className="bg-[#ED4245] hover:bg-[#ED4245]/90"
-                    onClick={() => {
-                      handleReject(selectedApp.id);
-                      setIsDialogOpen(false);
-                    }}
+                    className="bg-red-700/80 hover:bg-red-700"
+                    onClick={() => openRejectDialog(selectedApp)}
                   >
                     <X className="h-4 w-4 mr-1" /> 拒絕
                   </Button>
@@ -296,6 +333,14 @@ export default function BotApplications({
             </div>
           </DialogContent>
         </Dialog>
+      )}
+      {selectedApp && (
+        <RejectBotDialog
+          botId={selectedApp.id}
+          isOpen={isRejectDialogOpen}
+          onClose={() => setRejectDialogOpen(false)}
+          onConfirm={handleRejectBot}
+        />
       )}
     </Card>
   );

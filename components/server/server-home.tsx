@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ServerGrid } from "@/components/server/server-grid";
-import type { InactiveServerInfo, ServerInfo } from "@/lib/get-user-guild";
+import { ServerGrid } from '@/components/server/server-grid';
+import type { InactiveServerInfo, ServerInfo } from '@/lib/get-user-guild';
 
 interface Props {
   activeServers: ServerInfo[];

@@ -1,16 +1,17 @@
 // hooks/useInbox.ts
-import useSWR from "swr";
-import { supabase } from "@/lib/supabase";
-import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import useSWR from 'swr';
+import { supabase } from '@/lib/supabase';
+import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 
 function transformNotification(n: any) {
   return {
     id: n.id,
-    name: n.name ?? "系統通知",
-    createdAt: new Date(n.createdAt).toISOString().split("T")[0],
+    content: n.content,
+    name: n.name ?? '系統通知',
+    createdAt: new Date(n.createdAt).toISOString().split('T')[0],
     subject: n.subject,
-    teaser: n.teaser ?? "",
+    teaser: n.teaser ?? '',
     priority: n.priority,
     isSystem: n.userId === null,
     read: n.read,
@@ -23,40 +24,40 @@ export function useInbox() {
   const [mails, setMails] = useState<any[]>([]);
 
   const markAsRead = async (mailId: string) => {
-    await supabase.from("Notification").update({ read: true }).eq("id", mailId);
+    await supabase.from('Notification').update({ read: true }).eq('id', mailId);
 
-    setMails((prev) =>
-      prev.map((mail) => (mail.id === mailId ? { ...mail, read: true } : mail))
+    setMails(prev =>
+      prev.map(mail => (mail.id === mailId ? { ...mail, read: true } : mail)),
     );
   };
 
   const deleteMail = async (mailId: string) => {
     const { error } = await supabase
-      .from("Notification")
+      .from('Notification')
       .delete()
-      .eq("id", mailId);
+      .eq('id', mailId);
 
     if (error) {
-      console.error("❌ 刪除失敗：", error);
+      console.error('❌ 刪除失敗：', error);
       throw error;
     }
 
-    setMails((prev) => prev.filter((mail) => mail.id !== mailId));
+    setMails(prev => prev.filter(mail => mail.id !== mailId));
   };
 
   const { data, error, isLoading, mutate } = useSWR(
-    userId ? ["inbox", userId] : null,
+    userId ? ['inbox', userId] : null,
     async () => {
       const { data, error } = await supabase
-        .from("Notification")
-        .select("*")
+        .from('Notification')
+        .select('*')
         .or(`userId.eq.${userId},userId.is.null`)
-        .order("createdAt", { ascending: false });
+        .order('createdAt', { ascending: false });
 
       if (error) throw error;
 
       return data.map(transformNotification);
-    }
+    },
   );
 
   useEffect(() => {
@@ -64,9 +65,9 @@ export function useInbox() {
   }, [data]);
 
   const addMail = (newRawMail: any) => {
-    console.log("newMail", newRawMail);
+    console.log('newMail', newRawMail);
     const newMail = transformNotification(newRawMail);
-    setMails((prev) => [newMail, ...prev]);
+    setMails(prev => [newMail, ...prev]);
   };
 
   return {

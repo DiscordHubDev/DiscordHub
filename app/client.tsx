@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { useState } from "react";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ServerList from "@/components/server-list";
-import FeaturedServers from "@/components/featured-servers";
-import CategoryFilter from "@/components/category-filter";
-import CategorySearch from "@/components/category-search";
-import MobileCategoryFilter from "@/components/mobile-category-filter";
-import { Servercategories as initialCategories } from "@/lib/categories";
-import type { CategoryType } from "@/lib/types";
-import { ServerType } from "@/lib/prisma_type";
+import { useState } from 'react';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ServerList from '@/components/server-list';
+import FeaturedServers from '@/components/featured-servers';
+import CategoryFilter from '@/components/category-filter';
+import CategorySearch from '@/components/category-search';
+import MobileCategoryFilter from '@/components/mobile-category-filter';
+import { Servercategories as initialCategories } from '@/lib/categories';
+import type { CategoryType } from '@/lib/types';
+import { ServerType } from '@/lib/prisma_type';
 
 type DiscordServerListProps = {
   servers: ServerType[];
@@ -24,7 +24,7 @@ export default function DiscordServerListPageClient({
   servers: allServers,
 }: DiscordServerListProps) {
   const [servers, setServers] = useState<ServerType[]>(allServers);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
 
@@ -35,17 +35,17 @@ export default function DiscordServerListPageClient({
       setServers(allServers);
     } else {
       // 根據選擇的分類過濾伺服器
-      const filteredServers = allServers.filter((server) => {
+      const filteredServers = allServers.filter(server => {
         // 這裡假設伺服器的標籤與分類名稱相關
         // 實際應用中可能需要更複雜的邏輯
         const categoryNames = categories
-          .filter((cat) => selectedCategoryIds.includes(cat.id))
-          .map((cat) => cat.name.toLowerCase());
+          .filter(cat => selectedCategoryIds.includes(cat.id))
+          .map(cat => cat.name.toLowerCase());
 
         return (
           Array.isArray(server.tags) &&
-          server.tags.some((tag) =>
-            categoryNames.some((catName) => tag.toLowerCase().includes(catName))
+          server.tags.some(tag =>
+            categoryNames.some(catName => tag.toLowerCase().includes(catName)),
           )
         );
       });
@@ -58,7 +58,7 @@ export default function DiscordServerListPageClient({
   const handleAddCustomCategory = (categoryName: string) => {
     // 檢查是否已存在相同名稱的分類
     const exists = categories.some(
-      (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
+      cat => cat.name.toLowerCase() === categoryName.toLowerCase(),
     );
 
     if (exists) return;
@@ -77,7 +77,7 @@ export default function DiscordServerListPageClient({
 
     // 自動選中新分類
     handleCategoryChange([
-      ...categories.filter((c) => c.selected).map((c) => c.id),
+      ...categories.filter(c => c.selected).map(c => c.id),
       newCategory.id,
     ]);
   };
@@ -93,11 +93,11 @@ export default function DiscordServerListPageClient({
 
     const query = searchQuery.toLowerCase();
     const searchResults = allServers.filter(
-      (server) =>
+      server =>
         server.name.toLowerCase().includes(query) ||
         server.description.toLowerCase().includes(query) ||
         (Array.isArray(server.tags) &&
-          server.tags.some((tag) => tag.toLowerCase().includes(query)))
+          server.tags.some(tag => tag.toLowerCase().includes(query))),
     );
 
     setServers(searchResults);
@@ -141,7 +141,7 @@ export default function DiscordServerListPageClient({
               placeholder="搜尋伺服器名稱、標籤或描述..."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
@@ -203,6 +203,12 @@ export default function DiscordServerListPageClient({
                 >
                   最新伺服器
                 </TabsTrigger>
+                <TabsTrigger
+                  value="voted"
+                  className="data-[state=active]:bg-[#36393f]"
+                >
+                  票選伺服器
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="mt-6">
@@ -214,7 +220,7 @@ export default function DiscordServerListPageClient({
 
               <TabsContent value="featured" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
-                <FeaturedServers servers={servers.filter((s) => s.featured)} />
+                <FeaturedServers servers={servers.filter(s => s.featured)} />
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
@@ -230,8 +236,14 @@ export default function DiscordServerListPageClient({
                   servers={[...servers].sort(
                     (a, b) =>
                       new Date(b.createdAt!).getTime() -
-                      new Date(a.createdAt!).getTime()
+                      new Date(a.createdAt!).getTime(),
                   )}
+                />
+              </TabsContent>
+              <TabsContent value="voted" className="mt-6">
+                <h2 className="text-2xl font-bold mb-4">票選伺服器</h2>
+                <ServerList
+                  servers={[...servers].sort((a, b) => b.upvotes - a.upvotes)}
                 />
               </TabsContent>
             </Tabs>

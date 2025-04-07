@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 
 type Props = {
   screenshotPreviews: string[];
@@ -16,10 +16,10 @@ export default function ScreenshotGrid({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPreviewImage(null);
+      if (e.key === 'Escape') setPreviewImage(null);
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -28,7 +28,7 @@ export default function ScreenshotGrid({
         {screenshotPreviews.map((preview, index) => (
           <div key={index} className="relative group">
             <img
-              src={preview || "/placeholder.svg"}
+              src={preview || '/placeholder.svg'}
               alt={`Screenshot ${index + 1}`}
               className="w-full h-32 object-cover rounded border border-[#1e1f22] cursor-pointer"
               onClick={() => setPreviewImage(preview)}
@@ -51,7 +51,7 @@ export default function ScreenshotGrid({
         >
           <div
             className="relative w-full h-full"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <img
               src={previewImage}

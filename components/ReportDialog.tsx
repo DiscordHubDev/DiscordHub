@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Dialog,
@@ -7,15 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Upload } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useState } from "react";
-import { toast } from "react-toastify";
-import { submitReport } from "@/lib/actions/report";
-import { AttachmentUploader } from "./AttachmentUploader";
-import { UploadedFile } from "@/lib/types";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Upload } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import { submitReport } from '@/lib/actions/report';
+import { AttachmentUploader } from './AttachmentUploader';
+import { UploadedFile } from '@/lib/types';
 
 export function ReportDialog({
   itemId,
@@ -24,37 +24,37 @@ export function ReportDialog({
 }: {
   itemId: string;
   itemName: string;
-  type: "bot" | "server";
+  type: 'bot' | 'server';
 }) {
   const [open, setOpen] = useState(false);
-  const [subject, setSubject] = useState("");
-  const [content, setContent] = useState("");
+  const [subject, setSubject] = useState('');
+  const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<UploadedFile[]>([]);
-  const severity = "untagged"; // 可改為下拉選單支援
+  const severity = 'untagged'; // 可改為下拉選單支援
 
-  const [subjectError, setSubjectError] = useState("");
-  const [contentError, setContentError] = useState("");
+  const [subjectError, setSubjectError] = useState('');
+  const [contentError, setContentError] = useState('');
 
   const { data: session } = useSession();
   const userId = session?.discordProfile?.id;
 
   const handleSubmit = async () => {
     let hasError = false;
-    setSubjectError("");
-    setContentError("");
+    setSubjectError('');
+    setContentError('');
 
     if (!userId) {
-      toast.error("請先登入再檢舉");
+      toast.error('請先登入再檢舉');
       return;
     }
 
     if (subject.trim().length < 5) {
-      setSubjectError("標題至少需要 5 個字");
+      setSubjectError('標題至少需要 5 個字');
       hasError = true;
     }
 
     if (content.trim().length < 20) {
-      setContentError("內容至少需要 20 個字");
+      setContentError('內容至少需要 20 個字');
       hasError = true;
     }
 
@@ -72,13 +72,13 @@ export function ReportDialog({
         reportedById: userId,
       });
 
-      toast.success("檢舉已提交！");
+      toast.success('檢舉已提交！');
       setOpen(false);
-      setSubject("");
-      setContent("");
+      setSubject('');
+      setContent('');
       setAttachments([]);
     } catch (err: any) {
-      toast.error("提交失敗：" + err.message);
+      toast.error('提交失敗：' + err.message);
     }
   };
 
@@ -97,7 +97,7 @@ export function ReportDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            檢舉{type === "bot" ? "機器人" : "伺服器"}：{itemName}
+            檢舉{type === 'bot' ? '機器人' : '伺服器'}：{itemName}
           </DialogTitle>
           <DialogDescription>
             請詳細描述問題並上傳證據，我們會盡快核實並處理。
@@ -117,17 +117,17 @@ export function ReportDialog({
               id="report-subject"
               type="text"
               value={subject}
-              onChange={(e) => {
+              onChange={e => {
                 setSubject(e.target.value);
                 if (subjectError && e.target.value.trim().length >= 5) {
-                  setSubjectError("");
+                  setSubjectError('');
                 }
               }}
               placeholder="例如：違規發言、詐騙等"
               className={`w-full px-3 py-2 rounded bg-zinc-800 text-white placeholder-gray-500 border ${
-                subjectError ? "border-red-500" : "border-zinc-700"
+                subjectError ? 'border-red-500' : 'border-zinc-700'
               } focus:outline-none focus:ring-2 ${
-                subjectError ? "focus:ring-red-500" : "focus:ring-indigo-500"
+                subjectError ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
               }`}
             />
             {subjectError && (
@@ -146,18 +146,18 @@ export function ReportDialog({
             <textarea
               id="report-content"
               value={content}
-              onChange={(e) => {
+              onChange={e => {
                 setContent(e.target.value);
                 if (contentError && e.target.value.trim().length >= 10) {
-                  setContentError("");
+                  setContentError('');
                 }
               }}
               placeholder="請詳細描述違規情況、違規行為、證據說明等等..."
               rows={4}
               className={`w-full px-3 py-2 rounded bg-zinc-800 text-white placeholder-gray-500 border ${
-                contentError ? "border-red-500" : "border-zinc-700"
+                contentError ? 'border-red-500' : 'border-zinc-700'
               } focus:outline-none focus:ring-2 ${
-                contentError ? "focus:ring-red-500" : "focus:ring-indigo-500"
+                contentError ? 'focus:ring-red-500' : 'focus:ring-indigo-500'
               }`}
             />
             {contentError && (

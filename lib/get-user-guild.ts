@@ -1,4 +1,4 @@
-export type BaseServerInfo = {
+type BaseServerInfo = {
   id: string;
   name: string;
   icon: string;
@@ -16,7 +16,7 @@ export type InactiveServerInfo = BaseServerInfo;
 
 export type ServerInfo = ActiveServerInfo | InactiveServerInfo;
 
-export type GuildResult = {
+type GuildResult = {
   activeServers: ActiveServerInfo[];
   inactiveServers: InactiveServerInfo[];
 };
@@ -35,7 +35,7 @@ const hasManageGuildPermission = (permissions: number) => {
 };
 
 export async function getGuildDetails(
-  guildId: string
+  guildId: string,
 ): Promise<ActiveServerInfo | null> {
   const res = await fetch(
     `https://discord.com/api/guilds/${guildId}?with_counts=true`,
@@ -43,7 +43,7 @@ export async function getGuildDetails(
       headers: {
         Authorization: `Bot ${BOT_TOKEN}`,
       },
-    }
+    },
   );
 
   if (!res.ok) return null;
@@ -55,10 +55,10 @@ export async function getGuildDetails(
     name: data.name,
     icon: data.icon
       ? `https://cdn.discordapp.com/icons/${data.id}/${data.icon}.png`
-      : "",
+      : '',
     banner: data.banner
       ? `https://cdn.discordapp.com/banners/${data.id}/${data.banner}.png`
-      : "",
+      : '',
     owner: data.owner_id,
     memberCount: data.approximate_member_count ?? 0,
     OnlineMemberCount: data.approximate_presence_count ?? 0,
@@ -67,30 +67,30 @@ export async function getGuildDetails(
 }
 
 export async function getUserGuildsWithBotStatus(
-  userAccessToken: string
+  userAccessToken: string,
 ): Promise<GuildResult> {
   const userGuildsRes = await fetch(
-    "https://discord.com/api/users/@me/guilds",
+    'https://discord.com/api/users/@me/guilds',
     {
       headers: {
         Authorization: `Bearer ${userAccessToken}`,
       },
-    }
+    },
   );
 
   if (!userGuildsRes.ok) {
     const errorJson = await userGuildsRes.text();
-    console.error("Discord API Error:", errorJson);
-    throw new Error("Failed to fetch user guilds");
+    console.error('Discord API Error:', errorJson);
+    throw new Error('Failed to fetch user guilds');
   }
 
   const userGuilds: DiscordGuild[] = await userGuildsRes.json();
 
-  const manageableGuilds = userGuilds.filter((g) =>
-    hasManageGuildPermission(g.permissions)
+  const manageableGuilds = userGuilds.filter(g =>
+    hasManageGuildPermission(g.permissions),
   );
 
-  const botGuildsRes = await fetch("https://discord.com/api/users/@me/guilds", {
+  const botGuildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
     headers: {
       Authorization: `Bot ${BOT_TOKEN}`,
     },
@@ -98,12 +98,12 @@ export async function getUserGuildsWithBotStatus(
 
   if (!botGuildsRes.ok) {
     const errorJson = await botGuildsRes.text();
-    console.error("Discord API Error:", errorJson);
-    throw new Error("Failed to fetch bot guilds");
+    console.error('Discord API Error:', errorJson);
+    throw new Error('Failed to fetch bot guilds');
   }
 
   const botGuilds: DiscordGuild[] = await botGuildsRes.json();
-  const botGuildIds = botGuilds.map((g) => g.id);
+  const botGuildIds = botGuilds.map(g => g.id);
 
   const activeServers: ActiveServerInfo[] = [];
   const inactiveServers: InactiveServerInfo[] = [];
@@ -116,8 +116,8 @@ export async function getUserGuildsWithBotStatus(
       name: guild.name,
       icon: guild.icon
         ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
-        : "",
-      banner: "",
+        : '',
+      banner: '',
       isInServer,
     };
 

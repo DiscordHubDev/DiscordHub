@@ -1,23 +1,23 @@
 // components/form/CommandListField.tsx
-"use client";
+'use client';
 
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Trash2, Plus } from "lucide-react";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Trash2, Plus } from 'lucide-react';
 
 export const CommandListField = () => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "commands",
+    name: 'commands',
   });
 
   return (
@@ -108,10 +108,10 @@ export const CommandListField = () => {
         type="button"
         onClick={() =>
           append({
-            name: "",
-            description: "",
-            usage: "",
-            category: "",
+            name: '',
+            description: '',
+            usage: '',
+            category: '',
           })
         }
         className="bg-[#5865f2] hover:bg-[#4752c4] w-full text-white"

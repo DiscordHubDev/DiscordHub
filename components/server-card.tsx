@@ -1,10 +1,10 @@
-import { Users, ArrowUp, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { formatDistanceToNow } from "date-fns";
-import { zhTW } from "date-fns/locale";
-import Link from "next/link";
-import { ServerType } from "@/lib/prisma_type";
+import { Users, ArrowUp, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { formatDistanceToNow } from 'date-fns';
+import { zhTW } from 'date-fns/locale';
+import Link from 'next/link';
+import { ServerType } from '@/lib/prisma_type';
 
 interface ServerCardProps {
   server: ServerType;
@@ -19,7 +19,7 @@ export default function ServerCard({ server }: ServerCardProps) {
           {server.banner && (
             <div className="w-full h-32 md:hidden">
               <img
-                src={server.banner || "/placeholder.svg"}
+                src={server.banner || '/placeholder.svg'}
                 alt={`${server.name} banner`}
                 className="w-full h-full object-cover"
               />
@@ -32,7 +32,7 @@ export default function ServerCard({ server }: ServerCardProps) {
               <div className="hidden md:block flex-shrink-0">
                 <div className="w-16 h-16 rounded-full bg-[#36393f] overflow-hidden">
                   <img
-                    src={server.icon || "/placeholder.svg?height=64&width=64"}
+                    src={server.icon || '/placeholder.svg?height=64&width=64'}
                     alt={server.name}
                     className="w-full h-full object-cover"
                   />
@@ -43,7 +43,7 @@ export default function ServerCard({ server }: ServerCardProps) {
               <div className="flex items-center md:hidden mb-3">
                 <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden mr-3">
                   <img
-                    src={server.icon || "/placeholder.svg?height=40&width=40"}
+                    src={server.icon || '/placeholder.svg?height=40&width=40'}
                     alt={server.name}
                     className="w-full h-full object-cover"
                   />
@@ -72,7 +72,7 @@ export default function ServerCard({ server }: ServerCardProps) {
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {server.tags.map((tag) => (
+                  {server.tags.map(tag => (
                     <Badge
                       key={tag}
                       variant="secondary"
@@ -127,7 +127,7 @@ export default function ServerCard({ server }: ServerCardProps) {
           {server.banner && (
             <div className="hidden md:block w-48 h-auto bg-[#36393f] flex-shrink-0">
               <img
-                src={server.banner || "/placeholder.svg"}
+                src={server.banner || '/placeholder.svg'}
                 alt={`${server.name} banner`}
                 className="w-full h-full object-cover"
               />

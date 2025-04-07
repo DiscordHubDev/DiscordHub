@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Calendar,
   Mail,
@@ -8,12 +8,12 @@ import {
   Github,
   MessageSquare,
   X,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { formatDistanceToNow } from "date-fns";
-import { zhTW } from "date-fns/locale";
-import { SOCIAL_PLATFORMS } from "@/lib/socialPlatforms";
-import { UserType } from "@/lib/get-user";
+import { formatDistanceToNow } from 'date-fns';
+import { zhTW } from 'date-fns/locale';
+import { SOCIAL_PLATFORMS } from '@/lib/socialPlatforms';
+import { UserType } from '@/lib/get-user';
 
 interface UserHeaderProps {
   user: UserType;
@@ -59,7 +59,7 @@ export default function UserHeader({ user }: UserHeaderProps) {
               <div className="flex items-center">
                 <Calendar size={16} className="mr-1" />
                 <span>
-                  加入於{" "}
+                  加入於{' '}
                   {formatDistanceToNow(new Date(user.joinedAt), {
                     addSuffix: true,
                     locale: zhTW,
@@ -94,7 +94,7 @@ export default function UserHeader({ user }: UserHeaderProps) {
               if (!config) return null;
 
               const Icon = config.icon;
-              const link = config.link ? config.link(value) : "#";
+              const link = config.link ? config.link(value) : '#';
 
               return (
                 <a

@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import type React from "react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Upload } from "lucide-react";
-import { Servercategories } from "@/lib/categories";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { ServerTagField } from "@/components/form/server-form/ServerTagField";
-import { ServerFormSchema } from "@/schemas/add-server-schema";
+import type React from 'react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Upload } from 'lucide-react';
+import { Servercategories } from '@/lib/categories';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { ServerTagField } from '@/components/form/server-form/ServerTagField';
+import { ServerFormSchema } from '@/schemas/add-server-schema';
 import {
   Form,
   FormField,
@@ -20,17 +20,17 @@ import {
   FormControl,
   FormMessage,
   FormLabel,
-} from "@/components/ui/form";
-import { ActiveServerInfo } from "@/lib/get-user-guild";
+} from '@/components/ui/form';
+import { ActiveServerInfo } from '@/lib/get-user-guild';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
-} from "@/lib/actions/image";
-import ScreenshotGrid from "../form/bot-form/ScreenshotGrid";
-import { CreateServerInput } from "@/lib/prisma_type";
-import { RulesField } from "../form/server-form/RulesField";
-import { insertServer, isOwnerexist } from "@/lib/actions/servers";
-import { fetchUserInfo } from "@/lib/utils";
+} from '@/lib/actions/image';
+import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
+import { CreateServerInput } from '@/lib/prisma_type';
+import { RulesField } from '../form/server-form/RulesField';
+import { insertServer, isOwnerexist } from '@/lib/actions/servers';
+import { fetchUserInfo } from '@/lib/utils';
 
 type FormSchemaType = z.infer<typeof ServerFormSchema>;
 
@@ -45,7 +45,7 @@ type ServerFormProps = {
 
 export default function ServerFormPage({ server }: ServerFormProps) {
   const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
-    []
+    [],
   );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,13 +54,13 @@ export default function ServerFormPage({ server }: ServerFormProps) {
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(ServerFormSchema),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
       serverName: server.name,
-      shortDescription: "",
-      longDescription: "",
-      inviteLink: "",
-      websiteLink: "",
+      shortDescription: '',
+      longDescription: '',
+      inviteLink: '',
+      websiteLink: '',
       tags: [],
       rules: [],
     },
@@ -69,7 +69,7 @@ export default function ServerFormPage({ server }: ServerFormProps) {
   const { handleSubmit, control, formState, register, reset } = form;
 
   const handleScreenshotUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = event.target.files;
     if (!files) return;
@@ -80,29 +80,29 @@ export default function ServerFormPage({ server }: ServerFormProps) {
     setUploading(true);
 
     const sig = await getCloudinarySignature();
-    console.log("簽名資訊", sig);
+    console.log('簽名資訊', sig);
 
     for (const file of fileArray) {
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("api_key", sig.apiKey);
-      formData.append("timestamp", sig.timestamp.toString());
-      formData.append("signature", sig.signature);
-      formData.append("upload_preset", sig.uploadPreset);
+      formData.append('file', file);
+      formData.append('api_key', sig.apiKey);
+      formData.append('timestamp', sig.timestamp.toString());
+      formData.append('signature', sig.signature);
+      formData.append('upload_preset', sig.uploadPreset);
 
       try {
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
           {
-            method: "POST",
+            method: 'POST',
             body: formData,
-          }
+          },
         );
 
         const data = await res.json();
 
         if (!res.ok) {
-          console.error("上傳失敗", {
+          console.error('上傳失敗', {
             status: res.status,
             statusText: res.statusText,
             body: data,
@@ -113,12 +113,12 @@ export default function ServerFormPage({ server }: ServerFormProps) {
         const imageUrl = data.secure_url;
         const publicId = data.public_id;
 
-        setScreenshotPreviews((prev) => [
+        setScreenshotPreviews(prev => [
           ...prev,
           { url: imageUrl, public_id: publicId },
         ]);
       } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error('Unexpected error:', error);
       }
     }
 
@@ -127,13 +127,13 @@ export default function ServerFormPage({ server }: ServerFormProps) {
 
   const removeScreenshot = async (index: number) => {
     const toDelete = screenshotPreviews[index];
-    setScreenshotPreviews((prev) => prev.filter((_, i) => i !== index));
+    setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));
 
     try {
       await deleteCloudinaryImage(toDelete.public_id);
-      console.log("圖片已從 Cloudinary 刪除");
+      console.log('圖片已從 Cloudinary 刪除');
     } catch (err) {
-      console.error("刪除失敗", err);
+      console.error('刪除失敗', err);
     }
   };
 
@@ -142,14 +142,14 @@ export default function ServerFormPage({ server }: ServerFormProps) {
     setError(null);
 
     try {
-      let avatar: string = "";
+      let avatar: string = '';
       let banner: string | null = null;
-      let global_name: string = "未知使用者";
+      let global_name: string = '未知使用者';
 
       const existingOwner = await isOwnerexist(server.owner);
 
       if (!existingOwner) {
-        console.log("server.owner", server.owner);
+        console.log('server.owner', server.owner);
         const userInfo = await fetchUserInfo(server.owner);
 
         avatar = userInfo.avatar_url;
@@ -189,7 +189,7 @@ export default function ServerFormPage({ server }: ServerFormProps) {
       setSuccess(true);
     } catch (err: any) {
       console.error(err);
-      setError(err.message ?? "發生未知錯誤");
+      setError(err.message ?? '發生未知錯誤');
     } finally {
       setLoading(false);
     }
@@ -327,7 +327,7 @@ export default function ServerFormPage({ server }: ServerFormProps) {
                   </Label>
                   <div className="flex flex-col gap-3">
                     <ScreenshotGrid
-                      screenshotPreviews={screenshotPreviews.map((p) => p.url)}
+                      screenshotPreviews={screenshotPreviews.map(p => p.url)}
                       removeScreenshot={removeScreenshot}
                     />
                     {screenshotPreviews.length < 5 && (
@@ -384,7 +384,7 @@ export default function ServerFormPage({ server }: ServerFormProps) {
                       />
                     </svg>
                   )}
-                  {loading ? "提交中..." : "提交伺服器"}
+                  {loading ? '提交中...' : '提交伺服器'}
                 </Button>
                 {error && <p className="text-red-500">{error}</p>}
               </div>

@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useFormContext, useFieldArray, useWatch } from "react-hook-form";
+import { useFormContext, useFieldArray, useWatch } from 'react-hook-form';
 import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Trash } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export const DeveloperListField = () => {
   const {
@@ -22,17 +22,17 @@ export const DeveloperListField = () => {
   } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "developers",
+    name: 'developers',
     shouldUnregister: true,
   });
 
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
 
   const handleAddDeveloper = () => {
     const trimmed = inputValue.trim();
     if (trimmed) {
       append({ name: trimmed });
-      setInputValue("");
+      setInputValue('');
     }
   };
 
@@ -44,8 +44,8 @@ export const DeveloperListField = () => {
     <div className="space-y-4">
       <FormLabel
         className={cn(
-          "text-base",
-          errors.developers?.message && "text-destructive"
+          'text-base',
+          errors.developers?.message && 'text-destructive',
         )}
       >
         開發者列表 *
@@ -87,9 +87,9 @@ export const DeveloperListField = () => {
         <Input
           placeholder="輸入開發者 ID"
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
+          onChange={e => setInputValue(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
               e.preventDefault();
               handleAddDeveloper();
             }

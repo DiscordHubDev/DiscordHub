@@ -1,11 +1,11 @@
-import { Users, ArrowUp, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { BotType } from "@/lib/types";
-import { formatDistanceToNow } from "date-fns";
-import { zhTW } from "date-fns/locale";
-import Link from "next/link";
-import { BotWithRelations } from "@/lib/prisma_type";
+import { Users, ArrowUp, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import type { BotType } from '@/lib/types';
+import { formatDistanceToNow } from 'date-fns';
+import { zhTW } from 'date-fns/locale';
+import Link from 'next/link';
+import { BotWithRelations } from '@/lib/prisma_type';
 
 interface BotCardProps {
   bot: BotWithRelations;
@@ -20,7 +20,7 @@ export default function BotCard({ bot }: BotCardProps) {
           {bot.banner && (
             <div className="w-full h-32 md:hidden">
               <img
-                src={bot.banner || "/placeholder.svg"}
+                src={bot.banner || '/placeholder.svg'}
                 alt={`${bot.name} banner`}
                 className="w-full h-full object-cover"
               />
@@ -33,7 +33,7 @@ export default function BotCard({ bot }: BotCardProps) {
               <div className="hidden md:block flex-shrink-0">
                 <div className="w-16 h-16 rounded-full bg-[#36393f] overflow-hidden">
                   <img
-                    src={bot.icon || "/placeholder.svg?height=64&width=64"}
+                    src={bot.icon || '/placeholder.svg?height=64&width=64'}
                     alt={bot.name}
                     className="w-full h-full object-cover"
                   />
@@ -44,7 +44,7 @@ export default function BotCard({ bot }: BotCardProps) {
               <div className="flex items-center md:hidden mb-3">
                 <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden mr-3">
                   <img
-                    src={bot.icon || "/placeholder.svg?height=40&width=40"}
+                    src={bot.icon || '/placeholder.svg?height=40&width=40'}
                     alt={bot.name}
                     className="w-full h-full object-cover"
                   />
@@ -115,7 +115,7 @@ export default function BotCard({ bot }: BotCardProps) {
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {bot.tags.map((tag) => (
+                  {bot.tags.map(tag => (
                     <Badge
                       key={tag}
                       variant="secondary"
@@ -171,7 +171,7 @@ export default function BotCard({ bot }: BotCardProps) {
           {bot.banner && (
             <div className="hidden md:block w-48 h-auto bg-[#36393f] flex-shrink-0">
               <img
-                src={bot.banner || "/placeholder.svg"}
+                src={bot.banner || '/placeholder.svg'}
                 alt={`${bot.name} banner`}
                 className="w-full h-full object-cover"
               />

@@ -1,13 +1,15 @@
-import { notFound } from "next/navigation";
-import BotDetailClient from "./client";
-import { getAllBots, getBot } from "@/lib/actions/bots";
+import { notFound } from 'next/navigation';
+import BotDetailClient from './client';
+import { getAllBots, getBot } from '@/lib/actions/bots';
 
 export default async function BotDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const bot = await getBot(params.id);
+  const { id } = await params;
+
+  const bot = await getBot(id);
   const allBots = await getAllBots();
 
   if (!bot) {

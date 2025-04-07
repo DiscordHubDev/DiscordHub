@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Image, FileText, Video } from "lucide-react"; // 你應該已有
-import { UploadedFile } from "@/lib/types";
+import { useEffect, useState } from 'react';
+import { Image, FileText, Video } from 'lucide-react'; // 你應該已有
+import { UploadedFile } from '@/lib/types';
 
 export default function AttachmentPreview({
   attachment,
@@ -13,17 +13,17 @@ export default function AttachmentPreview({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (attachment.type === "raw") {
+    if (attachment.type === 'raw') {
       fetch(attachment.url)
-        .then((res) => res.text())
+        .then(res => res.text())
         .then(setTextContent)
-        .catch(() => setError("無法讀取內容"));
+        .catch(() => setError('無法讀取內容'));
     }
   }, [attachment]);
 
-  const isImage = attachment.type === "image";
-  const isVideo = attachment.type === "video";
-  const isRaw = attachment.type === "raw";
+  const isImage = attachment.type === 'image';
+  const isVideo = attachment.type === 'video';
+  const isRaw = attachment.type === 'raw';
 
   return (
     <div className="p-3 bg-[#2F3136] rounded-md space-y-2">
@@ -37,7 +37,7 @@ export default function AttachmentPreview({
       {isImage && (
         <div className="w-full overflow-hidden rounded-md border border-[#202225]">
           <img
-            src={attachment.url || "/placeholder.svg"}
+            src={attachment.url || '/placeholder.svg'}
             alt={attachment.original_filename}
             className="w-full h-auto object-contain max-h-[300px]"
           />

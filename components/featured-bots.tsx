@@ -1,9 +1,9 @@
-import type { BotType } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Users } from "lucide-react";
-import Link from "next/link";
-import { BotWithRelations } from "@/lib/prisma_type";
+import type { BotType } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Users } from 'lucide-react';
+import Link from 'next/link';
+import { BotWithRelations } from '@/lib/prisma_type';
 
 interface FeaturedBotsProps {
   bots: BotWithRelations[];
@@ -17,7 +17,7 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
     <div>
       <h2 className="text-2xl font-bold mb-4">精選機器人</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {featuredBots.map((bot) => (
+        {featuredBots.map(bot => (
           <Link href={`/bots/${bot.id}`} key={bot.id} className="block">
             <div className="bg-[#2b2d31] rounded-lg overflow-hidden border border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200 flex flex-col h-full">
               {/* Banner */}
@@ -35,7 +35,7 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                 {/* Bot Icon */}
                 <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-full bg-[#36393f] border-4 border-[#2b2d31] overflow-hidden">
                   <img
-                    src={bot.icon || "/placeholder.svg?height=48&width=48"}
+                    src={bot.icon || '/placeholder.svg?height=48&width=48'}
                     alt={bot.name}
                     className="w-full h-full object-cover"
                   />
@@ -70,7 +70,7 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {bot.tags.slice(0, 3).map((tag) => (
+                  {bot.tags.slice(0, 3).map(tag => (
                     <Badge
                       key={tag}
                       variant="secondary"

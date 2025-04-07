@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
 import {
   CreateServerInput,
   ServerType,
   ServerWithMinimalFavorited,
-} from "@/lib/prisma_type";
-import { prisma } from "@/lib/prisma";
+} from '@/lib/prisma_type';
+import { prisma } from '@/lib/prisma';
 
 export async function insertServer(data: CreateServerInput) {
   try {
@@ -13,10 +13,10 @@ export async function insertServer(data: CreateServerInput) {
       data,
     });
 
-    console.log("✅ 新增伺服器成功:", createdServer);
+    console.log('✅ 新增伺服器成功:', createdServer);
     return createdServer;
   } catch (error) {
-    console.error("❌ 新增伺服器失敗:", error);
+    console.error('❌ 新增伺服器失敗:', error);
     throw error;
   }
 }
@@ -34,13 +34,13 @@ export const getAllServers = async () => {
         favoritedBy: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     return servers;
   } catch (error) {
-    console.error("❌ 無法獲取伺服器列表:", error);
+    console.error('❌ 無法獲取伺服器列表:', error);
     throw error;
   }
 };
@@ -48,7 +48,7 @@ export const getAllServers = async () => {
 // 獲取單一伺服器
 export const getServerByGuildId = async (
   userId: string | undefined,
-  guildId: string
+  guildId: string,
 ): Promise<ServerWithMinimalFavorited> => {
   try {
     const server = await prisma.server.findUnique({
@@ -63,7 +63,7 @@ export const getServerByGuildId = async (
     });
 
     if (!server) {
-      throw new Error("找不到該伺服器");
+      throw new Error('找不到該伺服器');
     }
 
     return server;

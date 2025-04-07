@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { X } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import * as React from 'react';
+import { X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   getPriorityColorClass,
   getPriorityIcon,
   getPriorityTextClass,
-} from "./inbox-sidebar";
-import { cn } from "@/lib/utils";
-import { ComponentPropsWithoutRef } from "react";
-import { Mail } from "@/lib/types";
+} from './inbox-sidebar';
+import { cn } from '@/lib/utils';
+import { ComponentPropsWithoutRef } from 'react';
+import { Mail } from '@/lib/types';
 
 interface CustomEmailDialogProps {
   email: Mail | null;
@@ -44,14 +44,14 @@ export function EmailDialog({ email, open, onClose }: CustomEmailDialogProps) {
   // 使用 React.useEffect 添加 ESC 鍵關閉功能
   React.useEffect(() => {
     const handleEscapeKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleEscapeKey);
+    document.addEventListener('keydown', handleEscapeKey);
     return () => {
-      document.removeEventListener("keydown", handleEscapeKey);
+      document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [onClose]);
 
@@ -60,15 +60,15 @@ export function EmailDialog({ email, open, onClose }: CustomEmailDialogProps) {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200",
-        open ? "opacity-100" : "opacity-0"
+        'fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200',
+        open ? 'opacity-100' : 'opacity-0',
       )}
     >
       <div
         className={cn(
-          "relative w-full max-w-[600px] max-h-[70vh] rounded-lg shadow-lg overflow-hidden transition-all duration-200",
+          'relative w-auto h-auto rounded-lg shadow-lg overflow-hidden transition-all duration-200',
           getPriorityColorClass(email.priority, false),
-          open ? "scale-100" : "scale-95"
+          open ? 'scale-100' : 'scale-95',
         )}
       >
         <div className="p-5">
@@ -87,14 +87,14 @@ export function EmailDialog({ email, open, onClose }: CustomEmailDialogProps) {
 
           <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
             <p className="text-sm text-muted-foreground">
-              📩 From: <span className="font-medium">{email.name}</span> ·{" "}
+              📩 來自: <span className="font-medium">{email.name}</span> ·{' '}
               {email.createdAt}
             </p>
 
             <span
               className={cn(
                 getPriorityTextClass(email.priority),
-                "text-sm flex items-center gap-2"
+                'text-sm flex items-center gap-2',
               )}
             >
               {getPriorityIcon(email.priority)}
@@ -102,7 +102,10 @@ export function EmailDialog({ email, open, onClose }: CustomEmailDialogProps) {
             </span>
           </div>
 
-          <div className="mt-4 overflow-auto max-h-[calc(70vh-140px)] text-sm prose prose-sm dark:prose-invert max-w-none">
+          <div
+            className="mt-4 text-sm prose prose-sm dark:prose-invert max-w-none"
+            style={{ maxHeight: '80vh', overflowY: 'auto' }}
+          >
             <ReactMarkdown
               components={{
                 h1: ({ node, ...props }) => (
@@ -139,12 +142,14 @@ export function EmailDialog({ email, open, onClose }: CustomEmailDialogProps) {
                   className,
                   children,
                   ...props
-                }: ComponentPropsWithoutRef<"code"> & { inline?: boolean }) =>
+                }: ComponentPropsWithoutRef<'code'> & {
+                  inline?: boolean;
+                }) =>
                   inline ? (
                     <code
                       className={cn(
-                        "bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm",
-                        className
+                        'bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm',
+                        className,
                       )}
                       {...props}
                     >
@@ -170,7 +175,7 @@ export function EmailDialog({ email, open, onClose }: CustomEmailDialogProps) {
                 ),
               }}
             >
-              {email.teaser}
+              {email.content}
             </ReactMarkdown>
           </div>
         </div>

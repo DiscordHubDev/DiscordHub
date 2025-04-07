@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/prisma';
 
 export async function getAllBots() {
   const bots = await prisma.bot.findMany({
     where: {
-      status: "approved",
+      status: 'approved',
     },
     include: {
       developers: true,
@@ -18,7 +18,7 @@ export async function getBot(id: string) {
   const bot = await prisma.bot.findUnique({
     where: {
       id,
-      status: "approved",
+      status: 'approved',
     },
     include: {
       developers: true,
@@ -32,14 +32,14 @@ export async function getBot(id: string) {
 export async function getPendingBots() {
   const bots = await prisma.bot.findMany({
     where: {
-      status: "pending",
+      status: 'pending',
     },
     include: {
       developers: true,
       commands: true,
     },
     orderBy: {
-      upvotes: "desc",
+      upvotes: 'desc',
     },
   });
 

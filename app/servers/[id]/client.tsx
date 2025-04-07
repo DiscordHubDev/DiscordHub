@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, ArrowUp, Clock, Globe, AlertCircle } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { se, zhTW } from "date-fns/locale";
-import Link from "next/link";
-import VoteButton from "@/components/vote-button";
-import { ServerType, ServerWithMinimalFavorited } from "@/lib/prisma_type";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FavoriteButton } from "@/components/favorite-button";
-import { useSession } from "next-auth/react";
-import { ReportDialog } from "@/components/ReportDialog";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, ArrowUp, Clock, Globe, AlertCircle } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { se, zhTW } from 'date-fns/locale';
+import Link from 'next/link';
+import VoteButton from '@/components/vote-button';
+import { ServerType, ServerWithMinimalFavorited } from '@/lib/prisma_type';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { FavoriteButton } from '@/components/favorite-button';
+import { useSession } from 'next-auth/react';
+import { ReportDialog } from '@/components/ReportDialog';
 
 type ServerDetailPageProps = {
   allServers: ServerType[];
@@ -26,7 +26,7 @@ export default function ServerDetailClientPage({
   isFavorited,
 }: ServerDetailPageProps) {
   const handleInviteButtonClick = () => {
-    window.open(server.inviteUrl!, "_blank", "noopener,noreferrer");
+    window.open(server.inviteUrl!, '_blank', 'noopener,noreferrer');
   };
 
   const { data: session } = useSession();
@@ -37,9 +37,9 @@ export default function ServerDetailClientPage({
       <div className="relative h-48 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
         {server.banner ? (
           <div className="relative w-full h-full">
-            {" "}
+            {' '}
             <img
-              src={server.banner || "/placeholder.svg?height=300&width=1200"}
+              src={server.banner || '/placeholder.svg?height=300&width=1200'}
               alt={`${server.name} banner`}
               className="w-full h-full object-cover"
             />
@@ -62,7 +62,7 @@ export default function ServerDetailClientPage({
                   className="object-cover"
                 />
                 <AvatarFallback className="bg-[#36393f] text-white text-sm">
-                  {server.name?.[0] || "伺"}
+                  {server.name?.[0] || '伺'}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -114,7 +114,7 @@ export default function ServerDetailClientPage({
           <ReportDialog
             itemId={server.id}
             itemName={server.name}
-            type={"server"}
+            type={'server'}
           />
 
           <FavoriteButton
@@ -126,7 +126,7 @@ export default function ServerDetailClientPage({
 
         {/* 標籤 */}
         <div className="flex flex-wrap gap-2 mt-6">
-          {server.tags.map((tag) => (
+          {server.tags.map(tag => (
             <Badge
               key={tag}
               variant="secondary"
@@ -214,7 +214,7 @@ export default function ServerDetailClientPage({
                           className="rounded-lg overflow-hidden bg-[#36393f]"
                         >
                           <img
-                            src={screenshot || "/placeholder.svg"}
+                            src={screenshot || '/placeholder.svg'}
                             alt={`${server.name} screenshot ${index + 1}`}
                             className="w-full h-auto"
                           />
@@ -243,7 +243,7 @@ export default function ServerDetailClientPage({
                 <div className="flex items-center">
                   <span className="text-gray-400 w-24">創建於:</span>
                   <span className="text-gray-300">
-                    {new Date(server.createdAt).toLocaleDateString("zh-TW")}
+                    {new Date(server.createdAt).toLocaleDateString('zh-TW')}
                   </span>
                 </div>
                 {server.website && (
@@ -294,12 +294,12 @@ export default function ServerDetailClientPage({
               <div className="space-y-3">
                 {allServers
                   .filter(
-                    (s) =>
+                    s =>
                       s.id !== server.id &&
-                      s.tags.some((tag) => server.tags.includes(tag))
+                      s.tags.some(tag => server.tags.includes(tag)),
                   )
                   .slice(0, 3)
-                  .map((relatedServer) => (
+                  .map(relatedServer => (
                     <Link
                       key={relatedServer.id}
                       href={`/servers/${relatedServer.id}`}
@@ -309,7 +309,7 @@ export default function ServerDetailClientPage({
                         <img
                           src={
                             relatedServer.icon ||
-                            "/placeholder.svg?height=40&width=40"
+                            '/placeholder.svg?height=40&width=40'
                           }
                           alt={relatedServer.name}
                           className="w-full h-full object-cover"

@@ -1,5 +1,5 @@
-import { getAllBots } from "@/lib/actions/bots";
-import DiscordBotListPageClient from "./discord-bot-list";
+import { getAllBots } from '@/lib/actions/bots';
+import DiscordBotListPageClient from './discord-bot-list';
 
 export default async function DiscordBotListPage() {
   const allBots = await getAllBots();

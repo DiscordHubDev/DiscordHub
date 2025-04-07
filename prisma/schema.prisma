@@ -30,6 +30,7 @@ model User {
 
   reports Report[] @relation("UserReports")
   handledReports Report[]  @relation("HandledReports")
+  handledBots Bot[]  @relation("HandleBots")
 }
 
 enum EmailPriority {
@@ -51,7 +52,8 @@ model Notification {
   createdAt DateTime      @default(now())
   subject   String
   teaser    String
-  userId    BigInt? // null is global broadcast
+  content String
+  userId    String? // null is global broadcast
   priority  EmailPriority @default(info)
   isSystem  Boolean       @default(false)
   read      Boolean       @default(false)
@@ -107,6 +109,11 @@ model Bot {
   features        String[]
   screenshots     String[]
 
+  rejectionReason String?
+    handledById    String?        // ✅ 處理者 ID（optional）
+  handledBy      User?          @relation("HandleBots", fields: [handledById], references: [id])
+  handledAt      DateTime?      // ✅ 處理時間（optional）
+
   favoritedBy User[] @relation("UserFavoriteBots")
 
   commands BotCommand[] // One-to-many relation
@@ -156,10 +163,10 @@ model Report {
   reportedBy   User   @relation("UserReports", fields: [reportedById], references: [id])
 
     // 處理結果
-  resolutionNote String?        // ✅ 管理員處理說明
-  handledById    String?        // ✅ 處理者 ID（optional）
+  resolutionNote String?
+  handledById    String?
   handledBy      User?          @relation("HandledReports", fields: [handledById], references: [id])
-  handledAt      DateTime?      // ✅ 處理時間（optional）
+  handledAt      DateTime? 
 }
 
 enum ReportStatus {

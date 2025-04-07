@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Users } from "lucide-react";
-import Link from "next/link";
-import { ServerType } from "@/lib/prisma_type";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Users } from 'lucide-react';
+import Link from 'next/link';
+import { ServerType } from '@/lib/prisma_type';
 
 interface FeaturedServersProps {
   servers: ServerType[];
@@ -25,7 +25,7 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
     <div>
       <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {featuredServers.map((server) => (
+        {featuredServers.map(server => (
           <Link
             href={`/servers/${server.id}`}
             key={server.id}
@@ -35,14 +35,14 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
               {/* Banner */}
               <div className="h-32 bg-[#36393f] relative">
                 <img
-                  src={server.banner || "/placeholder.svg?height=128&width=256"}
+                  src={server.banner || '/placeholder.svg?height=128&width=256'}
                   alt={server.name}
                   className="w-full h-full object-cover"
                 />
                 {/* Server Icon */}
                 <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-full bg-[#36393f] border-4 border-[#2b2d31] overflow-hidden">
                   <img
-                    src={server.icon || "/placeholder.svg?height=48&width=48"}
+                    src={server.icon || '/placeholder.svg?height=48&width=48'}
                     alt={server.name}
                     className="w-full h-full object-cover"
                   />
@@ -56,7 +56,7 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {server.tags.slice(0, 3).map((tag) => (
+                  {server.tags.slice(0, 3).map(tag => (
                     <Badge
                       key={tag}
                       variant="secondary"

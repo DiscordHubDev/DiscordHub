@@ -5,29 +5,29 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { getServerSession } from 'next-auth';
 
 export default async function ServerDetailPage({
-    params,
+  params,
 }: {
-    params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-    const { id } = params;
+  const { id } = await params;
 
-    const session = await getServerSession(authOptions);
-    const userId = session?.discordProfile?.id;
+  const session = await getServerSession(authOptions);
+  const userId = session?.discordProfile?.id;
 
-    const server = await getServerByGuildId(userId, id);
-    const allServers = await getAllServers();
+  const server = await getServerByGuildId(userId, id);
+  const allServers = await getAllServers();
 
-    const isFavorited = !!server.favoritedBy?.length;
+  const isFavorited = !!server.favoritedBy?.length;
 
-    if (!server) {
-        notFound();
-    }
+  if (!server) {
+    notFound();
+  }
 
-    return (
-        <ServerDetailClientPage
-            server={server}
-            allServers={allServers}
-            isFavorited={isFavorited}
-        />
-    );
+  return (
+    <ServerDetailClientPage
+      server={server}
+      allServers={allServers}
+      isFavorited={isFavorited}
+    />
+  );
 }

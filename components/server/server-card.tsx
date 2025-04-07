@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface ServerCardProps {
   server: {
@@ -43,7 +43,7 @@ export function ServerCard({ server }: ServerCardProps) {
       <Card className="overflow-hidden bg-[#2f3136] border-[#1e1f22] transition-all duration-200 hover:shadow-md hover:shadow-[#5865f2]/10 hover:-translate-y-1">
         {/* Banner */}
         <div className="relative h-24 w-full">
-          {server.banner !== "" ? (
+          {server.banner !== '' ? (
             <Image
               src={server.banner}
               alt={`${server.name} banner`}
@@ -61,13 +61,13 @@ export function ServerCard({ server }: ServerCardProps) {
         <div className="relative -mt-8 ml-4">
           <Avatar className="h-16 w-16 border-4 border-[#2f3136] bg-[#36393f]">
             <AvatarImage
-              src={!imgError && server.icon !== "" ? server.icon : undefined}
+              src={!imgError && server.icon !== '' ? server.icon : undefined}
               alt={`${server.name} icon`}
               onError={() => setImgError(true)}
             />
 
             <AvatarFallback>
-              {server.name?.charAt(0).toUpperCase() ?? "?"}
+              {server.name?.charAt(0).toUpperCase() ?? '?'}
             </AvatarFallback>
           </Avatar>
         </div>
@@ -86,13 +86,13 @@ export function ServerCard({ server }: ServerCardProps) {
             </div>
             <Badge
               className={cn(
-                "mt-1",
+                'mt-1',
                 server.isInServer
-                  ? "bg-[#3ba55c] hover:bg-[#3ba55c]/90"
-                  : "bg-[#ed4245] hover:bg-[#ed4245]/90"
+                  ? 'bg-[#3ba55c] hover:bg-[#3ba55c]/90'
+                  : 'bg-[#ed4245] hover:bg-[#ed4245]/90',
               )}
             >
-              {server.isInServer ? "已加入" : "未加入"}
+              {server.isInServer ? '已加入' : '未加入'}
             </Badge>
           </div>
         </CardContent>
@@ -102,21 +102,21 @@ export function ServerCard({ server }: ServerCardProps) {
             onClick={() => {
               if (!server.isInServer) {
                 window.open(
-                  "https://discord.com/oauth2/authorize?client_id=1324996138251583580",
-                  "_blank"
+                  'https://discord.com/oauth2/authorize?client_id=1324996138251583580',
+                  '_blank',
                 );
               } else {
                 window.location.href = `/add-server/${server.id}`;
               }
             }}
             className={cn(
-              "w-full py-2 rounded-md font-medium text-sm transition-colors",
+              'w-full py-2 rounded-md font-medium text-sm transition-colors',
               server.isInServer
-                ? "bg-[#4f545c] hover:bg-[#686d73] text-white"
-                : "bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                ? 'bg-[#4f545c] hover:bg-[#686d73] text-white'
+                : 'bg-[#5865f2] hover:bg-[#4752c4] text-white',
             )}
           >
-            {server.isInServer ? "發布伺服器" : "邀請機器人"}
+            {server.isInServer ? '發布伺服器' : '邀請機器人'}
           </button>
         </CardFooter>
       </Card>

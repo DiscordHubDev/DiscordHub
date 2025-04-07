@@ -1,10 +1,10 @@
 // components/MarkdownRenderer.tsx
-"use client";
+'use client';
 
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import "highlight.js/styles/github-dark.css"; // 你也可以換成其他風格
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github-dark.css'; // 你也可以換成其他風格
 
 type Props = {
   content: string;
@@ -24,7 +24,7 @@ export default function MarkdownRenderer({ content }: Props) {
             </a>
           ),
           img: ({ src, alt }) => (
-            <img src={src || ""} alt={alt || ""} loading="lazy" />
+            <img src={src || ''} alt={alt || ''} loading="lazy" />
           ),
         }}
       />

@@ -9,7 +9,7 @@ export type UploadedFile = {
   url: string;
   public_id: string;
   format: string;
-  type: "image" | "video" | "raw";
+  type: 'image' | 'video' | 'raw';
   original_filename: string;
 };
 
@@ -38,7 +38,7 @@ export interface BotType {
   screenshots?: string[];
 }
 
-export interface BotCommand {
+interface BotCommand {
   name: string;
   description: string;
   usage: string;
@@ -48,8 +48,9 @@ export interface BotCommand {
 export type Mail = {
   id: string;
   name: string;
-  createdAt: String;
+  createdAt: string;
   subject: string;
+  content: string;
   teaser: string;
   userId?: bigint | null;
   priority: EmailPriority;
@@ -57,7 +58,7 @@ export type Mail = {
   read: boolean;
 };
 
-export type EmailPriority = "success" | "info" | "warning" | "danger";
+export type EmailPriority = 'success' | 'info' | 'warning' | 'danger';
 
 // types/discord.ts
 export type DiscordBotRPCInfo = {

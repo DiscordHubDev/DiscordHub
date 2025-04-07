@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { updateUserSettings } from "@/lib/actions/user";
-import { SOCIAL_PLATFORMS } from "@/lib/socialPlatforms";
-import { useActionState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { updateUserSettings } from '@/lib/actions/user';
+import { SOCIAL_PLATFORMS } from '@/lib/socialPlatforms';
+import { useActionState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 export default function UserSettingsForm({ user }: { user: any }) {
   const initialState = { success: undefined, error: undefined };
@@ -16,8 +16,8 @@ export default function UserSettingsForm({ user }: { user: any }) {
     if (state.success) {
       toast.success(state.success, {
         style: {
-          background: "#1e1f22",
-          color: "#fff",
+          background: '#1e1f22',
+          color: '#fff',
         },
       });
       router.refresh();
@@ -26,8 +26,8 @@ export default function UserSettingsForm({ user }: { user: any }) {
     if (state.error) {
       toast.error(state.error, {
         style: {
-          background: "#1e1f22",
-          color: "#fff",
+          background: '#1e1f22',
+          color: '#fff',
         },
       });
     }
@@ -58,7 +58,7 @@ export default function UserSettingsForm({ user }: { user: any }) {
             </label>
             <textarea
               name="bio"
-              defaultValue={user.bio ?? ""}
+              defaultValue={user.bio ?? ''}
               rows={4}
               className="w-full px-3 py-2 bg-[#36393f] border border-[#1e1f22] rounded-md text-white"
             />
@@ -76,7 +76,7 @@ export default function UserSettingsForm({ user }: { user: any }) {
                 <input
                   type="text"
                   name={`social.${platform}`}
-                  defaultValue={socialData?.[platform] || ""}
+                  defaultValue={socialData?.[platform] || ''}
                   className="w-full px-3 py-2 bg-[#36393f] border border-[#1e1f22] rounded-md text-white"
                 />
               </div>

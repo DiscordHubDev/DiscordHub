@@ -1,7 +1,7 @@
-import NextAuth, { DefaultSession } from "next-auth";
-import { DiscordProfile } from "next-auth/providers/discord";
+import NextAuth, { DefaultSession } from 'next-auth';
+import { DiscordProfile } from 'next-auth/providers/discord';
 
-import { Profile } from "next-auth";
+import { Profile } from 'next-auth';
 
 interface NewDiscordProfile extends DiscordProfile {
   global_name: string;
@@ -11,7 +11,7 @@ interface JWTDiscordProfile extends Profile {
   global_name: string;
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   interface JWT {
     maxAge?: number;
     accessToken?: string;
@@ -19,7 +19,7 @@ declare module "next-auth/jwt" {
   }
 }
 
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     access_token?: string;
     discordProfile?: JWTDiscordProfile;

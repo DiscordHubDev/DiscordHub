@@ -1,7 +1,7 @@
 // app/upload/actions.ts
-"use server";
+'use server';
 
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
@@ -17,7 +17,7 @@ export async function getCloudinarySignature() {
       timestamp,
       upload_preset: process.env.NEXT_PUBLIC_UPLOAD_PRESET!,
     },
-    process.env.CLOUDINARY_API_SECRET!
+    process.env.CLOUDINARY_API_SECRET!,
   );
 
   return {
@@ -34,7 +34,7 @@ export async function deleteCloudinaryImage(publicId: string) {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
-    console.error("刪除 Cloudinary 圖片失敗：", error);
+    console.error('刪除 Cloudinary 圖片失敗：', error);
     throw error;
   }
 }

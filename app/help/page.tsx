@@ -1,12 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
 const Page: React.FC = () => {
   return (
     <div className="py-10 bg-gray-700">
-      <div className="container mx-auto px-4" style={{ maxWidth: "1200px" }}>
+      <div className="container mx-auto px-4" style={{ maxWidth: '1200px' }}>
         <h1 className="text-3xl font-bold mb-6 text-center">
           DiscordHub 使用教學
         </h1>

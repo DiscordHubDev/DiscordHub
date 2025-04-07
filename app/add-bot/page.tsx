@@ -1,7 +1,7 @@
-"use client";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+'use client';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
   FormControl,
@@ -9,25 +9,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
-} from "@/lib/actions/image";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { X, Upload, Info } from "lucide-react";
-import { botFormSchema } from "@/schemas/add-bot-schema";
-import { botCategories } from "@/lib/bot-categories";
-import { z } from "zod";
-import { TagField } from "@/components/form/bot-form/TagField";
-import { CommandListField } from "@/components/form/bot-form/CommandListField";
-import { DeveloperListField } from "@/components/form/bot-form/DeveloperListField";
-import { DiscordBotRPCInfo } from "@/lib/types";
-import { submitBot } from "@/lib/actions/submit-bot";
-import { BotWithRelationsInput } from "@/lib/prisma_type";
-import ScreenshotGrid from "@/components/form/bot-form/ScreenshotGrid";
+} from '@/lib/actions/image';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { X, Upload, Info } from 'lucide-react';
+import { botFormSchema } from '@/schemas/add-bot-schema';
+import { botCategories } from '@/lib/bot-categories';
+import { z } from 'zod';
+import { TagField } from '@/components/form/bot-form/TagField';
+import { CommandListField } from '@/components/form/bot-form/CommandListField';
+import { DeveloperListField } from '@/components/form/bot-form/DeveloperListField';
+import { DiscordBotRPCInfo } from '@/lib/types';
+import { submitBot } from '@/lib/actions/submit-bot';
+import { BotWithRelationsInput } from '@/lib/prisma_type';
+import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
+import { sendNotification } from '@/lib/actions/sendNotification';
 
 type FormData = z.infer<typeof botFormSchema>;
 
@@ -38,21 +39,21 @@ type Screenshot = {
 
 const BotForm: React.FC = () => {
   const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
-    []
+    [],
   );
   const [uploading, setUploading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(botFormSchema),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
-      botName: "",
-      botPrefix: "",
-      botDescription: "",
-      botLongDescription: "",
-      botInvite: "",
-      botWebsite: "",
-      botSupport: "",
+      botName: '',
+      botPrefix: '',
+      botDescription: '',
+      botLongDescription: '',
+      botInvite: '',
+      botWebsite: '',
+      botSupport: '',
       developers: [],
       commands: [],
       tags: [],
@@ -67,7 +68,7 @@ const BotForm: React.FC = () => {
   const { handleSubmit, control, formState, register, reset } = form;
 
   const handleScreenshotUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = event.target.files;
     if (!files) return;
@@ -78,29 +79,29 @@ const BotForm: React.FC = () => {
     setUploading(true);
 
     const sig = await getCloudinarySignature();
-    console.log("簽名資訊", sig);
+    console.log('簽名資訊', sig);
 
     for (const file of fileArray) {
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("api_key", sig.apiKey);
-      formData.append("timestamp", sig.timestamp.toString());
-      formData.append("signature", sig.signature);
-      formData.append("upload_preset", sig.uploadPreset);
+      formData.append('file', file);
+      formData.append('api_key', sig.apiKey);
+      formData.append('timestamp', sig.timestamp.toString());
+      formData.append('signature', sig.signature);
+      formData.append('upload_preset', sig.uploadPreset);
 
       try {
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
           {
-            method: "POST",
+            method: 'POST',
             body: formData,
-          }
+          },
         );
 
         const data = await res.json();
 
         if (!res.ok) {
-          console.error("上傳失敗", {
+          console.error('上傳失敗', {
             status: res.status,
             statusText: res.statusText,
             body: data,
@@ -111,12 +112,12 @@ const BotForm: React.FC = () => {
         const imageUrl = data.secure_url;
         const publicId = data.public_id;
 
-        setScreenshotPreviews((prev) => [
+        setScreenshotPreviews(prev => [
           ...prev,
           { url: imageUrl, public_id: publicId },
         ]);
       } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error('Unexpected error:', error);
       }
     }
 
@@ -125,13 +126,13 @@ const BotForm: React.FC = () => {
 
   const removeScreenshot = async (index: number) => {
     const toDelete = screenshotPreviews[index];
-    setScreenshotPreviews((prev) => prev.filter((_, i) => i !== index));
+    setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));
 
     try {
       await deleteCloudinaryImage(toDelete.public_id);
-      console.log("圖片已從 Cloudinary 刪除");
+      console.log('圖片已從 Cloudinary 刪除');
     } catch (err) {
-      console.error("刪除失敗", err);
+      console.error('刪除失敗', err);
     }
   };
 
@@ -139,10 +140,10 @@ const BotForm: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const client_id = new URL(data.botInvite).searchParams.get("client_id");
+    const client_id = new URL(data.botInvite).searchParams.get('client_id');
 
     if (!client_id) {
-      setError(":x: 無法解析 bot invite link 中的 client_id");
+      setError(':x: 無法解析 bot invite link 中的 client_id');
       setLoading(false);
       return;
     }
@@ -152,21 +153,21 @@ const BotForm: React.FC = () => {
         `https://discord.com/api/v10/applications/${client_id.trim()}/rpc`,
         {
           headers: {
-            "User-Agent": "DiscordHubs/1.0",
+            'User-Agent': 'DiscordHubs/1.0',
           },
-        }
+        },
       );
 
       if (!res.ok) {
         throw new Error(
-          `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`
+          `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`,
         );
       }
 
       const rpcData: DiscordBotRPCInfo = await res.json();
       setBotInfo(rpcData);
 
-      const commandPayload = data.commands.map((cmd) => ({
+      const commandPayload = data.commands.map(cmd => ({
         name: cmd.name,
         description: cmd.description,
         usage: cmd.usage,
@@ -190,14 +191,14 @@ const BotForm: React.FC = () => {
         featured: false,
         createdAt: new Date(),
         prefix: data.botPrefix,
-        developers: data.developers.map((dev) => ({ id: dev.name })),
+        developers: data.developers.map(dev => ({ id: dev.name })),
         website: data.botWebsite || null,
-        status: "pending",
+        status: 'pending',
         inviteUrl: data.botInvite,
         supportServer: data.botSupport || null,
         verified: false,
         features: [],
-        screenshots: screenshotPreviews.map((s) => s.url),
+        screenshots: screenshotPreviews.map(s => s.url),
         commands: commandPayload,
       };
 
@@ -206,12 +207,18 @@ const BotForm: React.FC = () => {
         reset();
         setScreenshotPreviews([]);
         setSuccess(true);
+
+        await sendNotification({
+          subject: '已收到審核請求',
+          teaser: `${data.botName} 審核請求`,
+          content: `感謝您的申請！我們已收到您的審核請求，通常會在 1～2 個工作天內完成審核。\n審核結果將會同樣於此收件匣通知您，請定時確認以免影響自身權益。\n如審核後的一段時間都仍未收到回覆，請至支援群組開單詢問。`,
+        });
       } catch (err) {
         console.error(err);
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message ?? "發生未知錯誤");
+      setError(err.message ?? '發生未知錯誤');
     } finally {
       setLoading(false);
     }
@@ -225,8 +232,8 @@ const BotForm: React.FC = () => {
           <h1 className="text-2xl font-bold mb-6">新增您的 Discord 機器人</h1>
           <Form {...form}>
             <form
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                 }
               }}
@@ -377,9 +384,7 @@ const BotForm: React.FC = () => {
                     </FormLabel>
                     <div className="flex flex-col gap-3">
                       <ScreenshotGrid
-                        screenshotPreviews={screenshotPreviews.map(
-                          (p) => p.url
-                        )}
+                        screenshotPreviews={screenshotPreviews.map(p => p.url)}
                         removeScreenshot={removeScreenshot}
                       />
                       {screenshotPreviews.length < 5 && (
@@ -443,7 +448,7 @@ const BotForm: React.FC = () => {
                         />
                       </svg>
                     )}
-                    {loading ? "提交中..." : "提交機器人"}
+                    {loading ? '提交中...' : '提交機器人'}
                   </Button>
                 </div>
                 {error && <p className="text-red-500">{error}</p>}

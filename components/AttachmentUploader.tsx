@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useRef } from "react";
-import { UploadedFile } from "@/lib/types";
-import { toast } from "react-toastify";
+import { useState, useRef } from 'react';
+import { UploadedFile } from '@/lib/types';
+import { toast } from 'react-toastify';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
-} from "@/lib/actions/image";
-import ScreenshotGrid from "./form/bot-form/ScreenshotGrid";
-import { Upload } from "lucide-react";
+} from '@/lib/actions/image';
+import ScreenshotGrid from './form/bot-form/ScreenshotGrid';
+import { Upload } from 'lucide-react';
 
 type Props = {
   value: UploadedFile[];
@@ -34,27 +34,27 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
       const sig = await getCloudinarySignature();
 
       for (const file of fileArray) {
-        const isImage = file.type.startsWith("image/");
-        const isVideo = file.type.startsWith("video/");
-        const resourceType = isImage ? "image" : isVideo ? "video" : "raw";
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+        const resourceType = isImage ? 'image' : isVideo ? 'video' : 'raw';
 
         const formData = new FormData();
-        formData.append("file", file);
-        formData.append("api_key", sig.apiKey);
-        formData.append("timestamp", sig.timestamp.toString());
-        formData.append("signature", sig.signature);
-        formData.append("upload_preset", sig.uploadPreset);
+        formData.append('file', file);
+        formData.append('api_key', sig.apiKey);
+        formData.append('timestamp', sig.timestamp.toString());
+        formData.append('signature', sig.signature);
+        formData.append('upload_preset', sig.uploadPreset);
 
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${sig.cloudName}/${resourceType}/upload`,
           {
-            method: "POST",
+            method: 'POST',
             body: formData,
-          }
+          },
         );
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error?.message || "上傳失敗");
+        if (!res.ok) throw new Error(data.error?.message || '上傳失敗');
 
         const uploaded: UploadedFile = {
           url: data.secure_url,
@@ -67,7 +67,7 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
         onChange([...value, uploaded]);
       }
     } catch (err: any) {
-      toast.error("上傳失敗：" + err.message);
+      toast.error('上傳失敗：' + err.message);
     }
 
     setUploading(false);
@@ -81,7 +81,7 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
     try {
       await deleteCloudinaryImage(toDelete.public_id);
     } catch (err) {
-      console.error("刪除失敗", err);
+      console.error('刪除失敗', err);
     }
   };
 
@@ -89,7 +89,7 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
     <div className="space-y-3">
       {/* 預覽圖片 */}
       <ScreenshotGrid
-        screenshotPreviews={value.map((v) => v.url)}
+        screenshotPreviews={value.map(v => v.url)}
         removeScreenshot={handleRemove}
       />
 
@@ -111,7 +111,7 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
           <label className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white">
             <Upload size={24} />
             <span className="mt-2 text-sm">
-              {uploading ? "上傳中..." : "上傳附件"}
+              {uploading ? '上傳中...' : '上傳附件'}
             </span>
           </label>
         </div>

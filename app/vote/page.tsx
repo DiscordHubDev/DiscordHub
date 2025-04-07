@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Search, Users, ArrowUp, Bot } from "lucide-react";
-import VoteCard from "@/components/vote-card";
-import { servers, bots } from "@/lib/mock-data";
-import MobileMenu from "@/components/mobile-menu";
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Search, Users, ArrowUp, Bot } from 'lucide-react';
+import VoteCard from '@/components/vote-card';
+import { servers, bots } from '@/lib/mock-data';
+import MobileMenu from '@/components/mobile-menu';
 
 export default function VotePage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [filteredServers, setFilteredServers] = useState(servers);
   const [filteredBots, setFilteredBots] = useState(bots);
 
@@ -31,16 +31,16 @@ export default function VotePage() {
 
     // 過濾伺服器
     const matchedServers = servers.filter(
-      (server) =>
+      server =>
         server.name.toLowerCase().includes(query) ||
-        server.description.toLowerCase().includes(query)
+        server.description.toLowerCase().includes(query),
     );
 
     // 過濾機器人
     const matchedBots = bots.filter(
-      (bot) =>
+      bot =>
         bot.name.toLowerCase().includes(query) ||
-        bot.description.toLowerCase().includes(query)
+        bot.description.toLowerCase().includes(query),
     );
 
     setFilteredServers(matchedServers);
@@ -85,7 +85,7 @@ export default function VotePage() {
               placeholder="搜尋伺服器或機器人..."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
@@ -136,7 +136,7 @@ export default function VotePage() {
           <TabsContent value="servers" className="mt-6">
             <h2 className="text-2xl font-bold mb-4">伺服器投票</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredServers.map((server) => (
+              {filteredServers.map(server => (
                 <VoteCard
                   key={server.id}
                   id={server.id}
@@ -155,7 +155,7 @@ export default function VotePage() {
           <TabsContent value="bots" className="mt-6">
             <h2 className="text-2xl font-bold mb-4">機器人投票</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredBots.map((bot) => (
+              {filteredBots.map(bot => (
                 <VoteCard
                   key={bot.id}
                   id={bot.id}
@@ -199,7 +199,7 @@ export default function VotePage() {
                               <img
                                 src={
                                   server.icon ||
-                                  "/placeholder.svg?height=40&width=40"
+                                  '/placeholder.svg?height=40&width=40'
                                 }
                                 alt={server.name}
                                 className="w-full h-full object-cover"
@@ -260,7 +260,7 @@ export default function VotePage() {
                               <img
                                 src={
                                   bot.icon ||
-                                  "/placeholder.svg?height=40&width=40"
+                                  '/placeholder.svg?height=40&width=40'
                                 }
                                 alt={bot.name}
                                 className="w-full h-full object-cover"

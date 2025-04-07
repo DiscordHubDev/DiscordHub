@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   User,
@@ -7,12 +7,12 @@ import {
   ChevronsUpDown,
   LogOut,
   Settings,
-} from "lucide-react";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+} from 'lucide-react';
+import { signIn, signOut, useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,14 +21,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import Link from "next/link";
+} from '@/components/ui/sidebar';
+import Link from 'next/link';
 
 interface NavUserProps {
   user: DiscordUser;
@@ -62,7 +62,7 @@ export function NavUser({ user }: NavUserProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="mx-5 min-w-50 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
@@ -84,7 +84,7 @@ export function NavUser({ user }: NavUserProps) {
                 <Settings />
                 帳號設定
               </DropdownMenuItem>
-              <Link href={"/profile"}>
+              <Link href={'/profile'}>
                 <DropdownMenuItem>
                   <User />
                   個人頁面

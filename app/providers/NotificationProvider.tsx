@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { useSession } from "next-auth/react";
+import { useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useSession } from 'next-auth/react';
 
 export function NotificationListener({
   onNotify,
@@ -18,22 +18,22 @@ export function NotificationListener({
     const channel = supabase
       .channel(`notifications-all`)
       .on(
-        "postgres_changes",
+        'postgres_changes',
         {
-          event: "INSERT",
-          schema: "public",
-          table: "Notification",
+          event: 'INSERT',
+          schema: 'public',
+          table: 'Notification',
         },
-        (payload) => {
+        payload => {
           const data = payload.new;
           const isForMe = data.user_id === userId;
           const isBroadcast = data.user_id === null;
 
           if (isForMe || isBroadcast) {
-            console.log("📩 收到通知：", data);
+            console.log('📩 收到通知：', data);
             onNotify(data);
           }
-        }
+        },
       )
       .subscribe();
 

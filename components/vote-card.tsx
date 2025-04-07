@@ -1,19 +1,25 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowUp, Users, Bot } from "lucide-react"
-import VoteButton from "@/components/vote-button"
-import Link from "next/link"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowUp, Users, Bot } from 'lucide-react';
+import VoteButton from '@/components/vote-button';
+import Link from 'next/link';
 
 interface VoteCardProps {
-  id: string
-  type: "server" | "bot"
-  name: string
-  description: string
-  icon?: string
-  votes: number
-  members?: number
-  servers?: number
-  verified?: boolean
+  id: string;
+  type: 'server' | 'bot';
+  name: string;
+  description: string;
+  icon?: string;
+  votes: number;
+  members?: number;
+  servers?: number;
+  verified?: boolean;
 }
 
 export default function VoteCard({
@@ -33,14 +39,14 @@ export default function VoteCard({
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
             <img
-              src={icon || "/placeholder.svg?height=40&width=40"}
+              src={icon || '/placeholder.svg?height=40&width=40'}
               alt={name}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="flex items-center">
             <CardTitle className="text-white">{name}</CardTitle>
-            {verified && type === "bot" && (
+            {verified && type === 'bot' && (
               <span className="ml-2 text-[#5865f2]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -65,13 +71,13 @@ export default function VoteCard({
       <CardContent className="pb-2">
         <p className="text-gray-300 text-sm line-clamp-2">{description}</p>
         <div className="flex items-center text-sm text-gray-400 mt-2">
-          {type === "server" && members !== undefined && (
+          {type === 'server' && members !== undefined && (
             <div className="flex items-center">
               <Users size={14} className="mr-1" />
               <span>{members.toLocaleString()} 成員</span>
             </div>
           )}
-          {type === "bot" && servers !== undefined && (
+          {type === 'bot' && servers !== undefined && (
             <div className="flex items-center">
               <Bot size={14} className="mr-1" />
               <span>{servers.toLocaleString()} 伺服器</span>
@@ -84,7 +90,10 @@ export default function VoteCard({
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pt-2">
-        <Link href={`/${type === "server" ? "servers" : "bots"}/${id}`} className="flex-1 mr-2">
+        <Link
+          href={`/${type === 'server' ? 'servers' : 'bots'}/${id}`}
+          className="flex-1 mr-2"
+        >
           <Button
             variant="outline"
             size="sm"
@@ -93,9 +102,14 @@ export default function VoteCard({
             查看詳情
           </Button>
         </Link>
-        <VoteButton id={id} type={type} initialVotes={votes} size="sm" className="bg-[#5865f2] hover:bg-[#4752c4]" />
+        <VoteButton
+          id={id}
+          type={type}
+          initialVotes={votes}
+          size="sm"
+          className="bg-[#5865f2] hover:bg-[#4752c4]"
+        />
       </CardFooter>
     </Card>
-  )
+  );
 }
-

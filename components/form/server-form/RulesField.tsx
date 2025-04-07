@@ -1,23 +1,23 @@
 // components/form/CommandListField.tsx
-"use client";
+'use client';
 
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Trash2, Plus } from "lucide-react";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Trash2, Plus } from 'lucide-react';
 
 export const RulesField = () => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "rules",
+    name: 'rules',
   });
 
   return (
@@ -75,7 +75,7 @@ export const RulesField = () => {
 
       <Button
         type="button"
-        onClick={() => append("")}
+        onClick={() => append('')}
         className="bg-[#5865f2] hover:bg-[#4752c4] w-full text-white"
       >
         <Plus size={16} className="mr-2" />

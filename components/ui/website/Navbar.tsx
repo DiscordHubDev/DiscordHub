@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { signIn, useSession } from "next-auth/react";
-import { FaDiscord } from "react-icons/fa";
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { signIn, useSession } from 'next-auth/react';
+import { FaDiscord } from 'react-icons/fa';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,7 +56,7 @@ export default function Navbar() {
               </Link>
             ) : (
               <Button
-                onClick={() => signIn("discord")}
+                onClick={() => signIn('discord')}
                 className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
               >
                 <FaDiscord />
@@ -99,7 +99,7 @@ export default function Navbar() {
             </Link>
           ) : (
             <Button
-              onClick={() => signIn("discord")}
+              onClick={() => signIn('discord')}
               className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
             >
               登入 Discord
@@ -119,19 +119,19 @@ function NavLinks({
   mobile?: boolean;
 }) {
   const links = [
-    { href: "/", label: "伺服器列表" },
-    { href: "/bots", label: "機器人列表" },
-    { href: "/add-server", label: "新增伺服器" },
-    { href: "/add-bot", label: "新增機器人" },
+    { href: '/', label: '伺服器列表' },
+    { href: '/bots', label: '機器人列表' },
+    { href: '/add-server', label: '新增伺服器' },
+    { href: '/add-bot', label: '新增機器人' },
   ];
 
   const linkClass = (href: string) =>
     mobile
       ? `block text-white w-full text-left px-4 py-2 hover:bg-[#36393f] ${
-          pathname === href ? "bg-white/10" : ""
+          pathname === href ? 'bg-white/10' : ''
         }`
       : `text-white hover:bg-[#36393f] ${
-          pathname === href ? "bg-white/10" : ""
+          pathname === href ? 'bg-white/10' : ''
         }`;
 
   return (

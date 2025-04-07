@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Card,
   CardContent,
@@ -8,19 +8,19 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, Bot, Star, Settings, Plus } from "lucide-react";
-import UserHeader from "@/components/user-header";
-import { getUser } from "@/lib/get-user";
-import { redirect } from "next/navigation";
-import UserSettingsForm from "../../components/form/user-form/SettingsForm";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Users, Bot, Star, Settings, Plus } from 'lucide-react';
+import UserHeader from '@/components/user-header';
+import { getUser } from '@/lib/get-user';
+import { redirect } from 'next/navigation';
+import UserSettingsForm from '../../components/form/user-form/SettingsForm';
 
 export default async function ProfilePage() {
   const user = await getUser();
 
   if (!user) {
-    return redirect("/api/auth/signin/discord?callbackUrl=/profile");
+    return redirect('/api/auth/signin/discord?callbackUrl=/profile');
   }
 
   // 獲取用戶收藏的伺服器和機器人
@@ -80,7 +80,7 @@ export default async function ProfilePage() {
 
             {user.ownedServers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {user.ownedServers.map((server) => (
+                {user.ownedServers.map(server => (
                   <Link
                     href={`/servers/${server.id}`}
                     key={server.id}
@@ -93,7 +93,7 @@ export default async function ProfilePage() {
                             <img
                               src={
                                 server.icon ||
-                                "/placeholder.svg?height=40&width=40"
+                                '/placeholder.svg?height=40&width=40'
                               }
                               alt={server.name}
                               className="w-full h-full object-cover"
@@ -114,7 +114,7 @@ export default async function ProfilePage() {
                           {server.description}
                         </p>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {server.tags.slice(0, 3).map((tag) => (
+                          {server.tags.slice(0, 3).map(tag => (
                             <Badge
                               key={tag}
                               variant="secondary"
@@ -165,7 +165,7 @@ export default async function ProfilePage() {
 
             {user.developedBots.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {user.developedBots.map((bot) => (
+                {user.developedBots.map(bot => (
                   <Link href={`/bots/${bot.id}`} key={bot.id} className="block">
                     <Card className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200">
                       <CardHeader className="pb-2">
@@ -174,7 +174,7 @@ export default async function ProfilePage() {
                             <img
                               src={
                                 bot.icon ||
-                                "/placeholder.svg?height=40&width=40"
+                                '/placeholder.svg?height=40&width=40'
                               }
                               alt={bot.name}
                               className="w-full h-full object-cover"
@@ -211,7 +211,7 @@ export default async function ProfilePage() {
                           {bot.description}
                         </p>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {bot.tags.slice(0, 3).map((tag) => (
+                          {bot.tags.slice(0, 3).map(tag => (
                             <Badge
                               key={tag}
                               variant="secondary"
@@ -260,7 +260,7 @@ export default async function ProfilePage() {
                 <h2 className="text-2xl font-bold mb-4">收藏的伺服器</h2>
                 {favoriteServers.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {favoriteServers.map((server) => (
+                    {favoriteServers.map(server => (
                       <Link
                         href={`/servers/${server.id}`}
                         key={server.id}
@@ -273,7 +273,7 @@ export default async function ProfilePage() {
                                 <img
                                   src={
                                     server.icon ||
-                                    "/placeholder.svg?height=40&width=40"
+                                    '/placeholder.svg?height=40&width=40'
                                   }
                                   alt={server.name}
                                   className="w-full h-full object-cover"
@@ -310,7 +310,7 @@ export default async function ProfilePage() {
                 <h2 className="text-2xl font-bold mb-4">收藏的機器人</h2>
                 {favoriteBots.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {favoriteBots.map((bot) => (
+                    {favoriteBots.map(bot => (
                       <Link
                         href={`/bots/${bot.id}`}
                         key={bot.id}
@@ -323,7 +323,7 @@ export default async function ProfilePage() {
                                 <img
                                   src={
                                     bot.icon ||
-                                    "/placeholder.svg?height=40&width=40"
+                                    '/placeholder.svg?height=40&width=40'
                                   }
                                   alt={bot.name}
                                   className="w-full h-full object-cover"

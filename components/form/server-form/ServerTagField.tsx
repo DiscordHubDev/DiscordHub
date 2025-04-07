@@ -1,18 +1,18 @@
 // components/form/TagField.tsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useFormContext, useWatch } from "react-hook-form";
+import { useState } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
 import {
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, X } from "lucide-react";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Plus, X } from 'lucide-react';
 
 type BotCategory = {
   id: string;
@@ -31,14 +31,14 @@ export const ServerTagField: React.FC<TagFieldProps> = ({
 }) => {
   const { control, setValue } = useFormContext();
   const selectedTags: string[] = useWatch({ control, name }) ?? [];
-  const [customTag, setCustomTag] = useState("");
+  const [customTag, setCustomTag] = useState('');
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setValue(
         name,
-        selectedTags.filter((t) => t !== tag),
-        { shouldValidate: true }
+        selectedTags.filter(t => t !== tag),
+        { shouldValidate: true },
       );
     } else {
       if (selectedTags.length < 5) {
@@ -51,14 +51,14 @@ export const ServerTagField: React.FC<TagFieldProps> = ({
 
   const handleAddCustomTag = () => {
     if (
-      customTag.trim() !== "" &&
+      customTag.trim() !== '' &&
       !selectedTags.includes(customTag) &&
       selectedTags.length < 5
     ) {
       setValue(name, [...selectedTags, customTag.trim()], {
         shouldValidate: true,
       });
-      setCustomTag("");
+      setCustomTag('');
     }
   };
 
@@ -75,16 +75,16 @@ export const ServerTagField: React.FC<TagFieldProps> = ({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {categories.map(category => (
               <Badge
                 key={category.id}
                 variant={
-                  selectedTags.includes(category.name) ? "default" : "secondary"
+                  selectedTags.includes(category.name) ? 'default' : 'secondary'
                 }
                 className={`cursor-pointer ${
                   selectedTags.includes(category.name)
-                    ? "bg-[#5865f2] hover:bg-[#4752c4]"
-                    : "bg-[#36393f] hover:bg-[#4f545c]"
+                    ? 'bg-[#5865f2] hover:bg-[#4752c4]'
+                    : 'bg-[#36393f] hover:bg-[#4f545c]'
                 }`}
                 onClick={() => toggleTag(category.name)}
               >
@@ -100,10 +100,10 @@ export const ServerTagField: React.FC<TagFieldProps> = ({
             <Input
               placeholder="添加自定義標籤"
               value={customTag}
-              onChange={(e) => setCustomTag(e.target.value)}
+              onChange={e => setCustomTag(e.target.value)}
               className="bg-[#36393f] border-[#1e1f22] text-white"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                   handleAddCustomTag();
                 }
@@ -122,7 +122,7 @@ export const ServerTagField: React.FC<TagFieldProps> = ({
             <div className="mt-2">
               <p className="text-sm font-medium mb-2">已選擇的標籤：</p>
               <div className="flex flex-wrap gap-2">
-                {selectedTags.map((tag) => (
+                {selectedTags.map(tag => (
                   <Badge
                     key={tag}
                     className="bg-[#5865f2] hover:bg-[#4752c4] flex items-center gap-1"
