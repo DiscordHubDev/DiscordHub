@@ -1,4 +1,4 @@
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/utils';
 import { getServerSession } from 'next-auth';
 
 import { upsertUserFromSession } from '@/lib/actions/user';

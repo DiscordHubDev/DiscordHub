@@ -7,7 +7,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
 import SessionProvider from './providers/SessionProvider';
 import { getServerSession } from 'next-auth';
-import { authOptions } from './api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/utils';
 
 import ClientLayout from './client_layout';
 

@@ -1,7 +1,7 @@
 import { getUserGuildsWithBotStatus } from '@/lib/get-user-guild';
 
 import ServerClient from '@/components/server/server-home';
-import { authOptions } from '../api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/utils';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 

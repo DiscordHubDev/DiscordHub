@@ -1,7 +1,7 @@
 import { getAllServers, getServerByGuildId } from '@/lib/actions/servers';
 import { notFound } from 'next/navigation';
 import ServerDetailClientPage from './client';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/utils';
 import { getServerSession } from 'next-auth';
 
 export default async function ServerDetailPage({

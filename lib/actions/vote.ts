@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/utils';
 import { VoteType } from '@/lib/prisma_type';
 export async function Vote(itemId: string, itemType: string) {
   const session = await getServerSession(authOptions);
