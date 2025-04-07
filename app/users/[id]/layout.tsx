@@ -7,9 +7,10 @@ export const revalidate = 0;
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const user = await getUserById(params.id);
+  const { id } = await params;
+  const user = await getUserById(id);
 
   if (!user) {
     return { title: '用戶未找到 | DiscordHubs' };
