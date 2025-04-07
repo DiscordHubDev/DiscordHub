@@ -1,35 +1,33 @@
-import { getAllServers, getServerByGuildId } from "@/lib/actions/servers";
-import { notFound } from "next/navigation";
-import ServerDetailClientPage from "./client";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getServerSession } from "next-auth";
-
-interface ServerDetailPageProps {
-  params: {
-    id: string;
-  };
-}
+import { getAllServers, getServerByGuildId } from '@/lib/actions/servers';
+import { notFound } from 'next/navigation';
+import ServerDetailClientPage from './client';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getServerSession } from 'next-auth';
 
 export default async function ServerDetailPage({
-  params,
-}: ServerDetailPageProps) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.discordProfile?.id;
+    params,
+}: {
+    params: { id: string };
+}) {
+    const { id } = params;
 
-  const server = await getServerByGuildId(userId, params.id);
-  const allServers = await getAllServers();
+    const session = await getServerSession(authOptions);
+    const userId = session?.discordProfile?.id;
 
-  const isFavorited = !!server.favoritedBy?.length;
+    const server = await getServerByGuildId(userId, id);
+    const allServers = await getAllServers();
 
-  if (!server) {
-    notFound();
-  }
+    const isFavorited = !!server.favoritedBy?.length;
 
-  return (
-    <ServerDetailClientPage
-      server={server}
-      allServers={allServers}
-      isFavorited={isFavorited}
-    />
-  );
+    if (!server) {
+        notFound();
+    }
+
+    return (
+        <ServerDetailClientPage
+            server={server}
+            allServers={allServers}
+            isFavorited={isFavorited}
+        />
+    );
 }

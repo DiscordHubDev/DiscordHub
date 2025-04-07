@@ -14,7 +14,7 @@ import { Users, Bot, Star, Settings, Plus } from "lucide-react";
 import UserHeader from "@/components/user-header";
 import { getUser } from "@/lib/get-user";
 import { redirect } from "next/navigation";
-import UserSettingsForm from "./settings";
+import UserSettingsForm from "../../components/form/user-form/SettingsForm";
 
 export default async function ProfilePage() {
   const user = await getUser();

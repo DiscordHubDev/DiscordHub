@@ -25,7 +25,11 @@ model User {
 
   // 使用者社群資訊（彈性 json 欄位）
   social  Json? // 儲存如：{ "twitter": "dawngs", "github": "dgsbot" }
+
+  votes    Vote[]
+
   reports Report[] @relation("UserReports")
+  handledReports Report[]  @relation("HandledReports")
 }
 
 enum EmailPriority {
@@ -138,6 +142,7 @@ model Report {
   id          String         @id @default(cuid())
   subject     String
   content     String
+
   reportedAt  DateTime       @default(now())
   status      ReportStatus   @default(pending)
   severity    ReportSeverity @default(untagged)
@@ -149,6 +154,12 @@ model Report {
   // 舉報者
   reportedById String
   reportedBy   User   @relation("UserReports", fields: [reportedById], references: [id])
+
+    // 處理結果
+  resolutionNote String?        // ✅ 管理員處理說明
+  handledById    String?        // ✅ 處理者 ID（optional）
+  handledBy      User?          @relation("HandledReports", fields: [handledById], references: [id])
+  handledAt      DateTime?      // ✅ 處理時間（optional）
 }
 
 enum ReportStatus {
@@ -167,4 +178,19 @@ enum ReportSeverity {
 enum ReportType {
   bot
   server
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String // serverId 或 botId
+  itemType  VoteType
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum VoteType {
+  server
+  bot
 }
