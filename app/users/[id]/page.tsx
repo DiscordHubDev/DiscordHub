@@ -26,13 +26,14 @@ export async function generateStaticParams() {
   return [];
 }
 
-export default async function UserProfilePage({
+export default async function BotDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const currentUser = await getUser();
-  const viewedUser = await getUserById(params.id);
+  const viewedUser = await getUserById(id);
 
   if (!viewedUser) {
     return notFound();
