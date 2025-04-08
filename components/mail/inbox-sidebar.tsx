@@ -85,46 +85,24 @@ export const getPriorityTextClass = (priority: EmailPriority) => {
 };
 
 interface InboxSidebarProps {
-  Emails: Mail[];
+  mails: Mail[];
   onSelectEmail: (email: Mail) => void;
 }
 
-export function InboxSidebar({ onSelectEmail }: InboxSidebarProps) {
+export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [showUnreadOnly, setShowUnreadOnly] = React.useState(false);
 
-  const { mails, deleteMail, markAsRead } = useInbox();
-
-  // 過濾郵件
-  const filteredEmails = React.useMemo(() => {
-    return mails.filter(mail => {
-      // 過濾已讀/未讀
-      if (showUnreadOnly && mail.read) {
-        return false;
-      }
-
-      // 搜索過濾
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          mail.name.toLowerCase().includes(query) ||
-          mail.subject.toLowerCase().includes(query) ||
-          mail.teaser.toLowerCase().includes(query)
-        );
-      }
-
-      return true;
-    });
-  }, [mails, searchQuery, showUnreadOnly]);
+  const { deleteMail, markAsRead } = useInbox();
 
   // 處理郵件點擊
-  const handleEmailClick = (email: Mail) => {
+  const handleEmailClick = (mail: Mail) => {
     // 更新為已讀狀態
-    if (!email.read) {
-      markAsRead(email.id);
-      onSelectEmail({ ...email, read: true });
+    if (!mail.read) {
+      markAsRead(mail.id);
+      onSelectEmail({ ...mail, read: true });
     } else {
-      onSelectEmail(email);
+      onSelectEmail(mail);
     }
   };
 
@@ -144,11 +122,11 @@ export function InboxSidebar({ onSelectEmail }: InboxSidebarProps) {
   return (
     <SidebarContent>
       <SidebarGroup>
-        <SidebarGroupLabel>郵件 ({filteredEmails.length})</SidebarGroupLabel>
+        <SidebarGroupLabel>郵件 ({mails.length})</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {filteredEmails.length > 0 ? (
-              filteredEmails.map(mail => (
+            {mails.length > 0 ? (
+              mails.map(mail => (
                 <SidebarMenuItem key={mail.id} className="mb-3">
                   <div
                     className={cn(
