@@ -17,7 +17,7 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: 'Discord Servers | Discord Hub',
+  title: 'DiscordHubs',
   description: 'Discover and join amazing Discord communities',
 };
 
