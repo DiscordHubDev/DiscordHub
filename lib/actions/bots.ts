@@ -15,7 +15,7 @@ export async function getAllBots() {
 }
 
 export async function getBot(id: string) {
-  const bot = await prisma.bot.findUnique({
+  const bot = await prisma.bot.findFirst({
     where: {
       id,
       status: 'approved',

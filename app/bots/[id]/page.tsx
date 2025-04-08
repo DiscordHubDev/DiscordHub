@@ -22,18 +22,18 @@ export async function generateMetadata({
   if (!bot) return {};
 
   return {
-    title: `${bot.name} - DiscordHubs`,
+    title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
     description: bot.description,
     alternates: {
       canonical: `https://dchubs.org/bots/${bot.id}`,
     },
     openGraph: {
-      title: `${bot.name} - DiscordHubs`,
+      title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
       description: bot.description,
       url: `https://dchubs.org/bots/${bot.id}`,
       images: [
         {
-          url: `https://dchubs.org/api/og/bot/${bot.id}`,
+          url: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
           width: 1200,
           height: 630,
         },
@@ -41,9 +41,11 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${bot.name} - DiscordHubs`,
+      title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
       description: bot.description,
-      images: [`https://dchubs.org/api/og/bot/${bot.id}`],
+      images: [
+        `${bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}`,
+      ],
     },
   };
 }

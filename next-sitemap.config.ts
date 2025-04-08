@@ -1,12 +1,12 @@
 import type { IConfig } from 'next-sitemap';
 
-const siteUrl = 'https://dchubs.org'; // ⬅️ 改成你的正式網域
+const siteUrl = 'https://dchubs.org';
 
 const config: IConfig = {
   siteUrl,
   generateRobotsTxt: true,
   sitemapSize: 5000,
-  exclude: ['/api/*', '/admin/*'], // ⬅️ 排除不想被爬的頁面
+  exclude: ['/api/*', '/admin/*'],
   robotsTxtOptions: {
     policies: [
       {

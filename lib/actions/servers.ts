@@ -77,7 +77,7 @@ export const getServerByGuildId = async (
   guildId: string,
 ): Promise<ServerType> => {
   try {
-    const server = await prisma.server.findUnique({
+    const server = await prisma.server.findFirst({
       where: { id: guildId },
       include: {
         owner: true,
