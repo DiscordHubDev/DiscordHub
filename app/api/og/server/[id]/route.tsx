@@ -8,9 +8,9 @@ export async function GET(
   req: NextRequest,
   context: { params: { id: string } },
 ) {
-  const bot = await getServerByGuildId(context.params.id);
+  const server = await getServerByGuildId(context.params.id);
 
-  if (!bot) return new Response('Not Found', { status: 404 });
+  if (!server) return new Response('Not Found', { status: 404 });
 
   return new ImageResponse(
     (
@@ -24,7 +24,7 @@ export async function GET(
         }}
       >
         <img
-          src={bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}
+          src={server.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}
           width="512"
           height="512"
           style={{ borderRadius: '50%' }}
