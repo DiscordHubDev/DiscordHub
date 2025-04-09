@@ -99,6 +99,14 @@ export default function DiscordBotListPageClient({
     setBots(searchResults);
   };
 
+  const handleClick = () => {
+    window.open(
+      'https://discord.gg/puQ9DPdG3M',
+      '_blank',
+      'noopener noreferrer',
+    );
+  };
+
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Hero Banner */}

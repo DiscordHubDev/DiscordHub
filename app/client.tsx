@@ -15,6 +15,7 @@ import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { Servercategories as initialCategories } from '@/lib/categories';
 import type { CategoryType } from '@/lib/types';
 import { ServerType } from '@/lib/prisma_type';
+import Link from 'next/link';
 
 type DiscordServerListProps = {
   servers: ServerType[];
@@ -101,6 +102,14 @@ export default function DiscordServerListPageClient({
     );
 
     setServers(searchResults);
+  };
+
+  const handleClick = () => {
+    window.open(
+      'https://discord.gg/puQ9DPdG3M',
+      '_blank',
+      'noopener noreferrer',
+    );
   };
 
   return (
@@ -295,9 +304,15 @@ export default function DiscordServerListPageClient({
                 想要推廣您的 Discord
                 伺服器嗎？立即加入我們的平台，讓更多人發現您的社群！
               </p>
-              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
-                新增伺服器
-              </Button>
+              <Link
+                href="https://discord.gg/puQ9DPdG3M"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+                  新增伺服器
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -310,9 +325,15 @@ export default function DiscordServerListPageClient({
               想要推廣您的 Discord
               伺服器嗎？立即加入我們的平台，讓更多人發現您的社群！
             </p>
-            <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
-              新增伺服器
-            </Button>
+            <Link
+              href="https://discord.gg/puQ9DPdG3M"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+                新增伺服器
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

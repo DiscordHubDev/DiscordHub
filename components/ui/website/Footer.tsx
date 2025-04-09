@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FaDiscord } from 'react-icons/fa6';
 
 export default function Footer({ className = '' }: { className?: string }) {
   return (
@@ -68,7 +69,7 @@ export default function Footer({ className = '' }: { className?: string }) {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/help" className="hover:text-white">
                   常見問題
                 </a>
               </li>
@@ -110,8 +111,8 @@ export default function Footer({ className = '' }: { className?: string }) {
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {/* Icons */}
-            <SocialIcon href="#" title="Twitter">
-              <TwitterIcon />
+            <SocialIcon href="https://discord.gg/puQ9DPdG3M" title="Twitter">
+              <FaDiscord />
             </SocialIcon>
             <SocialIcon href="#" title="GitHub">
               <GitHubIcon />
@@ -140,29 +141,31 @@ function SocialIcon({
       href={href}
       className="text-gray-400 hover:text-white"
       aria-label={title}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       {children}
     </a>
   );
 }
 
-function TwitterIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="lucide lucide-twitter"
-    >
-      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-    </svg>
-  );
-}
+// function TwitterIcon() {
+//   return (
+//     <svg
+//       xmlns="http://www.w3.org/2000/svg"
+//       width="20"
+//       height="20"
+//       fill="none"
+//       stroke="currentColor"
+//       strokeWidth="2"
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//       className="lucide lucide-twitter"
+//     >
+//       <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+//     </svg>
+//   );
+// }
 
 function GitHubIcon() {
   return (

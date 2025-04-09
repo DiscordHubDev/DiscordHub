@@ -91,6 +91,14 @@ export default function Navbar() {
 
       {isOpen && (
         <div className="md:hidden px-4 pb-4">
+          <style jsx>{`
+            button,
+            a {
+              white-space: normal;
+              word-wrap: break-word;
+              max-width: 100%;
+            }
+          `}</style>
           {session && session?.user ? (
             <Link href="/profile">
               <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
@@ -105,6 +113,7 @@ export default function Navbar() {
               登入 Discord
             </Button>
           )}
+          <NavLinks pathname={pathname} mobile={true} />
         </div>
       )}
     </nav>
@@ -127,7 +136,7 @@ function NavLinks({
 
   const linkClass = (href: string) =>
     mobile
-      ? `block text-white w-full text-left px-4 py-2 hover:bg-[#36393f] ${
+      ? `block text-white w-full text-left px-2 py-1 hover:bg-[#36393f] ${
           pathname === href ? 'bg-white/10' : ''
         }`
       : `text-white hover:bg-[#36393f] ${
