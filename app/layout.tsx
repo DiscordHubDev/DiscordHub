@@ -35,18 +35,18 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SessionProvider session={session}>
-            <SidebarProvider>
+        <SidebarProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SessionProvider session={session}>
               <ClientLayout>{children}</ClientLayout>
-            </SidebarProvider>
-          </SessionProvider>
-        </ThemeProvider>
+            </SessionProvider>
+          </ThemeProvider>
+        </SidebarProvider>
       </body>
     </html>
   );

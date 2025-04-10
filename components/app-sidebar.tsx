@@ -19,6 +19,7 @@ import {
   Inbox,
   Search,
   Sparkles,
+  Menu,
 } from 'lucide-react';
 
 import { NavMain } from '@/components/nav-main';
@@ -288,7 +289,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   });
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full">
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
           <SidebarTrigger />
