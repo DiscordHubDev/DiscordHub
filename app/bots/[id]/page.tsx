@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
-import BotDetailClient from './client';
 import { getAllBots, getBot } from '@/lib/actions/bots';
 import { Metadata } from 'next';
+import BotDetailClient from './client';
 
 const allBots = await getAllBots();
 

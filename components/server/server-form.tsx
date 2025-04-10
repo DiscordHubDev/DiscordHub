@@ -27,9 +27,13 @@ import {
   getCloudinarySignature,
 } from '@/lib/actions/image';
 import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
-import { CreateServerInput } from '@/lib/prisma_type';
+import { CreateServerInput, ServerType } from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
-import { insertServer, isOwnerexist } from '@/lib/actions/servers';
+import {
+  insertServer,
+  isOwnerexist,
+  updateServer,
+} from '@/lib/actions/servers';
 import { fetchUserInfo } from '@/lib/utils';
 
 type FormSchemaType = z.infer<typeof ServerFormSchema>;
@@ -40,10 +44,16 @@ type Screenshot = {
 };
 
 type ServerFormProps = {
-  server: ActiveServerInfo;
+  server?: ActiveServerInfo;
+  edit_server?: ServerType;
+  mode: 'create' | 'edit';
 };
 
-export default function ServerFormPage({ server }: ServerFormProps) {
+export default function ServerFormPage({
+  server,
+  edit_server,
+  mode,
+}: ServerFormProps) {
   const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
     [],
   );
@@ -56,13 +66,13 @@ export default function ServerFormPage({ server }: ServerFormProps) {
     resolver: zodResolver(ServerFormSchema),
     mode: 'onChange',
     defaultValues: {
-      serverName: server.name,
-      shortDescription: '',
-      longDescription: '',
-      inviteLink: '',
-      websiteLink: '',
-      tags: [],
-      rules: [],
+      serverName: edit_server?.name || server?.name,
+      shortDescription: edit_server?.description || '',
+      longDescription: edit_server?.longDescription || '',
+      inviteLink: edit_server?.inviteUrl || '',
+      websiteLink: edit_server?.website || '',
+      tags: edit_server?.tags || [],
+      rules: edit_server?.rules || [],
     },
   });
 
@@ -141,41 +151,57 @@ export default function ServerFormPage({ server }: ServerFormProps) {
     setLoading(true);
     setError(null);
 
+    const activeServer = server ?? edit_server;
+    if (!activeServer) {
+      setError('找不到伺服器資料');
+      return;
+    }
+
     try {
       let avatar: string = '';
       let banner: string | null = null;
       let global_name: string = '未知使用者';
 
-      const existingOwner = await isOwnerexist(server.owner);
+      const memberCount =
+        'memberCount' in activeServer ? activeServer.memberCount : 0;
+      const onlineCount =
+        'OnlineMemberCount' in activeServer
+          ? activeServer.OnlineMemberCount
+          : 0;
+
+      const ownerId =
+        typeof activeServer.owner === 'string'
+          ? activeServer.owner
+          : activeServer.owner?.id;
+
+      const existingOwner = await isOwnerexist(ownerId!);
 
       if (!existingOwner) {
-        console.log('server.owner', server.owner);
-        const userInfo = await fetchUserInfo(server.owner);
-
+        const userInfo = await fetchUserInfo(ownerId!);
         avatar = userInfo.avatar_url;
         banner = userInfo.banner_url;
         global_name = userInfo.global_name;
       }
 
       const payload: CreateServerInput = {
-        id: server.id,
+        id: activeServer.id,
         name: data.serverName,
-        icon: server.icon,
-        banner: server.banner,
+        icon: activeServer.icon,
+        banner: activeServer.banner,
         description: data.shortDescription,
         longDescription: data.longDescription,
         inviteUrl: data.inviteLink,
         website: data.websiteLink,
         tags: data.tags,
-        members: server.memberCount,
-        online: server.OnlineMemberCount,
+        members: memberCount,
+        online: onlineCount,
         rules: data.rules,
         upvotes: 0,
         owner: {
           connectOrCreate: {
-            where: { id: server.owner },
+            where: { id: ownerId },
             create: {
-              id: server.owner,
+              id: ownerId,
               username: global_name,
               avatar: avatar,
               banner: banner,
@@ -184,9 +210,14 @@ export default function ServerFormPage({ server }: ServerFormProps) {
         },
       };
 
-      await insertServer(payload);
-      reset();
+      if (mode === 'edit') {
+        await updateServer(payload);
+      } else {
+        await insertServer(payload);
+      }
+
       setSuccess(true);
+      reset();
     } catch (err: any) {
       console.error(err);
       setError(err.message ?? '發生未知錯誤');
@@ -384,15 +415,23 @@ export default function ServerFormPage({ server }: ServerFormProps) {
                       />
                     </svg>
                   )}
-                  {loading ? '提交中...' : '提交伺服器'}
+                  {loading
+                    ? mode === 'edit'
+                      ? '儲存中...'
+                      : '提交中...'
+                    : mode === 'edit'
+                      ? '儲存變更'
+                      : '提交伺服器'}
                 </Button>
                 {error && <p className="text-red-500">{error}</p>}
               </div>
             </form>
           </Form>
           {success && (
-            <div className="mt-4 text-green-500 text-sm border border-green-500 bg-green-100/10 rounded p-3">
-              ✅ 伺服器已經提交成功，可到伺服器頁面查看！
+            <div className="... text-green-500">
+              {mode === 'edit'
+                ? '✅ 伺服器資訊已更新！'
+                : '✅ 伺服器已經提交成功！'}
             </div>
           )}
         </div>

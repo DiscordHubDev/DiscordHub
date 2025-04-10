@@ -38,7 +38,7 @@ export function NavItem({
             >
               <a href={item.url} className="flex items-center gap-2">
                 <span className="relative">
-                  <item.icon />
+                  <item.icon size={20} />
                   {badgeDisplay && (
                     <span
                       className={clsx(
