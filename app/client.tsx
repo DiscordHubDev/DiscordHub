@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,9 @@ import { Servercategories as initialCategories } from '@/lib/categories';
 import type { CategoryType } from '@/lib/types';
 import { ServerType } from '@/lib/prisma_type';
 import Link from 'next/link';
+import Pagination from '@/components/pagination';
+
+const ITEMS_PER_PAGE = 20;
 
 type DiscordServerListProps = {
   servers: ServerType[];
@@ -28,6 +31,23 @@ export default function DiscordServerListPageClient({
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('featured');
+
+  // 計算總頁數
+  const totalPages = Math.ceil(servers.length / ITEMS_PER_PAGE);
+
+  // 獲取當前頁的伺服器
+  const getCurrentPageServers = () => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return servers.slice(startIndex, endIndex);
+  };
+
+  // 當過濾條件改變時，重置頁碼
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [servers.length]);
 
   // 處理分類過濾
   const handleCategoryChange = (selectedCategoryIds: string[]) => {
@@ -104,12 +124,36 @@ export default function DiscordServerListPageClient({
     setServers(searchResults);
   };
 
-  const handleClick = () => {
-    window.open(
-      'https://discord.gg/puQ9DPdG3M',
-      '_blank',
-      'noopener noreferrer',
-    );
+  // 處理頁面變更
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滾動到頁面頂部
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  // 處理標籤切換
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // 重置頁碼
+
+    // 根據標籤排序伺服器
+    const sortedServers = [...allServers];
+    if (value === 'popular') {
+      sortedServers.sort((a, b) => b.members - a.members);
+    } else if (value === 'new') {
+      sortedServers.sort(
+        (a, b) =>
+          new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
+      );
+    } else if (value === 'featured') {
+      sortedServers.filter(s => s.featured);
+    } else if (value === 'voted') {
+      sortedServers.sort((a, b) => b.upvotes - a.upvotes);
+    }
+    setServers(sortedServers);
   };
 
   return (
@@ -186,7 +230,11 @@ export default function DiscordServerListPageClient({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
-            <Tabs defaultValue="featured" className="mb-8">
+            <Tabs
+              defaultValue="featured"
+              className="mb-8"
+              onValueChange={handleTabChange}
+            >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full overflow-x-auto">
                 <TabsTrigger
                   value="all"
@@ -223,30 +271,42 @@ export default function DiscordServerListPageClient({
               <TabsContent value="all" className="mt-6">
                 <div className="mt-8">
                   <h2 className="text-2xl font-bold mb-4">所有伺服器</h2>
-                  <ServerList servers={servers} />
+                  <ServerList servers={getCurrentPageServers()} />
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
-                <FeaturedServers servers={servers.filter(s => s.featured)} />
+                <ServerList servers={getCurrentPageServers()} />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">熱門伺服器</h2>
-                <ServerList
-                  servers={[...servers].sort((a, b) => b.members - a.members)}
+                <ServerList servers={getCurrentPageServers()} />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">最新伺服器</h2>
-                <ServerList
-                  servers={[...servers].sort(
-                    (a, b) =>
-                      new Date(b.createdAt!).getTime() -
-                      new Date(a.createdAt!).getTime(),
-                  )}
+                <ServerList servers={getCurrentPageServers()} />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
               </TabsContent>
               <TabsContent value="voted" className="mt-6">

@@ -61,7 +61,7 @@ export default function MobileCategoryFilter({
           className="text-sm text-gray-400"
           onClick={() => setShowAll(!showAll)}
         >
-          {showAll ? '收起' : '查看全部'}
+          {showAll ? '收起' : '查看所有分類'}
         </Button>
       </div>
 
