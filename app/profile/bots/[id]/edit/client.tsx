@@ -18,6 +18,8 @@ export default function BotEditClient({ bot }: { bot: BotWithFavorites }) {
         botSupport: bot.supportServer || '',
         tags: bot.tags,
         developers: bot.developers.map(dev => ({ name: dev.id })),
+        webhook_url: bot.VoteNotificationURL || '',
+        secret: bot.secret || '',
         commands: bot.commands.map(cmd => ({
           name: cmd.name,
           description: cmd.description,

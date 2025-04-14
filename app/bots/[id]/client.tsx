@@ -21,6 +21,7 @@ import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FavoriteButton } from '@/components/favorite-button';
 import { ReportDialog } from '@/components/ReportDialog';
+import { FaDiscord } from 'react-icons/fa6';
 
 type BotDetailProps = {
   allBots: BotWithRelations[];
@@ -207,7 +208,7 @@ export default function BotDetailClient({
                       rel="noopener noreferrer"
                       className="text-[#5865f2] hover:underline flex items-center"
                     >
-                      <MessageSquare size={14} className="mr-1" />
+                      <FaDiscord size={14} className="mr-1" />
                       <span>加入支援伺服器</span>
                     </a>
                   </div>

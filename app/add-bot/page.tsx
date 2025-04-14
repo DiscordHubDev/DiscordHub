@@ -56,6 +56,8 @@ const AddBotPage = () => {
       prefix: data.botPrefix,
       developers: data.developers.map(dev => ({ id: dev.name })),
       website: data.botWebsite || null,
+      VoteNotificationURL: data.webhook_url || '',
+      secret: data.secret || '',
       status: 'pending',
       inviteUrl: data.botInvite,
       supportServer: data.botSupport || null,

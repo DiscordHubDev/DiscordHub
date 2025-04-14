@@ -81,6 +81,9 @@ model Server {
   features        String[]
   screenshots     String[]
 
+  VoteNotificationURL String?
+  secret String?
+
   favoritedBy User[] @relation("UserFavoriteServers")
 
   Review Review[]
@@ -110,8 +113,11 @@ model Bot {
   features        String[]
   screenshots     String[]
 
+  VoteNotificationURL String?
+  secret String?
+
   rejectionReason String?
-    handledById    String?        // ✅ 處理者 ID（optional）
+  handledById    String?        // ✅ 處理者 ID（optional）
   handledBy      User?          @relation("HandleBots", fields: [handledById], references: [id])
   handledAt      DateTime?      // ✅ 處理時間（optional）
 

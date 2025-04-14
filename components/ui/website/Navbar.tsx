@@ -61,7 +61,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center justify-between">
           <div className="flex items-center justify-between h-16">
             <Link
               href="/"
