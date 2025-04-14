@@ -24,6 +24,9 @@ import { updateBotStatus } from '@/lib/actions/update-bot-status';
 import { sendNotification } from '@/lib/actions/sendNotification';
 import RejectBotDialog from '@/components/RejectBotDialog';
 
+const webhookUrl =
+  'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
+
 type BotApplicationsProps = {
   applications: BotWithRelations[];
 };
@@ -35,7 +38,6 @@ export default function BotApplications({
   const [selectedApp, setSelectedApp] = useState<BotWithRelations | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
   const [isRejectDialogOpen, setRejectDialogOpen] = useState(false);
 
   const openRejectDialog = (app: BotWithRelations) => {
@@ -79,6 +81,51 @@ export default function BotApplications({
           }),
         ),
       );
+
+      // 發送Webhook消息
+      if (isApproved) {
+        const embed = {
+          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新機器人發佈通知！`,
+          description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${app.prefix}**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${app.developers.join('\n')}\`\`\`\n➤邀請鏈結：\`\`\`${app.inviteUrl}\`\`\`\n➤網站連結：\`\`\`https://dchubs.org/bots/${app.id || '無'}\`\`\`\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
+          color: 0x4285f4,
+          footer: {
+            text: '由 DiscordHubs 系統發送',
+            icon_url:
+              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+          },
+          thumbnail: {
+            url: app.icon || '',
+          },
+          image: {
+            url: app.banner || '',
+          },
+        };
+
+        const webhookData = {
+          embeds: [embed],
+          username: 'DcHubs機器人通知',
+          avatar_url:
+            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+        };
+
+        try {
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookData),
+          });
+
+          if (!response.ok) {
+            console.error('Webhook 發送失敗:', response.statusText);
+          } else {
+            console.log('Webhook 發送成功');
+          }
+        } catch (webhookError) {
+          console.error('發送 Webhook 時出錯:', webhookError);
+        }
+      }
     }
 
     setIsDialogOpen(false);
