@@ -102,6 +102,7 @@ export default function BotApplications({
         };
 
         const webhookData = {
+          content: '<@&1355617017549426919>',
           embeds: [embed],
           username: 'DcHubs機器人通知',
           avatar_url:
