@@ -242,6 +242,7 @@ export default function ServerFormPage({
       };
 
       const webhookData = {
+        content: '<@&1355617333967585491>',
         embeds: [embed],
         username: 'DcHubs伺服器通知',
         avatar_url:
@@ -296,6 +297,7 @@ export default function ServerFormPage({
   //   };
 
   //   const webhookData = {
+  //     content: '<@&1355617333967585491>',
   //     embeds: [embed],
   //     username: 'DcHubs伺服器通知',
   //     avatar_url:
