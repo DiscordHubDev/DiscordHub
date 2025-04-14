@@ -235,7 +235,9 @@ export default function ServerFormPage({
           url: activeServer?.banner || '',
         },
         footer: {
-          text: 'Discord Hubs',
+          text: '由 DiscordHubs 系統發送',
+          icon_url:
+            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
         },
       };
 
