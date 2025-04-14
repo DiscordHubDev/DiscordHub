@@ -149,7 +149,7 @@ export default function DiscordServerListPageClient({
           new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
       );
     } else if (value === 'featured') {
-      sortedServers.filter(s => s.featured);
+      sortedServers.sort((a, b) => b.members - a.members);
     } else if (value === 'voted') {
       sortedServers.sort((a, b) => b.upvotes - a.upvotes);
     }
