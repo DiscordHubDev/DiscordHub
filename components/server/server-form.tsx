@@ -49,6 +49,9 @@ type ServerFormProps = {
   mode: 'create' | 'edit';
 };
 
+const webhookUrl =
+  'https://discord.com/api/webhooks/1361334441498378452/pa6cNfNoKTo8tpB_ClSzVZhqnO0DoAjNZ_INJYwPPEvAcT7RkjZLN-H5BQqNSSW_TTUf';
+
 export default function ServerFormPage({
   server,
   edit_server,
@@ -78,7 +81,7 @@ export default function ServerFormPage({
     },
   });
 
-  const { handleSubmit, control, formState, register, reset } = form;
+  const { handleSubmit, control, formState, register, reset, getValues } = form;
 
   const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -220,6 +223,47 @@ export default function ServerFormPage({
         await insertServer(payload);
       }
 
+      // Webhook 消息
+      const embed = {
+        title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
+        description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
+        color: 0x4285f4,
+        thumbnail: {
+          url: activeServer?.icon || '',
+        },
+        image: {
+          url: activeServer?.banner || '',
+        },
+        footer: {
+          text: 'Discord Hubs',
+        },
+      };
+
+      const webhookData = {
+        embeds: [embed],
+        username: 'DcHubs伺服器通知',
+        avatar_url:
+          'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+      };
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookData),
+        });
+
+        if (!response.ok) {
+          console.error('Webhook 發送失敗:', response.statusText);
+        } else {
+          console.log('Webhook 發送成功');
+        }
+      } catch (webhookError) {
+        console.error('發送 Webhook 時出錯:', webhookError);
+      }
+
       setSuccess(true);
       reset();
     } catch (err: any) {
@@ -229,6 +273,51 @@ export default function ServerFormPage({
       setLoading(false);
     }
   };
+
+  // const handleTestWebhook = async () => {
+  //   const data = getValues();
+  //   const activeServer = server ?? edit_server;
+
+  //   const embed = {
+  //     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
+  //     description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
+  //     color: 0x4285f4,
+  //     thumbnail: {
+  //       url: activeServer?.icon || '',
+  //     },
+  //     image: {
+  //       url: activeServer?.banner || '',
+  //     },
+  //     footer: {
+  //       text: 'Discord Hubs',
+  //     },
+  //   };
+
+  //   const webhookData = {
+  //     embeds: [embed],
+  //     username: 'DcHubs伺服器通知',
+  //     avatar_url:
+  //       'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+  //   };
+
+  //   try {
+  //     const response = await fetch(webhookUrl, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(webhookData),
+  //     });
+
+  //     if (!response.ok) {
+  //       console.error('Webhook 發送失敗:', response.statusText);
+  //     } else {
+  //       console.log('Webhook 發送成功');
+  //     }
+  //   } catch (webhookError) {
+  //     console.error('發送 Webhook 時出錯:', webhookError);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -434,6 +523,13 @@ export default function ServerFormPage({
               </div>
 
               <div className="flex flex-col items-center justify-center pt-4 border-t border-[#1e1f22] space-y-2">
+                {/* <Button
+                  type="button"
+                  onClick={handleTestWebhook}
+                  className="relative discord text-white px-4 py-2 rounded flex items-center justify-center"
+                >
+                  測試 Webhook
+                </Button> */}
                 <Button
                   type="submit"
                   disabled={loading}

@@ -140,7 +140,7 @@ export default function DiscordServerListPageClient({
     setCurrentPage(1); // 重置頁碼
 
     // 根據標籤排序伺服器
-    const sortedServers = [...allServers];
+    let sortedServers = [...allServers];
     if (value === 'popular') {
       sortedServers.sort((a, b) => b.members - a.members);
     } else if (value === 'new') {
@@ -149,7 +149,8 @@ export default function DiscordServerListPageClient({
           new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
       );
     } else if (value === 'featured') {
-      sortedServers.filter(s => s.featured);
+      sortedServers.sort((a, b) => b.members - a.members);
+      sortedServers = sortedServers.filter(server => server.members >= 1000);
     } else if (value === 'voted') {
       sortedServers.sort((a, b) => b.upvotes - a.upvotes);
     }

@@ -256,6 +256,8 @@ export default function VoteButton({
 
     router.refresh();
 
+    sendWebhook();
+
     // 啟動倒數
     const interval = setInterval(() => {
       setCooldown(prev => {
@@ -281,6 +283,9 @@ export default function VoteButton({
 
   return (
     <>
+      {/* <Button onClick={sendWebhook} className="mb-2" variant="secondary">
+        測試
+      </Button> */}
       {/* <Button onClick={sendWebhook} className="mb-2" variant="secondary">
         測試
       </Button> */}
