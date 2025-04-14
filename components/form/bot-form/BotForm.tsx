@@ -27,6 +27,22 @@ import { DeveloperListField } from '@/components/form/bot-form/DeveloperListFiel
 import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
 
+const getBotAvatarUrl = async (botId: any) => {
+  try {
+    const response = await fetch(
+      `https://dgsbotapi.vercel.app/v181cm/application/${botId}`,
+    );
+    if (!response.ok) {
+      throw new Error(`${response.status}`);
+    }
+    const data = await response.json();
+    return data.icon;
+  } catch (error) {
+    console.error(error);
+    return '';
+  }
+};
+
 type FormData = z.infer<typeof botFormSchema>;
 
 type BotFormProps = {
@@ -69,7 +85,10 @@ const BotForm: React.FC<BotFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const { handleSubmit, control, formState, register, reset } = form;
+  const { handleSubmit, control, formState, register, reset, getValues } = form;
+
+  const webhookUrl =
+    'https://discord.com/api/webhooks/1361383631796572345/zwDOea-BFSW7aDksperh06YX0tjEWQPxLJT_pO3MMGEY3fWC2zjqY4kuO3gFPG1-uW38';
 
   const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -140,6 +159,13 @@ const BotForm: React.FC<BotFormProps> = ({
     }
   };
 
+  // 從邀請鏈結中提取機器人 ID
+  const extractBotIdFromInviteLink = (inviteLink: string) => {
+    const url = new URL(inviteLink);
+    const params = new URLSearchParams(url.search);
+    return params.get('client_id');
+  };
+
   const onSubmitHandler = async (data: FormData) => {
     try {
       setLoading(true);
@@ -147,6 +173,49 @@ const BotForm: React.FC<BotFormProps> = ({
       await onSubmit(data, screenshotPreviews);
       setLoading(false);
       if (mode === 'create') reset();
+
+      const botId = extractBotIdFromInviteLink(data.botInvite);
+      const avatarUrl = await getBotAvatarUrl(botId);
+
+      const embed = {
+        title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
+        description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
+        color: 0x4285f4,
+        footer: {
+          text: '由 DiscordHubs 系統發送',
+          icon_url:
+            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+        },
+        thumbnail: {
+          url: avatarUrl || '',
+        },
+      };
+
+      const webhookData = {
+        embeds: [embed],
+        username: 'DcHubs機器人通知',
+        avatar_url:
+          'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+      };
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookData),
+        });
+
+        if (!response.ok) {
+          console.error('Webhook 發送失敗:', response.statusText);
+        } else {
+          console.log('Webhook 發送成功');
+        }
+      } catch (webhookError) {
+        console.error('發送 Webhook 時出錯:', webhookError);
+      }
+
       setScreenshotPreviews([]);
       setSuccess(true);
     } catch (err: any) {
@@ -155,6 +224,51 @@ const BotForm: React.FC<BotFormProps> = ({
       setLoading(false);
     }
   };
+
+  // const handleTestWebhook = async () => {
+  //   const data = getValues();
+  //   const botId = extractBotIdFromInviteLink(data.botInvite);
+  //   const avatarUrl = await getBotAvatarUrl(botId);
+
+  //   const embed = {
+  //     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
+  //     description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
+  //     color: 0x4285f4,
+  //     footer: {
+  //       text: '由 DiscordHubs 系統發送',
+  //       icon_url:
+  //         'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+  //     },
+  //     thumbnail: {
+  //       url: avatarUrl || '',
+  //     },
+  //   };
+
+  //   const webhookData = {
+  //     embeds: [embed],
+  //     username: 'DcHubs機器人通知',
+  //     avatar_url:
+  //       'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+  //   };
+
+  //   try {
+  //     const response = await fetch(webhookUrl, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(webhookData),
+  //     });
+
+  //     if (!response.ok) {
+  //       console.error('Webhook 發送失敗:', response.statusText);
+  //     } else {
+  //       console.log('Webhook 發送成功');
+  //     }
+  //   } catch (webhookError) {
+  //     console.error('發送 Webhook 時出錯:', webhookError);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -338,7 +452,7 @@ const BotForm: React.FC<BotFormProps> = ({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://https://discord.com/api/webhooks/... or http://your-webserver.com/"
+                            placeholder="https://your-webhook.url"
                             {...field}
                           />
                         </FormControl>
@@ -400,6 +514,13 @@ const BotForm: React.FC<BotFormProps> = ({
                       </p>
                     </div>
                   </div>
+                  {/* <Button
+                    type="button"
+                    onClick={handleTestWebhook}
+                    className="relative discord text-white px-4 py-2 rounded flex items-center justify-center"
+                  >
+                    測試 Webhook
+                  </Button> */}
                   <Button
                     type="submit"
                     disabled={loading}
