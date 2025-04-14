@@ -192,6 +192,7 @@ const BotForm: React.FC<BotFormProps> = ({
       };
 
       const webhookData = {
+        content: '<@&1361412309209317468>',
         embeds: [embed],
         username: 'DcHubs機器人通知',
         avatar_url:
@@ -245,6 +246,7 @@ const BotForm: React.FC<BotFormProps> = ({
   //   };
 
   //   const webhookData = {
+  //     content: '<@&1361412309209317468>',
   //     embeds: [embed],
   //     username: 'DcHubs機器人通知',
   //     avatar_url:
