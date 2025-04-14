@@ -1,7 +1,7 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-const allowedIds = ['549056425943629825'];
+const allowedIds = ['857502876108193812' , '549056425943629825'];
 
 export default withAuth(
   function middleware(req) {
