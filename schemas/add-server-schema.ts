@@ -37,4 +37,6 @@ export const ServerFormSchema = z.object({
     .min(1, { message: '請至少選擇一個標籤' })
     .max(5, { message: '最多選擇 5 個標籤' }),
   rules: z.array(z.string().min(1, { message: '請填寫規則內容' })).optional(),
+  secret: z.string().min(1, { message: '請至少輸入一個字' }).optional(),
+  webhook_url: z.string().url({ message: '請輸入正確的連結' }).optional(),
 });

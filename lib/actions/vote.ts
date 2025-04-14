@@ -1,12 +1,12 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/utils';
 import { VoteType } from '@/lib/prisma_type';
+import { getUser } from '../get-user';
+
 export async function Vote(itemId: string, itemType: string) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.discordProfile?.id;
+  const user = await getUser();
+  const userId = user?.id;
 
   const normalizedType = itemType.toLowerCase() as VoteType;
 

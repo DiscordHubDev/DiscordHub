@@ -15,6 +15,8 @@ export async function transformToBotUpdateData(
     inviteUrl: formData.botInvite,
     website: formData.botWebsite || null,
     supportServer: formData.botSupport || null,
+    VoteNotificationURL: formData.webhook_url,
+    secret: formData.secret,
     tags: {
       set: formData.tags,
     },

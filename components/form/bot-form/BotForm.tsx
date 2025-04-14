@@ -338,7 +338,7 @@ const BotForm: React.FC<BotFormProps> = ({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://your-webhook.url"
+                            placeholder="https://https://discord.com/api/webhooks/... or http://your-webserver.com/"
                             {...field}
                           />
                         </FormControl>

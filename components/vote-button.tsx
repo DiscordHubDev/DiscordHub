@@ -13,9 +13,86 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Vote } from '@/lib/actions/vote';
-import { VoteType } from '@/lib/prisma_type';
+import {
+  BotWithFavorites,
+  ServerType,
+  UserType,
+  VoteType,
+} from '@/lib/prisma_type';
 import { checkVoteCooldown } from '@/lib/actions/check-vote-cooldown';
 import { useRouter } from 'next/navigation';
+import { GetUserBySession } from '@/lib/actions/user';
+import { useSession } from 'next-auth/react';
+import { getServerByGuildId } from '@/lib/actions/servers';
+import { toast } from 'react-toastify';
+import { getBot } from '@/lib/actions/bots';
+import { getRandomEmbedColor } from '@/lib/utils';
+
+async function sendDataToWebServerOrDiscord(
+  type: string,
+  user: UserType,
+  server?: ServerType,
+  bot?: BotWithFavorites,
+) {
+  const target = server ?? bot;
+
+  if (!target?.VoteNotificationURL) return;
+
+  const url = target.VoteNotificationURL;
+  const isDiscordWebhook = url.startsWith('https://discord.com/api/webhooks/');
+
+  const payload = isDiscordWebhook
+    ? {
+        content: `<@${user.id}>`,
+        embeds: [
+          {
+            author: {
+              name: user.username,
+              icon_url: user.avatar,
+            },
+            title: '❤️ | 感謝投票!',
+            url: 'https://dchubs.org',
+            description: `感謝您的支持與投票！您的每一票都是讓${bot ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再次投票一次，讓更多人發現我們的${bot ? '機器人' : '伺服器'}吧！✨`,
+            color: getRandomEmbedColor(),
+            footer: {
+              text: 'Powered by DawnGS Vote System',
+              icon_url:
+                'https://example.com/logo.pnghttps://images-ext-1.discordapp.net/external/UPq4fK1TpfNlL5xKNkZwqO02wPJoX-yd9IKkk5UnyP8/%3Fsize%3D512%26format%3Dwebp/https/cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?format=webp',
+            },
+          },
+        ],
+      }
+    : {
+        userId: user.id,
+        username: user.username,
+        userAvatar: user.avatar,
+        votedAt: new Date().toISOString(),
+        itemId: target.id,
+        itemType: type,
+        itemName: target.name,
+      };
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (!isDiscordWebhook && target.secret) {
+    headers['x-api-secret'] = target.secret;
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`❌ POST 失敗: ${res.status} - ${text}`);
+  }
+
+  return res.status === 204 ? null : await res.json().catch(() => null);
+}
 
 interface VoteButtonProps {
   id: string;
@@ -49,6 +126,9 @@ export default function VoteButton({
     useState<NodeJS.Timeout | null>(null);
 
   const router = useRouter();
+  const { data: session } = useSession();
+
+  if (!session) return;
 
   useEffect(() => {
     const fetchCooldown = async () => {
@@ -81,6 +161,48 @@ export default function VoteButton({
     };
   }, [id, type]);
 
+  // 發送 Discord Webhook
+  const sendWebhook = async (
+    user: UserType,
+    server?: ServerType,
+    bot?: BotWithFavorites,
+  ) => {
+    const target = (server ?? bot)!;
+    const webhookUrl = process.env.Discord_WEBHOOK_URL!;
+    const username = user?.username;
+    const userid = user?.id;
+    const voteItem = type === 'server' ? '伺服器' : '機器人';
+    const embed = {
+      title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 投票系統`,
+      description: `➤用戶：**${username}**\n➤用戶ID：**${userid}**\n> ➤對**${voteItem}**：**${target.name}** 進行了投票\n> ➤${voteItem}ID：**${id}**`,
+      color: 0x4285f4,
+    };
+
+    const data = {
+      embeds: [embed],
+      username: 'DcHubs投票通知',
+      avatar_url:
+        'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+    };
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        console.error('Webhook 發送失敗:', response.statusText);
+      } else {
+        console.log('Webhook 發送成功');
+      }
+    } catch (error) {
+      console.error('發送 Webhook 時出錯:', error);
+    }
+  };
+
   // 處理投票
   const handleVote = async () => {
     if (hasVoted) return;
@@ -88,6 +210,20 @@ export default function VoteButton({
     setIsVoting(true);
 
     const vote = await Vote(id, type.toUpperCase() as VoteType);
+
+    const user = await GetUserBySession(session);
+
+    let server: ServerType | undefined;
+    let bot: BotWithFavorites | undefined;
+
+    if (type === 'server') {
+      server = await getServerByGuildId(id);
+    } else {
+      const result = await getBot(id);
+      bot = result ?? undefined;
+    }
+
+    if (!user) throw new Error('User not found.');
 
     if (!vote.success) {
       if (vote.error === 'COOLDOWN') {
@@ -98,6 +234,11 @@ export default function VoteButton({
         setCooldown(remainingSec);
         setHasVoted(true);
       }
+
+      if (vote.error === 'NOT_LOGGED_IN') {
+        toast.error('請先登入！');
+      }
+
       setIsVoting(false);
       return;
     }
@@ -107,6 +248,11 @@ export default function VoteButton({
     setHasVoted(true);
     setShowDialog(true);
     setIsVoting(false);
+
+    if (!user) return;
+
+    sendWebhook(user, server, bot);
+    await sendDataToWebServerOrDiscord(type, user, server, bot);
 
     router.refresh();
 
@@ -135,6 +281,9 @@ export default function VoteButton({
 
   return (
     <>
+      {/* <Button onClick={sendWebhook} className="mb-2" variant="secondary">
+        測試
+      </Button> */}
       <Button
         onClick={hasVoted ? undefined : handleVote}
         disabled={hasVoted || isVoting}

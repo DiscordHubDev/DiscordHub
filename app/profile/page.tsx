@@ -9,6 +9,5 @@ export default async function ProfilePage() {
     return redirect('/api/auth/signin/discord?callbackUrl=/profile');
   }
 
-  // 獲取用戶收藏的伺服器和機器人
   return <UserProfile />;
 }

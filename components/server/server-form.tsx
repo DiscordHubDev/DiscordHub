@@ -73,6 +73,8 @@ export default function ServerFormPage({
       websiteLink: edit_server?.website || '',
       tags: edit_server?.tags || [],
       rules: edit_server?.rules || [],
+      secret: edit_server?.secret || '',
+      webhook_url: edit_server?.VoteNotificationURL || '',
     },
   });
 
@@ -192,6 +194,8 @@ export default function ServerFormPage({
         longDescription: data.longDescription,
         inviteUrl: data.inviteLink,
         website: data.websiteLink,
+        VoteNotificationURL: data.webhook_url,
+        secret: data.secret,
         tags: data.tags,
         members: memberCount,
         online: onlineCount,
@@ -201,7 +205,7 @@ export default function ServerFormPage({
           connectOrCreate: {
             where: { id: ownerId },
             create: {
-              id: ownerId,
+              id: ownerId!,
               username: global_name,
               avatar: avatar,
               banner: banner,
@@ -346,6 +350,48 @@ export default function ServerFormPage({
 
               {/* 標籤 */}
               <ServerTagField name="tags" categories={Servercategories} />
+
+              {/* 投票通知 */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">投票通知</h2>
+
+                <FormField
+                  control={form.control}
+                  name="secret"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Secret（觸發投票時，Secret會加到 Auth
+                        Header，用來驗證請求是從這裡送出）
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="輸入 Secret" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="webhook_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Webhook URL（輸入 Discord Webhook 時會送出美化的投票通知
+                        Embed，自訂 Web Server 則會接收到 JSON 格式的資料）
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://https://discord.com/api/webhooks/... or http://your-webserver.com/"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/* 圖片上傳 */}
               <div className="space-y-4">

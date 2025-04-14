@@ -7,6 +7,7 @@ import { BotWithFavorites } from '@/lib/prisma_type';
 export default function BotEditClient({ bot }: { bot: BotWithFavorites }) {
   return (
     <BotForm
+      key={bot.id}
       mode="edit"
       defaultValues={{
         botName: bot.name,

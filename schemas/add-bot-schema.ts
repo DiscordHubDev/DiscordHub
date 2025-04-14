@@ -61,6 +61,6 @@ export const botFormSchema = z.object({
     .array(z.string())
     .min(1, { message: '請至少選擇一個標籤' })
     .max(5, { message: '最多選擇 5 個標籤' }),
-  secret: z.string().min(1).optional(),
-  webhook_url: z.string().url().optional(),
+  secret: z.string().min(1, { message: '請至少輸入一個字' }).optional(),
+  webhook_url: z.string().url({ message: '請輸入正確的連結' }).optional(),
 });
