@@ -17,14 +17,14 @@ import {
 } from '@/lib/actions/image';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { X, Upload, Info } from 'lucide-react';
+import { Upload, Info } from 'lucide-react';
 import { botFormSchema } from '@/schemas/add-bot-schema';
 import { botCategories } from '@/lib/bot-categories';
 import { z } from 'zod';
 import { TagField } from '@/components/form/bot-form/TagField';
 import { CommandListField } from '@/components/form/bot-form/CommandListField';
 import { DeveloperListField } from '@/components/form/bot-form/DeveloperListField';
-import { DiscordBotRPCInfo, Screenshot } from '@/lib/types';
+import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
 
 type FormData = z.infer<typeof botFormSchema>;
@@ -59,6 +59,8 @@ const BotForm: React.FC<BotFormProps> = ({
       developers: [],
       commands: [],
       tags: [],
+      webhook_url: '',
+      secret: '',
       ...(defaultValues || {}),
     },
   });
@@ -303,6 +305,48 @@ const BotForm: React.FC<BotFormProps> = ({
 
                 {/* 指令列表 */}
                 <CommandListField />
+
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold">投票通知</h2>
+
+                  <FormField
+                    control={form.control}
+                    name="secret"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Secret（觸發投票時，Secret會加到 Auth
+                          Header，用來驗證請求是從這裡送出）
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="輸入 Secret" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="webhook_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Webhook URL（輸入 Discord Webhook
+                          時會送出美化的投票通知 Embed，自訂 Web Server
+                          則會接收到 JSON 格式的資料）
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://your-webhook.url"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* 圖片上傳 */}
                 <div className="space-y-4">
