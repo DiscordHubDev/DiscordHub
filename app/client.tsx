@@ -33,6 +33,7 @@ export default function DiscordServerListPageClient({
     useState<CategoryType[]>(initialCategories);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState('featured');
+  const [showNoFeaturedMessage, setShowNoFeaturedMessage] = useState(false);
 
   // 計算總頁數
   const totalPages = Math.ceil(servers.length / ITEMS_PER_PAGE);
@@ -42,6 +43,16 @@ export default function DiscordServerListPageClient({
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return servers.slice(startIndex, endIndex);
+  };
+
+  const calculateTotalTags = () => {
+    let totalTags = 0;
+    allServers.forEach(server => {
+      if (Array.isArray(server.tags)) {
+        totalTags += server.tags.length;
+      }
+    });
+    return totalTags;
   };
 
   // 當過濾條件改變時，重置頁碼
@@ -134,6 +145,18 @@ export default function DiscordServerListPageClient({
     });
   };
 
+  const allfeatured = () => {
+    let sortedServers = [...allServers];
+    sortedServers.sort((a, b) => b.members - a.members);
+    sortedServers = sortedServers.filter(server => server.members >= 1000);
+    return sortedServers.length;
+  };
+
+  const alltag = () => {
+    let sortedServers = [...allServers];
+    return sortedServers.t;
+  };
+
   // 處理標籤切換
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -151,6 +174,13 @@ export default function DiscordServerListPageClient({
     } else if (value === 'featured') {
       sortedServers.sort((a, b) => b.members - a.members);
       sortedServers = sortedServers.filter(server => server.members >= 1000);
+      if (sortedServers.length === 0) {
+        if (sortedServers.length === 0) {
+          setShowNoFeaturedMessage(true);
+        } else {
+          setShowNoFeaturedMessage(false);
+        }
+      }
     } else if (value === 'voted') {
       sortedServers.sort((a, b) => b.upvotes - a.upvotes);
     }
@@ -283,12 +313,20 @@ export default function DiscordServerListPageClient({
 
               <TabsContent value="featured" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
-                <ServerList servers={getCurrentPageServers()} />
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                {showNoFeaturedMessage ? (
+                  <div className="text-center text-gray-400 py-10">
+                    <p className="text-sm">目前沒有任何精選伺服器 🙁</p>
+                  </div>
+                ) : (
+                  <>
+                    <ServerList servers={getCurrentPageServers()} />
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
@@ -349,12 +387,12 @@ export default function DiscordServerListPageClient({
                   <span className="font-medium">{allServers.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">本週新增</span>
-                  <span className="font-medium">24</span>
+                  <span className="text-gray-300">總精選伺服器數量</span>
+                  <span className="font-medium">{allfeatured()}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">在線用戶</span>
-                  <span className="font-medium">1,245</span>
+                  <span className="text-gray-300">目前已被使用的分類總數</span>
+                  <span className="font-medium">{calculateTotalTags()}</span>
                 </div>
               </div>
             </div>
