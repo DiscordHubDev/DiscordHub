@@ -96,14 +96,14 @@ export default function Navbar() {
           <div className="hidden md:block">
             {session && session?.user ? (
               <Link href="/profile">
-                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer">
                   個人資料
                 </Button>
               </Link>
             ) : (
               <Button
                 onClick={() => signIn('discord')}
-                className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
               >
                 <FaDiscord />
                 登入 Discord
@@ -147,14 +147,14 @@ export default function Navbar() {
           `}</style>
           {session && session?.user ? (
             <Link href="/profile">
-              <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
+              <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer">
                 個人資料
               </Button>
             </Link>
           ) : (
             <Button
               onClick={() => signIn('discord')}
-              className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
+              className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
             >
               登入 Discord
             </Button>
@@ -193,7 +193,7 @@ function NavLinks({
             <DropdownMenuItem asChild key={href}>
               <Link
                 href={href}
-                className={`text-white w-full px-2 py-1 text-sm hover:bg-[#36393f] ${
+                className={`text-white w-full cursor-pointer px-2 py-1 text-sm hover:bg-[#36393f] ${
                   pathname === href ? 'bg-white/10' : ''
                 }`}
               >
@@ -212,7 +212,7 @@ function NavLinks({
         <Link key={href} href={href} passHref>
           <Button
             variant="ghost"
-            className={`text-white hover:bg-[#36393f] ${
+            className={`text-white cursor-pointer hover:bg-[#36393f] ${
               pathname === href ? 'bg-white/10' : ''
             }`}
           >

@@ -39,6 +39,7 @@ export default function BotApplications({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const openRejectDialog = (app: BotWithRelations) => {
     setSelectedApp(app);
@@ -75,7 +76,7 @@ export default function BotApplications({
               : `${app.name} 的申請未被接受`,
             content: isApproved
               ? `您好！我們已審查您提交的機器人「${app.name}」，並已核准上架。感謝您的耐心等待，祝您的機器人越來越好！`
-              : `您好，我們已審查您提交的機器人「${app.name}」，很遺憾，未能通過審核。\n\n拒絕原因：${rejectionReason || '未提供原因'}\n若有疑問，歡迎再次申請。`,
+              : `您好，我們已審查您提交的機器人「${app.name}」，很遺憾，未能通過審核。\n\n拒絕原因：${rejectionReason || '未提供原因'}。\n\n若有疑問，歡迎再次申請。`,
             priority: isApproved ? 'success' : 'warning',
             userId: dev.id,
           }),
@@ -355,6 +356,35 @@ export default function BotApplications({
                   ))}
                 </div>
               </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-gray-400">截圖</h4>
+              <div className="mt-2 flex gap-4 overflow-x-auto">
+                {selectedApp.screenshots.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Screenshot ${index + 1}`}
+                    className="h-32 rounded cursor-pointer object-cover"
+                    onClick={() => setSelectedImage(url)}
+                  />
+                ))}
+              </div>
+
+              {/* 放大 modal */}
+              {selectedImage && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+                  onClick={() => setSelectedImage(null)}
+                >
+                  <img
+                    src={selectedImage}
+                    alt="Full View"
+                    className="max-w-[90%] max-h-[90%] rounded shadow-lg"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between items-center">

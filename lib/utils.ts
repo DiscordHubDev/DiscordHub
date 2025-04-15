@@ -34,7 +34,7 @@ export const authOptions: NextAuthOptions = {
     DiscordProvider<NewDiscordProfile>({
       authorization: {
         params: {
-          scope: 'identify guilds email applications.commands',
+          scope: 'identify guilds email',
         },
       },
       clientId: process.env.DISCORD_CLIENT_ID ?? '',

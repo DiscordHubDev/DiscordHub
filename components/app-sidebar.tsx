@@ -185,10 +185,6 @@ export function DiscordUser(session?: Session): DiscordUser {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  useEffect(() => {
-    refreshUnreadCount();
-  }, []);
-
   const { data: session, status } = useSession();
   const [activeItem, setActiveItem] = useState<string | null>(null);
 
@@ -202,9 +198,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [onlyUnread, setOnlyUnread] = useState(false);
 
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showInbox, setShowInbox] = useState(false);
+
+  useEffect(() => {
+    refreshUnreadCount();
+  }, [mails]);
 
   const refreshUnreadCount = () => {
     const count = mails.filter(mail => !mail.read).length;
+    console.log('unread', count);
     setUnreadCount(count); // ✅ 這裡設定的是外層的 state
   };
 
@@ -212,13 +214,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const keyword = search.toLowerCase().trim();
 
     return mails.filter(mail => {
+      const isUnread = !Boolean(mail.read); // 如果 mail.read 為 false、null、undefined 都算未讀
+      const matchesUnread = !onlyUnread || isUnread;
+
       const matchesSearch =
         !keyword ||
-        [mail.subject, mail.teaser, mail.name].some(field =>
-          field?.toLowerCase().includes(keyword),
-        );
-
-      const matchesUnread = !onlyUnread || mail.read === false;
+        [mail.subject, mail.teaser, mail.name]
+          .filter(Boolean)
+          .some(field => field.toLowerCase().includes(keyword));
 
       return matchesSearch && matchesUnread;
     });
@@ -246,6 +249,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: '#',
       icon: Inbox,
       badge: unreadCount > 0 ? String(unreadCount) : undefined,
+      isActive: showInbox,
     },
   ];
 
@@ -280,7 +284,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           id: session?.discordProfile?.id,
         };
 
-  console.log('status:', status, session);
 
   const filterednavSecondary = data.navSecondary.filter(item => {
     if (!item.onlyFor) return true;
@@ -299,7 +302,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               ...item,
               isActive: activeItem === item.title,
             }))}
-            onSelect={title => setActiveItem(title)}
+            onSelect={title => {
+              if (title === 'Inbox') {
+                setShowInbox(prev => !prev); // 切換 inbox 開關
+              } else {
+                setShowInbox(false); // 點其他項目時強制關閉 inbox
+                setActiveItem(title); // 正常切換 active
+              }
+            }}
           />
         </SidebarHeader>
         <Separator className="h-[2px] bg-muted-foreground/30" />
@@ -320,7 +330,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarRail />
       </Sidebar>
       <div className="flex-1 flex flex-col overflow-hidden">
-        {activeItem === 'Inbox' && (
+        {showInbox && (
           <Sidebar collapsible="none" className="flex flex-col max-h-screen">
             <SidebarHeader className="shrink-0 border-b p-4">
               <div className="flex w-full items-center justify-between">
