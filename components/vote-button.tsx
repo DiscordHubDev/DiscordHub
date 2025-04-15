@@ -255,7 +255,7 @@ export default function VoteButton({
 
     router.refresh();
 
-    sendWebhook(user, server, bot);
+    await sendWebhook(user, server, bot);
 
     // 啟動倒數
     const interval = setInterval(() => {
