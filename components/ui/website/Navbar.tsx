@@ -15,6 +15,13 @@ import {
 } from '../dropdown-menu';
 import { Menu } from 'lucide-react';
 
+// 定义 LinkItem 类型，允许存在 onClick 属性
+type LinkItem = {
+  href: string;
+  label: string;
+  onClick?: () => void;
+};
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session, status } = useSession();
@@ -56,7 +63,7 @@ export default function Navbar() {
 
             {/* 右側 NavLinks（你可以包個 dropdown 或 icon menu 也行） */}
             <div>
-              <NavLinks pathname={pathname} mobile={true} />
+              <NavLinks pathname={pathname} mobile={true} session={session} />
             </div>
           </div>
         </div>
@@ -89,21 +96,21 @@ export default function Navbar() {
               DiscordHubs
             </Link>
             <div className="hidden md:flex ml-10 space-x-4">
-              <NavLinks pathname={pathname} />
+              <NavLinks pathname={pathname} session={session} />
             </div>
           </div>
 
           <div className="hidden md:block">
             {session && session?.user ? (
               <Link href="/profile">
-                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer">
+                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
                   個人資料
                 </Button>
               </Link>
             ) : (
               <Button
                 onClick={() => signIn('discord')}
-                className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
+                className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
               >
                 <FaDiscord />
                 登入 Discord
@@ -145,21 +152,7 @@ export default function Navbar() {
               max-width: 100%;
             }
           `}</style>
-          {session && session?.user ? (
-            <Link href="/profile">
-              <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer">
-                個人資料
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              onClick={() => signIn('discord')}
-              className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
-            >
-              登入 Discord
-            </Button>
-          )}
-          <NavLinks pathname={pathname} mobile={true} />
+          <NavLinks pathname={pathname} mobile={true} session={session} />
         </div>
       )}
     </nav>
@@ -169,16 +162,37 @@ export default function Navbar() {
 function NavLinks({
   pathname,
   mobile = false,
+  session,
 }: {
   pathname: string;
   mobile?: boolean;
+  session: any;
 }) {
-  const links = [
+  let links: LinkItem[] = [
     { href: '/', label: '伺服器列表' },
     { href: '/bots', label: '機器人列表' },
-    { href: '/add-server', label: '新增伺服器' },
-    { href: '/add-bot', label: '新增機器人' },
+    // { href: '/add-server', label: '新增伺服器' },
+    // { href: '/add-bot', label: '新增機器人' },
   ];
+
+  if (session && session?.user) {
+    links = [
+      ...links,
+      { href: '/add-server', label: '新增伺服器' },
+      { href: '/add-bot', label: '新增機器人' },
+    ];
+    if (mobile) {
+      links.push({ href: '/profile', label: '個人資料' });
+    }
+  } else {
+    if (mobile) {
+      links.push({
+        href: '#',
+        label: '登入 Discord',
+        onClick: () => signIn('discord'),
+      });
+    }
+  }
 
   if (mobile) {
     return (
@@ -189,11 +203,17 @@ function NavLinks({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-[#2f3136] border-none">
-          {links.map(({ href, label }) => (
+          {links.map(({ href, label, onClick }) => (
             <DropdownMenuItem asChild key={href}>
               <Link
                 href={href}
-                className={`text-white w-full cursor-pointer px-2 py-1 text-sm hover:bg-[#36393f] ${
+                onClick={e => {
+                  if (onClick) {
+                    e.preventDefault();
+                    onClick();
+                  }
+                }}
+                className={`text-white w-full px-2 py-1 text-sm hover:bg-[#36393f] ${
                   pathname === href ? 'bg-white/10' : ''
                 }`}
               >
@@ -208,13 +228,19 @@ function NavLinks({
 
   return (
     <>
-      {links.map(({ href, label }) => (
+      {links.map(({ href, label, onClick }) => (
         <Link key={href} href={href} passHref>
           <Button
             variant="ghost"
-            className={`text-white cursor-pointer hover:bg-[#36393f] ${
+            className={`text-white hover:bg-[#36393f] ${
               pathname === href ? 'bg-white/10' : ''
             }`}
+            onClick={e => {
+              if (onClick) {
+                e.preventDefault();
+                onClick();
+              }
+            }}
           >
             {label}
           </Button>
