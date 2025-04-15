@@ -20,6 +20,16 @@ import {
   Search,
   Sparkles,
   Menu,
+  Blocks,
+  BookUser,
+  BookAIcon,
+  BotIcon,
+  BookImage,
+  BookOpenIcon,
+  BookText,
+  BookPlusIcon,
+  BookCheck,
+  BookCheckIcon,
 } from 'lucide-react';
 
 import { NavMain } from '@/components/nav-main';
@@ -53,104 +63,96 @@ const ADMIN_ID = ['857502876108193812', '549056425943629825'];
 const data = {
   navMain: [
     {
-      title: 'Playground',
+      title: '支持作者們',
       url: '#',
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: 'History',
-          url: '#',
+          title: '弦樂（DawnGS）',
+          url: 'https://dawngs.xyz/',
         },
         {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
+          title: '鰻頭(´・ω・)（mantouisyummy）',
+          url: 'https://github.com/Mantouisyummy',
         },
       ],
     },
     {
-      title: 'Models',
+      title: '政策及條款',
       url: '#',
-      icon: Bot,
+      icon: BookText,
       items: [
         {
-          title: 'Genesis',
-          url: '#',
+          title: '服務條款',
+          url: '/terms',
         },
         {
-          title: 'Explorer',
-          url: '#',
-        },
-        {
-          title: 'Quantum',
-          url: '#',
+          title: '隱私權政策',
+          url: '/privacy',
         },
       ],
     },
     {
-      title: 'Documentation',
+      title: '不同的文檔',
       url: '#',
-      icon: BookOpen,
+      icon: BookCheckIcon,
       items: [
         {
-          title: 'Introduction',
+          title: '開發者文檔',
           url: '#',
         },
         {
-          title: 'Get Started',
+          title: '等待更新1',
           url: '#',
         },
         {
-          title: 'Tutorials',
+          title: '等待更新2',
           url: '#',
         },
         {
-          title: 'Changelog',
+          title: '等待更新3',
           url: '#',
         },
       ],
     },
-    {
-      title: 'Settings',
-      url: '#',
-      icon: Settings2,
-      items: [
-        {
-          title: 'General',
-          url: '#',
-        },
-        {
-          title: 'Team',
-          url: '#',
-        },
-        {
-          title: 'Billing',
-          url: '#',
-        },
-        {
-          title: 'Limits',
-          url: '#',
-        },
-      ],
-    },
+    // {
+    //   title: 'Settings',
+    //   url: '#',
+    //   icon: Settings2,
+    //   items: [
+    //     {
+    //       title: 'General',
+    //       url: '#',
+    //     },
+    //     {
+    //       title: 'Team',
+    //       url: '#',
+    //     },
+    //     {
+    //       title: 'Billing',
+    //       url: '#',
+    //     },
+    //     {
+    //       title: 'Limits',
+    //       url: '#',
+    //     },
+    //   ],
+    // },
   ],
   navSecondary: [
     {
-      title: 'Support',
-      url: '#',
+      title: '獲得支援',
+      url: 'https://discord.gg/puQ9DPdG3',
       icon: LifeBuoy,
     },
     {
-      title: 'Feedback',
-      url: '#',
+      title: '回報問題',
+      url: 'https://discord.gg/puQ9DPdG3',
       icon: Send,
     },
     {
-      title: 'Admin',
+      title: '管理員頁面',
       url: '/admin',
       icon: ShieldPlus,
       onlyFor: ADMIN_ID,
@@ -178,8 +180,8 @@ export function DiscordUser(session?: Session): DiscordUser {
   }
 
   return {
-    display_name: 'Not Login',
-    username: 'Not Login',
+    display_name: '未登入',
+    username: '未登入',
     avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
   };
 }
@@ -229,27 +231,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navItem = [
     {
-      title: 'Search',
-      url: '#',
-      icon: Search,
-    },
-    {
-      title: 'Ask AI',
-      url: '#',
-      icon: Sparkles,
-    },
-    {
-      title: 'Home',
-      url: '#',
+      title: '返回首頁',
+      url: '/',
       icon: Home,
       isActive: true,
     },
     {
-      title: 'Inbox',
+      title: '教學頁面',
+      url: 'help',
+      icon: BookOpen,
+    },
+    {
+      title: '加入官方群',
+      url: 'https://discord.com/invite/puQ9DPdG3M',
+      icon: Sparkles,
+    },
+    {
+      title: '私人收件匣',
       url: '#',
       icon: Inbox,
       badge: unreadCount > 0 ? String(unreadCount) : undefined,
       isActive: showInbox,
+    },
+    {
+      title: '邀請官方機器人',
+      url: 'https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=8&integration_type=0&scope=bot',
+      icon: BotIcon,
     },
   ];
 
@@ -276,14 +283,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           id: '',
         }
       : {
-          display_name: session?.discordProfile?.global_name ?? 'Not Login',
-          username: session?.discordProfile?.username ?? 'Not Login',
+          display_name: session?.discordProfile?.global_name ?? '未登入',
+          username: session?.discordProfile?.username ?? '未登入',
           avatar:
             session?.user?.image ??
             'https://cdn.discordapp.com/embed/avatars/0.png',
           id: session?.discordProfile?.id,
         };
-
 
   const filterednavSecondary = data.navSecondary.filter(item => {
     if (!item.onlyFor) return true;
@@ -303,7 +309,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: activeItem === item.title,
             }))}
             onSelect={title => {
-              if (title === 'Inbox') {
+              if (title === '私人收件匣') {
                 setShowInbox(prev => !prev); // 切換 inbox 開關
               } else {
                 setShowInbox(false); // 點其他項目時強制關閉 inbox
