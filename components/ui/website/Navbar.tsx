@@ -171,16 +171,16 @@ function NavLinks({
   let links: LinkItem[] = [
     { href: '/', label: '伺服器列表' },
     { href: '/bots', label: '機器人列表' },
-    // { href: '/add-server', label: '新增伺服器' },
-    // { href: '/add-bot', label: '新增機器人' },
+    { href: '/add-server', label: '新增伺服器' },
+    { href: '/add-bot', label: '新增機器人' },
   ];
 
   if (session && session?.user) {
-    links = [
-      ...links,
-      { href: '/add-server', label: '新增伺服器' },
-      { href: '/add-bot', label: '新增機器人' },
-    ];
+    // links = [
+    //   ...links,
+    //   { href: '/add-server', label: '新增伺服器' },
+    //   { href: '/add-bot', label: '新增機器人' },
+    // ];
     if (mobile) {
       links.push({ href: '/profile', label: '個人資料' });
     }
