@@ -54,8 +54,13 @@ export default function Footer({ className = '' }: { className?: string }) {
             <h4 className="font-medium mb-4 text-white">資源</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <a href="#" className="hover:text-white">
-                  Discord 官方
+                <a href="/help" className="hover:text-white">
+                  常見問題
+                </a>
+              </li>
+              <li>
+                <a href="/help#faq" className="hover:text-white">
+                  使用指南
                 </a>
               </li>
               <li>
@@ -65,31 +70,26 @@ export default function Footer({ className = '' }: { className?: string }) {
               </li>
               <li>
                 <a href="#" className="hover:text-white">
-                  機器人指南
-                </a>
-              </li>
-              <li>
-                <a href="/help" className="hover:text-white">
-                  常見問題
+                  Discord 官方
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* 法律 */}
+          {/* 規範 */}
           <div>
-            <h4 className="font-medium mb-4 text-white">法律</h4>
+            <h4 className="font-medium mb-4 text-white">規範</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/terms" className="hover:text-white">
                   服務條款
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/privacy" className="hover:text-white">
                   隱私政策
                 </a>
-              </li>
+                {/* </li>
               <li>
                 <a href="#" className="hover:text-white">
                   Cookie 政策
@@ -98,7 +98,7 @@ export default function Footer({ className = '' }: { className?: string }) {
               <li>
                 <a href="#" className="hover:text-white">
                   DMCA
-                </a>
+                </a> */}
               </li>
             </ul>
           </div>
