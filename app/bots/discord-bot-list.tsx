@@ -42,6 +42,16 @@ export default function DiscordBotListPageClient({
     return bots.slice(startIndex, endIndex);
   };
 
+  const calculateTotalTags = () => {
+    let totalTags = 0;
+    allBots.forEach(bot => {
+      if (Array.isArray(bot.tags)) {
+        totalTags += bot.tags.length;
+      }
+    });
+    return totalTags;
+  };
+
   // 當過濾條件改變時，重置頁碼
   useEffect(() => {
     setCurrentPage(1);
@@ -368,8 +378,8 @@ export default function DiscordBotListPageClient({
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">本週新增</span>
-                  <span className="font-medium">18</span>
+                  <span className="text-gray-300">目前已被使用的分類總數</span>
+                  <span className="font-medium">{calculateTotalTags()}</span>
                 </div>
               </div>
             </div>
