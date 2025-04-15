@@ -251,12 +251,11 @@ export default function VoteButton({
 
     if (!user) return;
 
-    sendWebhook(user, server, bot);
     await sendDataToWebServerOrDiscord(type, user, server, bot);
 
     router.refresh();
 
-    sendWebhook();
+    sendWebhook(user, server, bot);
 
     // 啟動倒數
     const interval = setInterval(() => {
