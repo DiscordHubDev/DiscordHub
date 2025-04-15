@@ -18,7 +18,8 @@ const fontSans = FontSans({
 
 export const metadata: Metadata = {
   title: 'Discord Servers | Discord Hub',
-  description: 'Discover and join amazing Discord communities',
+  description:
+    '最佳的 Discord 伺服器和機器人列表平台，幫助您發現宣傳和加入，有趣的社群群組和機器人，為伺服器增添功能和成員。',
 };
 
 export default async function RootLayout({
