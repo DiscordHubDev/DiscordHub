@@ -152,11 +152,6 @@ export default function DiscordServerListPageClient({
     return sortedServers.length;
   };
 
-  const alltag = () => {
-    let sortedServers = [...allServers];
-    return sortedServers.t;
-  };
-
   // 處理標籤切換
   const handleTabChange = (value: string) => {
     setActiveTab(value);
