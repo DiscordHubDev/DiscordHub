@@ -169,7 +169,7 @@ export default function BotCard({ bot }: BotCardProps) {
           </div>
 
           {/* Bot Banner (desktop) */}
-          {bot.banner && (
+          {/* {bot.banner && (
             <div className="hidden md:block w-48 h-auto bg-[#36393f] flex-shrink-0">
               <img
                 src={bot.banner || '/placeholder.svg'}
@@ -177,7 +177,7 @@ export default function BotCard({ bot }: BotCardProps) {
                 className="w-full h-full object-cover"
               />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Link>

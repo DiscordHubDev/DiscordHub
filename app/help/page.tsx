@@ -626,7 +626,7 @@ export default function TutorialPage() {
                         </h3>
                         <p className="text-gray-300 text-sm">
                           詳細介紹如何在 DiscordHubs 上添加和推廣您的 Discord
-                          伺服器。
+                          伺服器。（教學影片製作中請等待更新）
                         </p>
                       </div>
                     </div>
@@ -647,7 +647,7 @@ export default function TutorialPage() {
                         </h3>
                         <p className="text-gray-300 text-sm">
                           詳細介紹如何在 DiscordHubs 上添加和推廣您的 Discord
-                          機器人。
+                          機器人。（教學影片製作中請等待更新）
                         </p>
                       </div>
                     </div>
@@ -667,7 +667,7 @@ export default function TutorialPage() {
                           投票系統使用教學
                         </h3>
                         <p className="text-gray-300 text-sm">
-                          了解如何使用投票系統支持您喜愛的伺服器和機器人。
+                          了解如何使用投票系統支持您喜愛的伺服器和機器人。（教學影片製作中請等待更新）
                         </p>
                       </div>
                     </div>
