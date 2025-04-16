@@ -105,3 +105,15 @@ export async function getPendingBots() {
 
   return bots;
 }
+
+export async function updateBotServerCount(botId: string, serverCount: number) {
+  try {
+    const updatedBot = await prisma.bot.update({
+      where: { id: botId },
+      data: { servers: serverCount },
+    });
+    return updatedBot;
+  } catch (error) {
+    console.error(error);
+  }
+}

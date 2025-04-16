@@ -23,6 +23,8 @@ import { BotWithRelations } from '@/lib/prisma_type';
 import { updateBotStatus } from '@/lib/actions/update-bot-status';
 import { sendNotification } from '@/lib/actions/sendNotification';
 import RejectBotDialog from '@/components/RejectBotDialog';
+import { toast } from 'react-toastify';
+import { updateBotServerCount } from '@/lib/actions/bots';
 
 const webhookUrl =
   'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
@@ -50,6 +52,36 @@ export default function BotApplications({
     handleReview(id, 'rejected', reason);
   };
 
+  const handleFetchBotServerCount = async (botId: string) => {
+    try {
+      const response = await fetch('/api/get_bot_server_count', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bot_id: botId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('網路錯誤或伺服器錯誤');
+      }
+
+      const data = await response.json();
+
+      if (data.server_count !== undefined) {
+        await updateBotServerCount(botId, data.server_count);
+      } else {
+        toast.error('伺服器回傳錯誤');
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(`發生錯誤：${err.message}`);
+      } else {
+        toast.error('發生未知錯誤');
+      }
+    }
+  };
+
   const handleReview = async (
     id: string,
     status: 'approved' | 'rejected',
@@ -64,6 +96,7 @@ export default function BotApplications({
     );
 
     const app = applications.find(app => app.id === id);
+
     if (app) {
       await Promise.all(
         app.developers.map(dev =>
@@ -78,13 +111,15 @@ export default function BotApplications({
               ? `您好！我們已審查您提交的機器人「${app.name}」，並已核准上架。感謝您的耐心等待，祝您的機器人越來越好！`
               : `您好，我們已審查您提交的機器人「${app.name}」，很遺憾，未能通過審核。\n\n拒絕原因：${rejectionReason || '未提供原因'}。\n\n若有疑問，歡迎再次申請。`,
             priority: isApproved ? 'success' : 'warning',
-            userId: dev.id,
+            userIds: app.developers.map(dev => dev.id),
           }),
         ),
       );
 
       // 發送Webhook消息
       if (isApproved) {
+        await handleFetchBotServerCount(app.id);
+
         const developerNames = app.developers
           .map(dev => dev.username || '未知')
           .join('\n');

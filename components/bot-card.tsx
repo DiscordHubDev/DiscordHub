@@ -149,7 +149,8 @@ export default function BotCard({ bot }: BotCardProps) {
                       {formatDistanceToNow(bot.approvedAt!, {
                         addSuffix: true,
                         locale: zhTW,
-                      })}
+                      })}{' '}
+                      通過審核
                     </span>
                   </div>
                 </div>

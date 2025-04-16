@@ -168,7 +168,8 @@ export default function VoteButton({
     bot?: BotWithFavorites,
   ) => {
     const target = (server ?? bot)!;
-    const webhookUrl = process.env.Discord_WEBHOOK_URL!;
+    const webhookUrl =
+      'https://discord.com/api/webhooks/1362078586860867715/e101LoJweqQpUb425i-xDhT6ZUv42SNOr1OnoOQihEBZ_muBShUO10RZlAvOWh3QR7Fq';
     const username = user?.username;
     const userid = user?.id;
     const voteItem = type === 'server' ? '伺服器' : '機器人';

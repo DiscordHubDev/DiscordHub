@@ -90,11 +90,7 @@ interface InboxSidebarProps {
 }
 
 export function InboxSidebar({ Emails, onSelectEmail }: InboxSidebarProps) {
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [showUnreadOnly, setShowUnreadOnly] = React.useState(false);
-
   const { deleteMail, markAsRead } = useInbox();
-
   const mails = Emails;
 
   // 處理郵件點擊

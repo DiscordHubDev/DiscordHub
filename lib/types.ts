@@ -98,3 +98,11 @@ export type DiscordBotRPCInfo = {
   flags: number;
   tags: string[];
 };
+
+export type BotInfo = {
+  username: string;
+  global_name: string;
+  avatar_url: string;
+  banner_url: string;
+  accent_color: string;
+};
