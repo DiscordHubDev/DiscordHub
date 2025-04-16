@@ -289,16 +289,15 @@ export default function DiscordBotListPageClient({
 
               <TabsContent value="featured" className="mt-6">
                 <FeaturedBots
-                  bots={bots.filter(b => b.featured && b.servers >= 1000)}
+                  bots={getCurrentPageBots()
+                    .filter(b => b.servers >= 1000)
+                    .sort((a, b) => b.servers - a.servers)}
                 />
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                  <BotList bots={getCurrentPageBots()} />
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
