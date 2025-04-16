@@ -153,8 +153,16 @@ export default function DiscordBotListPageClient({
           new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime()
         );
       });
+    } else if (value === 'featured') {
+      sortedBots = allBots
+        .filter(b => b.servers >= 1000)
+        .sort((a, b) => b.servers - a.servers);
     } else if (value === 'verified') {
       sortedBots = allBots.filter(b => b.verified);
+      sortedBots.sort(
+        (a, b) =>
+          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime(),
+      );
     } else if (value === 'voted') {
       sortedBots.sort((a, b) => b.upvotes - a.upvotes);
     }
@@ -289,11 +297,7 @@ export default function DiscordBotListPageClient({
               </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
-                <FeaturedBots
-                  bots={getCurrentPageBots()
-                    .filter(b => b.servers >= 1000)
-                    .sort((a, b) => b.servers - a.servers)}
-                />
+                <FeaturedBots bots={getCurrentPageBots()} />
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -323,13 +327,12 @@ export default function DiscordBotListPageClient({
 
               <TabsContent value="verified" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">驗證機器人</h2>
-                <BotList bots={bots.filter(b => b.verified)} />
+                <BotList bots={getCurrentPageBots()} />
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
-                <BotList bots={getCurrentPageBots()} />
               </TabsContent>
 
               <TabsContent value="voted" className="mt-6">
