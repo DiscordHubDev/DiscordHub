@@ -23,11 +23,12 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
               {/* Banner */}
               <div className="h-32 bg-[#36393f] relative">
                 {bot.banner ? (
-                  <div className="relative w-full h-48 overflow-hidden">
-                    <div
-                      className="absolute inset-0 bg-center bg-cover blur-sm scale-110"
-                      style={{ backgroundColor: bot.banner }}
-                    ></div>
+                  <div className="relative w-full h-32 overflow-hidden">
+                    <img
+                      src={bot.banner}
+                      alt={`${bot.name} banner`}
+                      className="absolute inset-0 w-full h-full object-cover scale-110"
+                    />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-gradient-to-r from-[#5865f2] to-[#8c54ff]"></div>
@@ -102,9 +103,14 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                       </div>
                     </>
                   )}
+                  {bot.upvotes !== undefined && (
+                    <>
+                      <div className="mx-2">•</div>
+                      <span>{bot.upvotes.toLocaleString()} 投票</span>
+                    </>
+                  )}
                 </div>
               </div>
-
               <div className="p-4 pt-0 mt-auto">
                 <Button
                   size="sm"
