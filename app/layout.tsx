@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   title: 'Discord Servers | Discord Hub',
   description:
     '最佳的 Discord 伺服器和機器人列表平台，幫助您發現宣傳和加入，有趣的社群群組和機器人，為伺服器增添功能和成員。',
+  icons: {
+    icon: 'https://i.imgur.com/l7H7ALj.png',
+  },
 };
 
 export default async function RootLayout({

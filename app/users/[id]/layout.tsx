@@ -19,6 +19,9 @@ export async function generateMetadata({
   return {
     title: `${user.username} | DiscordHubs`,
     description: `${user.username} 的個人頁面`,
+    icons: {
+      icon: 'https://i.imgur.com/l7H7ALj.png',
+    },
     openGraph: {
       title: `${user.username} 的個人頁面`,
       images: user.avatar ? [user.avatar] : [],
