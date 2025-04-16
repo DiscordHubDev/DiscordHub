@@ -168,7 +168,10 @@ export default function DiscordServerListPageClient({
       );
     } else if (value === 'featured') {
       sortedServers.sort((a, b) => b.members - a.members);
-      sortedServers = sortedServers.filter(server => server.members >= 1000);
+      sortedServers = sortedServers
+        .filter(server => server.members >= 1000)
+        .sort((a, b) => b.upvotes - a.upvotes)
+        .sort((a, b) => b.members - a.members);
       if (sortedServers.length === 0) {
         if (sortedServers.length === 0) {
           setShowNoFeaturedMessage(true);
