@@ -315,7 +315,7 @@ export default function TermsPage() {
           {/* 最後更新 */}
           <div className="mt-12 pt-6 border-t border-[#1e1f22] text-center">
             <p className="text-gray-400 text-sm">
-              這些使用條款最後更新於 2025 年 1 月 1 日
+              這些使用條款最後更新於 2025 年 4 月 16 日
             </p>
           </div>
         </div>
