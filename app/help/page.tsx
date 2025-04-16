@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +25,59 @@ import {
   Plus,
   ArrowRight,
 } from 'lucide-react';
+import { Metadata } from 'next';
+
+const keywords = [
+  '新增 Discord 伺服器',
+  'Discord 伺服器添加',
+  '創建 Discord 伺服器',
+  'Discord 伺服器列表',
+  '熱門 Discord 伺服器',
+  '免費 Discord 伺服器',
+  '人氣 Discord 伺服器',
+  'Discord 伺服器推薦',
+  '大型 Discord 伺服器',
+  '小型 Discord 伺服器',
+  '公開 Discord 伺服器',
+  'DiscordHubs 幫助頁面',
+  'DiscordHubs 教學頁面',
+  'DiscordHubs 使用教學',
+];
+
+export const metadata: Metadata = {
+  title: `使用教學 | Discord伺服器列表 - DiscordHubs`,
+  description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解如何充分利用及使用 DiscordHubs 平台，探索伺服器、機器人，以及管理您的內容`,
+  icons: {
+    icon: '/dchub.ico',
+  },
+  // 關鍵詞
+  keywords: keywords.join('，'),
+  // 作者的信息
+  authors: [
+    {
+      name: 'DiscordHubs 團隊',
+      url: 'https://dchubs.org',
+    },
+  ],
+  // 社交媒體分享優化
+  metadataBase: new URL('https://dchubs.org'),
+  openGraph: {
+    title: `使用教學 | Discord伺服器列表 - DiscordHubs`,
+    description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解如何充分利用及使用 DiscordHubs 平台，探索伺服器、機器人，以及管理您的內容`,
+    url: 'https://dchubs.org',
+    siteName: 'DiscordHubs',
+    images: [
+      {
+        url: '/DCHUSB_banner.png',
+        width: 1012,
+        height: 392,
+        alt: 'DiscordHubs Discord伺服器及機器人列表',
+      },
+    ],
+    locale: 'zh-TW',
+    type: 'website',
+  },
+};
 
 export default function TutorialPage() {
   return (
