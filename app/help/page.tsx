@@ -577,6 +577,47 @@ export default function TutorialPage() {
                         className="border-[#1e1f22]"
                       >
                         <AccordionTrigger className="text-white hover:no-underline">
+                          頁面中那些熱門、精選、票選、最新等都是什麼意思？代表什麼呀
+                        </AccordionTrigger>
+                        <AccordionContent className="text-gray-300">
+                          以下是我們平台暫定對於分類的顯示條件，每個類別都有一定排序條件（適用於伺服器或機器人），例如：
+                          <ul className="list-disc list-inside mt-2">
+                            <li>
+                              熱門：是以社群成員或機器人擁有伺服器數量進行降序排序。
+                            </li>
+                          </ul>
+                          <ul className="list-disc list-inside mt-2">
+                            <li>
+                              精選：是以社群成員或機器人擁有伺服器數量，以及擁有的投票數進行降序排序。
+                            </li>
+                          </ul>
+                          <ul className="list-disc list-inside mt-2">
+                            <li>
+                              票選：是以該社群或機器人擁有的投票數進行降序排序。
+                            </li>
+                          </ul>
+                          <ul className="list-disc list-inside mt-2">
+                            <li>
+                              最新：是以社群或機器人在平台推出發佈的時間進行升序排序。
+                            </li>
+                          </ul>
+                          <ul className="list-disc list-inside mt-2">
+                            <li>
+                              已驗證：是以機器人是否獲得官方驗證，及在平台推出發佈的時間進行升序排序。
+                            </li>
+                          </ul>
+                          <ul className="list-disc list-inside mt-2">
+                            <li>
+                              所有：是以本平台所有收錄的社群或機器人，的推出發佈的時間進行降序排序。
+                            </li>
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem
+                        value="item-2"
+                        className="border-[#1e1f22]"
+                      >
+                        <AccordionTrigger className="text-white hover:no-underline">
                           我需要付費才能使用 DiscordHubs 嗎？
                         </AccordionTrigger>
                         <AccordionContent className="text-gray-300">
@@ -585,7 +626,7 @@ export default function TutorialPage() {
                         </AccordionContent>
                       </AccordionItem>
                       <AccordionItem
-                        value="item-2"
+                        value="item-3"
                         className="border-[#1e1f22]"
                       >
                         <AccordionTrigger className="text-white hover:no-underline">
@@ -597,7 +638,7 @@ export default function TutorialPage() {
                         </AccordionContent>
                       </AccordionItem>
                       <AccordionItem
-                        value="item-3"
+                        value="item-4"
                         className="border-[#1e1f22]"
                       >
                         <AccordionTrigger className="text-white hover:no-underline">
@@ -608,7 +649,7 @@ export default function TutorialPage() {
                         </AccordionContent>
                       </AccordionItem>
                       <AccordionItem
-                        value="item-4"
+                        value="item-5"
                         className="border-[#1e1f22]"
                       >
                         <AccordionTrigger className="text-white hover:no-underline">
@@ -620,7 +661,7 @@ export default function TutorialPage() {
                         </AccordionContent>
                       </AccordionItem>
                       <AccordionItem
-                        value="item-5"
+                        value="item-6"
                         className="border-[#1e1f22]"
                       >
                         <AccordionTrigger className="text-white hover:no-underline">
@@ -628,6 +669,17 @@ export default function TutorialPage() {
                         </AccordionTrigger>
                         <AccordionContent className="text-gray-300">
                           登入後，前往您的個人資料頁面，在「我的伺服器」或「我的機器人」標籤下，點擊「管理」按鈕即可編輯相關資訊。
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem
+                        value="item-7"
+                        className="border-[#1e1f22]"
+                      >
+                        <AccordionTrigger className="text-white hover:no-underline">
+                          我怎麼知道我的機器人是否通過審核了？
+                        </AccordionTrigger>
+                        <AccordionContent className="text-gray-300">
+                          你可以在左上角找到一本小書，在此處下方可以找到私人收件匣，點擊可以打開並查看你的郵件，無論通過還是被拒絕皆會有通知，又或者到官方群組的資訊區查看相關資訊
                         </AccordionContent>
                       </AccordionItem>
                     </Accordion>
