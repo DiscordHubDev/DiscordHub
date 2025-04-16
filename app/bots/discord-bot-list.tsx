@@ -156,6 +156,7 @@ export default function DiscordBotListPageClient({
     } else if (value === 'featured') {
       sortedBots = allBots
         .filter(b => b.servers >= 1000)
+        .sort((a, b) => b.upvotes - a.upvotes)
         .sort((a, b) => b.servers - a.servers);
     } else if (value === 'verified') {
       sortedBots = allBots.filter(b => b.verified);
