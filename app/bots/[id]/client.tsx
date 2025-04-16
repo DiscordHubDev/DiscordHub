@@ -34,6 +34,10 @@ export default function BotDetailClient({
   allBots,
   isFavorited,
 }: BotDetailProps) {
+  const handleInviteButtonClick = () => {
+    window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Banner */}
@@ -137,6 +141,7 @@ export default function BotDetailClient({
         <div className="mt-6 mb-4 flex flex-wrap gap-x-4 gap-y-4">
           <Button
             size="lg"
+            onClick={handleInviteButtonClick}
             className="w-full md:w-auto bg-[#5865f2] hover:bg-[#4752c4] text-white transition-all duration-150 transform hover:scale-105"
           >
             邀請機器人
