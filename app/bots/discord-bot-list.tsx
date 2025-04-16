@@ -148,10 +148,11 @@ export default function DiscordBotListPageClient({
     if (value === 'popular') {
       sortedBots.sort((a, b) => b.servers - a.servers);
     } else if (value === 'new') {
-      sortedBots.sort(
-        (a, b) =>
-          new Date(a.approvedAt!).getTime() - new Date(b.approvedAt!).getTime(),
-      );
+      sortedBots.sort((a, b) => {
+        return (
+          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime()
+        );
+      });
     } else if (value === 'verified') {
       sortedBots = allBots.filter(b => b.verified);
     } else if (value === 'voted') {
