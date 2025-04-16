@@ -20,7 +20,7 @@ export async function generateMetadata({
     title: `${user.username} | DiscordHubs`,
     description: `${user.username} 的個人頁面`,
     icons: {
-      icon: 'https://i.imgur.com/l7H7ALj.png',
+      icon: '/dchub.ico',
     },
     openGraph: {
       title: `${user.username} 的個人頁面`,

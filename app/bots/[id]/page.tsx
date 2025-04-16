@@ -25,7 +25,7 @@ export async function generateMetadata({
     title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
     description: bot.description,
     icons: {
-      icon: 'https://i.imgur.com/l7H7ALj.png',
+      icon: '/dchub.ico',
     },
     alternates: {
       canonical: `https://dchubs.org/bots/${bot.id}`,
