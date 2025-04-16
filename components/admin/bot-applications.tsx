@@ -125,7 +125,7 @@ export default function BotApplications({
           .join('\n');
         const embed = {
           title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新機器人發佈通知！`,
-          description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${app.prefix}**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\`\`\`${app.inviteUrl}\`\`\`\n➤網站連結：\`\`\`https://dchubs.org/bots/${app.id || '無'}\`\`\`\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
+          description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${app.prefix}**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\n> ${app.inviteUrl}\n➤網站連結：\n> https://dchubs.org/bots/${app.id || '無'}\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
           color: 0x4285f4,
           footer: {
             text: '由 DiscordHubs 系統發送',
