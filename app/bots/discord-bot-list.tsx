@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,9 @@ import type { BotType, CategoryType } from '@/lib/types';
 import Link from 'next/link';
 import { getAllBots } from '@/lib/actions/bots';
 import { BotWithRelations } from '@/lib/prisma_type';
+import Pagination from '@/components/pagination';
+
+const ITEMS_PER_PAGE = 20;
 
 export default function DiscordBotListPageClient({
   allBots,
@@ -27,6 +30,32 @@ export default function DiscordBotListPageClient({
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('featured');
+  // 計算總頁數
+  const totalPages = Math.ceil(bots.length / ITEMS_PER_PAGE);
+
+  // 獲取當前頁的機器人
+  const getCurrentPageBots = () => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return bots.slice(startIndex, endIndex);
+  };
+
+  const calculateTotalTags = () => {
+    let totalTags = 0;
+    allBots.forEach(bot => {
+      if (Array.isArray(bot.tags)) {
+        totalTags += bot.tags.length;
+      }
+    });
+    return totalTags;
+  };
+
+  // 當過濾條件改變時，重置頁碼
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [bots.length]);
 
   // 處理分類過濾
   const handleCategoryChange = (selectedCategoryIds: string[]) => {
@@ -99,6 +128,47 @@ export default function DiscordBotListPageClient({
     setBots(searchResults);
   };
 
+  // 處理頁面變更
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 滾動到頁面頂部
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  // 處理標籤切換
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // 重置頁碼
+
+    // 根據標籤排序機器人
+    let sortedBots = [...allBots];
+    if (value === 'popular') {
+      sortedBots.sort((a, b) => b.servers - a.servers);
+    } else if (value === 'new') {
+      sortedBots.sort((a, b) => {
+        return (
+          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime()
+        );
+      });
+    } else if (value === 'featured') {
+      sortedBots = allBots
+        .filter(b => b.servers >= 1000)
+        .sort((a, b) => b.upvotes - a.upvotes)
+        .sort((a, b) => b.servers - a.servers);
+    } else if (value === 'verified') {
+      sortedBots = allBots.filter(b => b.verified);
+      sortedBots.sort(
+        (a, b) =>
+          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime(),
+      );
+    } else if (value === 'voted') {
+      sortedBots.sort((a, b) => b.upvotes - a.upvotes);
+    }
+    setBots(sortedBots);
+  };
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Hero Banner */}
@@ -173,7 +243,11 @@ export default function DiscordBotListPageClient({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
-            <Tabs defaultValue="featured" className="mb-8">
+            <Tabs
+              defaultValue="featured"
+              className="mb-8"
+              onValueChange={handleTabChange}
+            >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full overflow-x-auto">
                 <TabsTrigger
                   value="all"
@@ -215,42 +289,61 @@ export default function DiscordBotListPageClient({
 
               <TabsContent value="all" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">所有機器人</h2>
-                <BotList bots={bots} />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+                <BotList bots={getCurrentPageBots()} />
               </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
-                <FeaturedBots bots={bots.filter(b => b.featured)} />
-                <div className="mt-8"></div>
+                <FeaturedBots bots={getCurrentPageBots()} />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">熱門機器人</h2>
-                <BotList
-                  bots={[...bots].sort((a, b) => b.servers - a.servers)}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
+                <BotList bots={getCurrentPageBots()} />
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">最新機器人</h2>
-                <BotList
-                  bots={[...bots].sort(
-                    (a, b) =>
-                      new Date(a.approvedAt!).getTime() -
-                      new Date(b.approvedAt!).getTime(),
-                  )}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
+                <BotList bots={getCurrentPageBots()} />
               </TabsContent>
 
               <TabsContent value="verified" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">驗證機器人</h2>
-                <BotList bots={bots.filter(b => b.verified)} />
+                <BotList bots={getCurrentPageBots()} />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </TabsContent>
 
               <TabsContent value="voted" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">票選機器人</h2>
-                <BotList
-                  bots={[...bots].sort((a, b) => b.upvotes - a.upvotes)}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
+                <BotList bots={getCurrentPageBots()} />
               </TabsContent>
             </Tabs>
           </div>
@@ -291,8 +384,8 @@ export default function DiscordBotListPageClient({
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-300">本週新增</span>
-                  <span className="font-medium">18</span>
+                  <span className="text-gray-300">目前已被使用的分類總數</span>
+                  <span className="font-medium">{calculateTotalTags()}</span>
                 </div>
               </div>
             </div>

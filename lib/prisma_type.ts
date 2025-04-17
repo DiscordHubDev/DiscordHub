@@ -46,17 +46,17 @@ export type BotWithFavorites = Prisma.BotGetPayload<{
 
 export type CreateServerInput = Prisma.ServerCreateInput;
 
-type ReportStatusType = 'pending' | 'resolved' | 'rejected';
-
 export type ReportSeverityType = 'severe' | 'moderate' | 'low' | 'untagged'; // severe: 嚴重, moderate: 中等, low: 輕微, untagged: 未標記
-
-type ReportType = 'bot' | 'server';
 
 export type { VoteType };
 
 export type { ReportStatus };
 
 export type { ReportSeverity };
+
+export type { BotCommandInsert };
+
+export type BotUpdateInput = Prisma.BotUpdateArgs['data'];
 
 export type ServerType = Prisma.ServerGetPayload<{
   include: {

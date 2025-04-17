@@ -5,7 +5,7 @@ export const Servercategories: CategoryType[] = [
     id: '1',
     name: '遊戲',
     color: 'bg-green-600',
-    selected: true,
+    selected: false,
   },
   {
     id: '2',

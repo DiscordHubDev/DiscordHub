@@ -13,5 +13,5 @@ export default async function AddServerFormPage({
 
   if (!server) return notFound();
 
-  return <ServerFormPage server={server} />;
+  return <ServerFormPage server={server} mode={'create'} />;
 }

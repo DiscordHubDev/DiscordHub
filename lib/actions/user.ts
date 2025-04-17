@@ -10,6 +10,22 @@ type UpdateState = {
   error?: string;
 };
 
+export async function GetUserBySession(session: Session) {
+  if (!session?.discordProfile) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.discordProfile.id },
+    include: {
+      favoriteServers: true,
+      favoriteBots: true,
+      ownedServers: true,
+      developedBots: true,
+    },
+  });
+
+  return user;
+}
+
 export async function upsertUserFromSession(session: Session) {
   if (!session?.discordProfile) return null;
 

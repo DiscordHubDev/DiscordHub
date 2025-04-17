@@ -4,6 +4,10 @@ import DiscordProvider from 'next-auth/providers/discord';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+export function getRandomEmbedColor(): number {
+  return Math.floor(Math.random() * 0xffffff);
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

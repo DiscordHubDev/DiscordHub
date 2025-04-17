@@ -58,7 +58,7 @@ export function ResolveDialog({ report, status, onClose }: Props) {
                 審查結果：${getReviewResultMessage(isResolved)}
                 `.trim(),
       priority: isResolved ? 'success' : 'warning',
-      userId: report.reportedBy.id,
+      userIds: [report.reportedBy.id],
     });
   };
 

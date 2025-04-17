@@ -11,23 +11,24 @@ interface FeaturedBotsProps {
 
 export default function FeaturedBots({ bots }: FeaturedBotsProps) {
   // Only show up to 3 featured bots
-  const featuredBots = bots.slice(0, 3);
+  // const featuredBots = bots.slice(0, 3);
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">精選機器人</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {featuredBots.map(bot => (
+        {bots.map(bot => (
           <Link href={`/bots/${bot.id}`} key={bot.id} className="block">
             <div className="bg-[#2b2d31] rounded-lg overflow-hidden border border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200 flex flex-col h-full">
               {/* Banner */}
               <div className="h-32 bg-[#36393f] relative">
                 {bot.banner ? (
-                  <div className="relative w-full h-48 overflow-hidden">
-                    <div
-                      className="absolute inset-0 bg-center bg-cover blur-sm scale-110"
-                      style={{ backgroundColor: bot.banner }}
-                    ></div>
+                  <div className="relative w-full h-32 overflow-hidden">
+                    <img
+                      src={bot.banner}
+                      alt={`${bot.name} banner`}
+                      className="absolute inset-0 w-full h-full object-cover scale-110"
+                    />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-gradient-to-r from-[#5865f2] to-[#8c54ff]"></div>
@@ -102,9 +103,14 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                       </div>
                     </>
                   )}
+                  {bot.upvotes !== undefined && (
+                    <>
+                      <div className="mx-2">•</div>
+                      <span>{bot.upvotes.toLocaleString()} 投票</span>
+                    </>
+                  )}
                 </div>
               </div>
-
               <div className="p-4 pt-0 mt-auto">
                 <Button
                   size="sm"

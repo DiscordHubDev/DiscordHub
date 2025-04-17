@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,7 +10,6 @@ import {
   Globe,
   MessageSquare,
   Terminal,
-  AlertCircle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
@@ -23,6 +21,7 @@ import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FavoriteButton } from '@/components/favorite-button';
 import { ReportDialog } from '@/components/ReportDialog';
+import { FaDiscord } from 'react-icons/fa6';
 
 type BotDetailProps = {
   allBots: BotWithRelations[];
@@ -35,6 +34,10 @@ export default function BotDetailClient({
   allBots,
   isFavorited,
 }: BotDetailProps) {
+  const handleInviteButtonClick = () => {
+    window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Banner */}
@@ -138,6 +141,7 @@ export default function BotDetailClient({
         <div className="mt-6 mb-4 flex flex-wrap gap-x-4 gap-y-4">
           <Button
             size="lg"
+            onClick={handleInviteButtonClick}
             className="w-full md:w-auto bg-[#5865f2] hover:bg-[#4752c4] text-white transition-all duration-150 transform hover:scale-105"
           >
             邀請機器人
@@ -209,7 +213,7 @@ export default function BotDetailClient({
                       rel="noopener noreferrer"
                       className="text-[#5865f2] hover:underline flex items-center"
                     >
-                      <MessageSquare size={14} className="mr-1" />
+                      <FaDiscord size={14} className="mr-1" />
                       <span>加入支援伺服器</span>
                     </a>
                   </div>

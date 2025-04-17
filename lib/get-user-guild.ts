@@ -1,3 +1,5 @@
+import { is } from 'date-fns/locale';
+
 type BaseServerInfo = {
   id: string;
   name: string;
@@ -10,9 +12,12 @@ export type ActiveServerInfo = BaseServerInfo & {
   owner: string;
   memberCount: number;
   OnlineMemberCount: number;
+  isPublished: boolean;
 };
 
-export type InactiveServerInfo = BaseServerInfo;
+export type InactiveServerInfo = BaseServerInfo & {
+  isPublished: boolean;
+};
 
 export type ServerInfo = ActiveServerInfo | InactiveServerInfo;
 
@@ -63,6 +68,7 @@ export async function getGuildDetails(
     memberCount: data.approximate_member_count ?? 0,
     OnlineMemberCount: data.approximate_presence_count ?? 0,
     isInServer: true,
+    isPublished: false,
   };
 }
 
@@ -119,6 +125,7 @@ export async function getUserGuildsWithBotStatus(
         : '',
       banner: '',
       isInServer,
+      isPublished: false,
     };
 
     if (isInServer) {

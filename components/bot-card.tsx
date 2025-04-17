@@ -12,6 +12,10 @@ interface BotCardProps {
 }
 
 export default function BotCard({ bot }: BotCardProps) {
+  const handleInviteButtonClick = () => {
+    window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <Link href={`/bots/${bot.id}`} className="block">
       <div className="bg-[#2b2d31] rounded-lg overflow-hidden border border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200">
@@ -101,6 +105,7 @@ export default function BotCard({ bot }: BotCardProps) {
                   <div className="flex items-center">
                     <Button
                       size="sm"
+                      onClick={handleInviteButtonClick}
                       className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
                     >
                       邀請機器人
@@ -168,7 +173,7 @@ export default function BotCard({ bot }: BotCardProps) {
           </div>
 
           {/* Bot Banner (desktop) */}
-          {bot.banner && (
+          {/* {bot.banner && (
             <div className="hidden md:block w-48 h-auto bg-[#36393f] flex-shrink-0">
               <img
                 src={bot.banner || '/placeholder.svg'}
@@ -176,7 +181,7 @@ export default function BotCard({ bot }: BotCardProps) {
                 className="w-full h-full object-cover"
               />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Link>

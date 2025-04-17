@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 interface ServerCardProps {
   server: {
@@ -18,6 +17,7 @@ interface ServerCardProps {
     memberCount?: number;
     isInServer: boolean;
   };
+  isPublished: boolean;
 }
 
 function useIsClient() {
@@ -30,13 +30,32 @@ function useIsClient() {
   return isClient;
 }
 
-export function ServerCard({ server }: ServerCardProps) {
+export function ServerCard({ server, isPublished }: ServerCardProps) {
   const [imgError, setImgError] = useState(false);
   const isClient = useIsClient();
 
   const router = useRouter();
 
   if (!isClient) return null;
+
+  const buttonText = server.isInServer
+    ? isPublished
+      ? '已發布伺服器'
+      : '發布伺服器'
+    : '邀請機器人';
+
+  const isDisabled = server.isInServer && isPublished;
+
+  const handleClick = () => {
+    if (!server.isInServer) {
+      window.open(
+        'https://discord.com/oauth2/authorize?client_id=1324996138251583580',
+        '_blank',
+      );
+    } else if (!isPublished) {
+      window.location.href = `/add-server/${server.id}`;
+    }
+  };
 
   return (
     <>
@@ -99,21 +118,16 @@ export function ServerCard({ server }: ServerCardProps) {
 
         <CardFooter className="border-t border-[#40444b] pt-3 pb-4">
           <button
-            onClick={() => {
-              if (!server.isInServer) {
-                window.open(
-                  'https://discord.com/oauth2/authorize?client_id=1324996138251583580',
-                  '_blank',
-                );
-              } else {
-                window.location.href = `/add-server/${server.id}`;
-              }
-            }}
+            disabled={isDisabled}
+            onClick={handleClick}
             className={cn(
               'w-full py-2 rounded-md font-medium text-sm transition-colors',
               server.isInServer
                 ? 'bg-[#4f545c] hover:bg-[#686d73] text-white'
                 : 'bg-[#5865f2] hover:bg-[#4752c4] text-white',
+              {
+                'cursor-not-allowed opacity-60': isDisabled,
+              },
             )}
           >
             {server.isInServer ? '發布伺服器' : '邀請機器人'}

@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
 import './globals.css';
 import { Inter as FontSans } from 'next/font/google';
+import type { Metadata } from 'next';
 import { cn } from '@/lib/utils';
 import { SidebarProvider } from '@/components/ui/sidebar';
 
@@ -16,11 +16,6 @@ const fontSans = FontSans({
   variable: '--font-sans',
 });
 
-export const metadata: Metadata = {
-  title: 'DiscordHubs',
-  description: 'Discover and join amazing Discord communities',
-};
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -35,18 +30,18 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SessionProvider session={session}>
-            <SidebarProvider>
+        <SidebarProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SessionProvider session={session}>
               <ClientLayout>{children}</ClientLayout>
-            </SidebarProvider>
-          </SessionProvider>
-        </ThemeProvider>
+            </SessionProvider>
+          </ThemeProvider>
+        </SidebarProvider>
       </body>
     </html>
   );

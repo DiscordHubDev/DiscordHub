@@ -12,7 +12,7 @@ type Props = {
 
 export default function MarkdownRenderer({ content }: Props) {
   return (
-    <div className="prose prose-invert max-w-none text-gray-300">
+    <div className="prose prose-invert max-w-none text-gray-300 prose-li:marker:text-gray-400 prose-ul:pl-5 whitespace-pre-line">
       <ReactMarkdown
         children={content}
         remarkPlugins={[remarkGfm]}
@@ -25,6 +25,17 @@ export default function MarkdownRenderer({ content }: Props) {
           ),
           img: ({ src, alt }) => (
             <img src={src || ''} alt={alt || ''} loading="lazy" />
+          ),
+          p: ({ children }) => (
+            <p className="whitespace-pre-line text-gray-300 text-sm">
+              {children}
+            </p>
+          ),
+          ul: ({ children }) => (
+            <ul className="list-disc pl-5 mb-2">{children}</ul>
+          ),
+          li: ({ children }) => (
+            <li className="text-sm text-gray-300">{children}</li>
           ),
         }}
       />

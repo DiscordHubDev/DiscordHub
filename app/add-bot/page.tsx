@@ -1,469 +1,133 @@
 'use client';
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  deleteCloudinaryImage,
-  getCloudinarySignature,
-} from '@/lib/actions/image';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { X, Upload, Info } from 'lucide-react';
-import { botFormSchema } from '@/schemas/add-bot-schema';
-import { botCategories } from '@/lib/bot-categories';
-import { z } from 'zod';
-import { TagField } from '@/components/form/bot-form/TagField';
-import { CommandListField } from '@/components/form/bot-form/CommandListField';
-import { DeveloperListField } from '@/components/form/bot-form/DeveloperListField';
-import { DiscordBotRPCInfo } from '@/lib/types';
+
+import Head from 'next/head';
 import { submitBot } from '@/lib/actions/submit-bot';
-import { BotWithRelationsInput } from '@/lib/prisma_type';
-import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
 import { sendNotification } from '@/lib/actions/sendNotification';
+import { BotWithRelationsInput } from '@/lib/prisma_type';
+import { BotFormData, DiscordBotRPCInfo, Screenshot } from '@/lib/types';
+import BotForm from '@/components/form/bot-form/BotForm';
 
-type FormData = z.infer<typeof botFormSchema>;
+const keywords = [
+  '新增 Discord 伺服器',
+  'Discord 伺服器添加',
+  '創建 Discord 伺服器',
+  'Discord 伺服器列表',
+  '熱門 Discord 伺服器',
+  '免費 Discord 伺服器',
+  '人氣 Discord 伺服器',
+  'Discord 伺服器推薦',
+  '大型 Discord 伺服器',
+  '小型 Discord 伺服器',
+  '公開 Discord 伺服器',
+];
 
-type Screenshot = {
-  url: string;
-  public_id: string;
-};
-
-const BotForm: React.FC = () => {
-  const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
-    [],
-  );
-  const [uploading, setUploading] = useState(false);
-
-  const form = useForm<FormData>({
-    resolver: zodResolver(botFormSchema),
-    mode: 'onChange',
-    defaultValues: {
-      botName: '',
-      botPrefix: '',
-      botDescription: '',
-      botLongDescription: '',
-      botInvite: '',
-      botWebsite: '',
-      botSupport: '',
-      developers: [],
-      commands: [],
-      tags: [],
-    },
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [botInfo, setBotInfo] = useState<DiscordBotRPCInfo | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  const { handleSubmit, control, formState, register, reset } = form;
-
-  const handleScreenshotUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    const fileArray = Array.from(files).slice(0, 5 - screenshotPreviews.length);
-    if (fileArray.length === 0) return;
-
-    setUploading(true);
-
-    const sig = await getCloudinarySignature();
-    console.log('簽名資訊', sig);
-
-    for (const file of fileArray) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('api_key', sig.apiKey);
-      formData.append('timestamp', sig.timestamp.toString());
-      formData.append('signature', sig.signature);
-      formData.append('upload_preset', sig.uploadPreset);
-
-      try {
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          },
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.error('上傳失敗', {
-            status: res.status,
-            statusText: res.statusText,
-            body: data,
-          });
-          continue;
-        }
-
-        const imageUrl = data.secure_url;
-        const publicId = data.public_id;
-
-        setScreenshotPreviews(prev => [
-          ...prev,
-          { url: imageUrl, public_id: publicId },
-        ]);
-      } catch (error) {
-        console.error('Unexpected error:', error);
-      }
-    }
-
-    setUploading(false);
-  };
-
-  const removeScreenshot = async (index: number) => {
-    const toDelete = screenshotPreviews[index];
-    setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));
-
-    try {
-      await deleteCloudinaryImage(toDelete.public_id);
-      console.log('圖片已從 Cloudinary 刪除');
-    } catch (err) {
-      console.error('刪除失敗', err);
-    }
-  };
-
-  const onSubmit = async (data: FormData) => {
-    setLoading(true);
-    setError(null);
-
+const AddBotPage = () => {
+  const handleCreate = async (data: BotFormData, screenshots: Screenshot[]) => {
     const client_id = new URL(data.botInvite).searchParams.get('client_id');
-
     if (!client_id) {
-      setError(':x: 無法解析 bot invite link 中的 client_id');
-      setLoading(false);
-      return;
+      throw new Error('Invite link 無效，找不到 client_id');
     }
 
-    try {
-      const res = await fetch(
-        `https://discord.com/api/v10/applications/${client_id.trim()}/rpc`,
-        {
-          headers: {
-            'User-Agent': 'DiscordHubs/1.0',
-          },
+    const res = await fetch(
+      `https://discord.com/api/v10/applications/${client_id.trim()}/rpc`,
+      {
+        headers: {
+          'User-Agent': 'DiscordHubs/1.0',
         },
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`,
       );
-
-      if (!res.ok) {
-        throw new Error(
-          `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`,
-        );
-      }
-
-      const rpcData: DiscordBotRPCInfo = await res.json();
-      setBotInfo(rpcData);
-
-      const commandPayload = data.commands.map(cmd => ({
-        name: cmd.name,
-        description: cmd.description,
-        usage: cmd.usage,
-        category: cmd.category ?? null,
-        botId: client_id,
-      }));
-
-      const icon = `https://cdn.discordapp.com/app-icons/${client_id}/${rpcData.icon}.png`;
-
-      const botData: BotWithRelationsInput = {
-        id: client_id,
-        name: data.botName,
-        description: data.botDescription,
-        longDescription: data.botLongDescription || null,
-        tags: data.tags,
-        servers: 0,
-        users: 0,
-        upvotes: 0,
-        icon: icon,
-        banner: null,
-        featured: false,
-        createdAt: new Date(),
-        prefix: data.botPrefix,
-        developers: data.developers.map(dev => ({ id: dev.name })),
-        website: data.botWebsite || null,
-        status: 'pending',
-        inviteUrl: data.botInvite,
-        supportServer: data.botSupport || null,
-        verified: false,
-        features: [],
-        screenshots: screenshotPreviews.map(s => s.url),
-        commands: commandPayload,
-      };
-
-      try {
-        await submitBot(botData);
-        reset();
-        setScreenshotPreviews([]);
-        setSuccess(true);
-
-        await sendNotification({
-          subject: '已收到審核請求',
-          teaser: `${data.botName} 審核請求`,
-          content: `感謝您的申請！我們已收到您的審核請求，通常會在 1～2 個工作天內完成審核。\n審核結果將會同樣於此收件匣通知您，請定時確認以免影響自身權益。\n如審核後的一段時間都仍未收到回覆，請至支援群組開單詢問。`,
-        });
-      } catch (err) {
-        console.error(err);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message ?? '發生未知錯誤');
-    } finally {
-      setLoading(false);
     }
+
+    const rpcData: DiscordBotRPCInfo = await res.json();
+
+    const commandPayload = data.commands.map(cmd => ({
+      name: cmd.name,
+      description: cmd.description,
+      usage: cmd.usage,
+      category: cmd.category ?? null,
+      botId: client_id,
+    }));
+
+    const icon = `https://cdn.discordapp.com/app-icons/${client_id}/${rpcData.icon}.png`;
+
+    const botData: BotWithRelationsInput = {
+      id: client_id,
+      name: data.botName,
+      description: data.botDescription,
+      longDescription: data.botLongDescription || null,
+      tags: data.tags,
+      servers: 0,
+      users: 0,
+      upvotes: 0,
+      icon: icon,
+      banner: null,
+      featured: false,
+      createdAt: new Date(),
+      prefix: data.botPrefix,
+      developers: data.developers.map(dev => ({ id: dev.name })),
+      website: data.botWebsite || null,
+      VoteNotificationURL: data.webhook_url || '',
+      secret: data.secret || '',
+      status: 'pending',
+      inviteUrl: data.botInvite,
+      supportServer: data.botSupport || null,
+      verified: false,
+      features: [],
+      screenshots: screenshots.map(s => s.url),
+      commands: commandPayload,
+    };
+
+    await submitBot(botData);
+    await sendNotification({
+      subject: '已收到審核請求',
+      teaser: `${data.botName} 審核請求`,
+      content: `感謝您的申請！我們已收到您的審核請求，通常會在 1～2 個工作天內完成審核。\n審核結果將會同樣於此收件匣通知您，請定時確認以免影響自身權益。\n如審核後的一段時間都仍未收到回覆，請至支援群組開單詢問。`,
+    });
   };
 
   return (
-    <div className="min-h-screen bg-[#1e1f22] text-white">
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-[#2b2d31] rounded-lg p-6 shadow-lg">
-          <h1 className="text-2xl font-bold mb-6">新增您的 Discord 機器人</h1>
-          <Form {...form}>
-            <form
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                }
-              }}
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-6"
-            >
-              {/* 基本資訊 */}
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">基本資訊</h2>
-
-                <FormField
-                  control={control}
-                  name="botName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>機器人名稱 *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="輸入您的機器人名稱" {...field} />
-                      </FormControl>
-                      <FormMessage>
-                        {formState.errors.botName?.message}
-                      </FormMessage>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={control}
-                  name="botPrefix"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>機器人前綴 *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="例如：! 或 /" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={control}
-                  name="botDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>簡短描述 *</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="簡短描述您的機器人功能（最多 200 字）"
-                          maxLength={200}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={control}
-                  name="botLongDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>詳細描述 *</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          rows={10}
-                          placeholder="詳細描述您的機器人功能、特色等（最多 2000 字）"
-                          maxLength={2000}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={control}
-                  name="botInvite"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>機器人邀請連結 *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="例如：https://discord.com/oauth2/authorize?client_id=..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={control}
-                    name="botWebsite"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>網站連結</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="例如：https://example.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={control}
-                    name="botSupport"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>支援伺服器連結</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="例如：https://discord.gg/example"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* 開發者列表 */}
-                <DeveloperListField />
-
-                {/* 標籤 */}
-                <TagField name="tags" categories={botCategories} />
-
-                {/* 指令列表 */}
-                <CommandListField />
-
-                {/* 圖片上傳 */}
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold">圖片上傳</h2>
-
-                  {/* 機器人截圖 */}
-                  <div className="space-y-10 mt-4">
-                    <FormLabel htmlFor="bot-screenshots">
-                      機器人截圖（最多 5 張）
-                    </FormLabel>
-                    <div className="flex flex-col gap-3">
-                      <ScreenshotGrid
-                        screenshotPreviews={screenshotPreviews.map(p => p.url)}
-                        removeScreenshot={removeScreenshot}
-                      />
-                      {screenshotPreviews.length < 5 && (
-                        <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
-                          <Input
-                            id="bot-screenshots"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleScreenshotUpload}
-                          />
-                          <FormLabel
-                            htmlFor="bot-screenshots"
-                            className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white"
-                          >
-                            <Upload size={24} />
-                            <span className="mt-2 text-sm">上傳截圖</span>
-                          </FormLabel>
-                        </div>
-                      )}
-                      <p className="text-xs text-gray-400">
-                        上傳您機器人的截圖，展示機器人的功能和使用場景
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 提交按鈕 */}
-                <div className="flex items-center justify-between pt-4 border-t border-[#1e1f22]">
-                  <div className="flex items-start gap-2">
-                    <Info size={16} className="text-[#5865f2] mt-0.5" />
-                    <p className="text-sm text-gray-400">
-                      提交後，我們將審核您的機器人。審核通常需要 1-2 個工作日。
-                    </p>
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="relative discord text-white px-4 py-2 rounded disabled:opacity-50 flex items-center justify-center"
-                  >
-                    {loading && (
-                      <svg
-                        className="animate-spin h-5 w-5 mr-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                        />
-                      </svg>
-                    )}
-                    {loading ? '提交中...' : '提交機器人'}
-                  </Button>
-                </div>
-                {error && <p className="text-red-500">{error}</p>}
-              </div>
-            </form>
-          </Form>
-          {success && (
-            <div className="mt-4 text-green-500 text-sm border border-green-500 bg-green-100/10 rounded p-3">
-              ✅ 機器人已成功新增，請等待管理員審核！
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <>
+      <Head>
+        <title>新增機器人 | Discord機器人列表 - DiscordHubs</title>
+        <meta
+          name="description"
+          content="DiscordHubs是最佳的 Discord 中文機器人和機器人列表平台，你可以在此新增你的機器人，讓你的機器人得到宣傳和管理，快速建立專屬的社群空間。"
+        />
+        <meta name="keywords" content={keywords.join('，')} />
+        <meta name="author" content="DiscordHubs 團隊" />
+        <link rel="author" href="https://dchubs.org" />
+        <meta
+          property="og:title"
+          content="新增機器人 | Discord機器人列表 - DiscordHubs"
+        />
+        <meta
+          property="og:description"
+          content="DiscordHubs是最佳的 Discord 中文機器人和機器人列表平台，你可以在此新增你的機器人，讓你的機器人得到宣傳和管理，快速建立專屬的社群空間。"
+        />
+        <meta property="og:url" content="https://dchubs.org" />
+        <meta property="og:site_name" content="DiscordHubs" />
+        <meta
+          property="og:image"
+          content="https://dchubs.org/DCHUSB_banner.png"
+        />
+        <meta property="og:image:width" content="1012" />
+        <meta property="og:image:height" content="392" />
+        <meta
+          property="og:image:alt"
+          content="DiscordHubs Discord伺服器及機器人列表"
+        />
+        <meta property="og:locale" content="zh-TW" />
+        <meta property="og:type" content="website" />
+        <link rel="icon" href="https://dchubs.org/dchub.ico" />
+      </Head>
+      <BotForm mode="create" onSubmit={handleCreate} />
+    </>
   );
 };
 
-export default BotForm;
+export default AddBotPage;

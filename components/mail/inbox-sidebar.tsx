@@ -89,10 +89,8 @@ interface InboxSidebarProps {
   onSelectEmail: (email: Mail) => void;
 }
 
-export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [showUnreadOnly, setShowUnreadOnly] = React.useState(false);
 
+export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
   const { deleteMail, markAsRead } = useInbox();
 
   // 處理郵件點擊
@@ -154,7 +152,7 @@ export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive cursor-pointer"
                           onClick={e => handleDeleteEmail(mail.id, e)}
                         >
                           <Trash2 className="size-4" />

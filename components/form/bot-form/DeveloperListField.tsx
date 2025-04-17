@@ -23,10 +23,14 @@ export const DeveloperListField = () => {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'developers',
-    shouldUnregister: true,
   });
 
+  console.log('fields:', fields);
+
   const [inputValue, setInputValue] = useState('');
+
+  const devs = useWatch({ name: 'developers' });
+  console.log('🧪 developers:', devs);
 
   const handleAddDeveloper = () => {
     const trimmed = inputValue.trim();

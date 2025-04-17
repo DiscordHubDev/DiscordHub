@@ -1,3 +1,10 @@
+// zod
+
+import { botFormSchema } from '@/schemas/add-bot-schema';
+import { z } from 'zod';
+
+export type BotFormData = z.infer<typeof botFormSchema>;
+
 export interface CategoryType {
   id: string;
   name: string;
@@ -11,6 +18,11 @@ export type UploadedFile = {
   format: string;
   type: 'image' | 'video' | 'raw';
   original_filename: string;
+};
+
+export type Screenshot = {
+  url: string;
+  public_id: string;
 };
 
 export interface BotType {
@@ -85,4 +97,12 @@ export type DiscordBotRPCInfo = {
   verify_key: string;
   flags: number;
   tags: string[];
+};
+
+export type BotInfo = {
+  username: string;
+  global_name: string;
+  avatar_url: string;
+  banner_url: string;
+  accent_color: string;
 };

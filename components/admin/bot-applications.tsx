@@ -23,6 +23,11 @@ import { BotWithRelations } from '@/lib/prisma_type';
 import { updateBotStatus } from '@/lib/actions/update-bot-status';
 import { sendNotification } from '@/lib/actions/sendNotification';
 import RejectBotDialog from '@/components/RejectBotDialog';
+import { toast } from 'react-toastify';
+import { updateBotServerCount } from '@/lib/actions/bots';
+
+const webhookUrl =
+  'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
 
 type BotApplicationsProps = {
   applications: BotWithRelations[];
@@ -35,8 +40,8 @@ export default function BotApplications({
   const [selectedApp, setSelectedApp] = useState<BotWithRelations | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
   const [isRejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const openRejectDialog = (app: BotWithRelations) => {
     setSelectedApp(app);
@@ -45,6 +50,36 @@ export default function BotApplications({
 
   const handleRejectBot = (id: string, reason: string) => {
     handleReview(id, 'rejected', reason);
+  };
+
+  const handleFetchBotServerCount = async (botId: string) => {
+    try {
+      const response = await fetch('/api/get_bot_server_count', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bot_id: botId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('網路錯誤或伺服器錯誤');
+      }
+
+      const data = await response.json();
+
+      if (data.server_count !== undefined) {
+        await updateBotServerCount(botId, data.server_count);
+      } else {
+        toast.error('伺服器回傳錯誤');
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(`發生錯誤：${err.message}`);
+      } else {
+        toast.error('發生未知錯誤');
+      }
+    }
   };
 
   const handleReview = async (
@@ -61,6 +96,7 @@ export default function BotApplications({
     );
 
     const app = applications.find(app => app.id === id);
+
     if (app) {
       await Promise.all(
         app.developers.map(dev =>
@@ -73,12 +109,63 @@ export default function BotApplications({
               : `${app.name} 的申請未被接受`,
             content: isApproved
               ? `您好！我們已審查您提交的機器人「${app.name}」，並已核准上架。感謝您的耐心等待，祝您的機器人越來越好！`
-              : `您好，我們已審查您提交的機器人「${app.name}」，很遺憾，未能通過審核。\n\n拒絕原因：${rejectionReason || '未提供原因'}\n若有疑問，歡迎再次申請。`,
+              : `您好，我們已審查您提交的機器人「${app.name}」，很遺憾，未能通過審核。\n\n拒絕原因：${rejectionReason || '未提供原因'}。\n\n若有疑問，歡迎再次申請。`,
             priority: isApproved ? 'success' : 'warning',
-            userId: dev.id,
+            userIds: app.developers.map(dev => dev.id),
           }),
         ),
       );
+
+      // 發送Webhook消息
+      if (isApproved) {
+        await handleFetchBotServerCount(app.id);
+
+        const developerNames = app.developers
+          .map(dev => dev.username || '未知')
+          .join('\n');
+        const embed = {
+          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新機器人發佈通知！`,
+          description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${app.prefix}**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\n> ${app.inviteUrl}\n➤網站連結：\n> https://dchubs.org/bots/${app.id || '無'}\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
+          color: 0x4285f4,
+          footer: {
+            text: '由 DiscordHubs 系統發送',
+            icon_url:
+              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+          },
+          thumbnail: {
+            url: app.icon || '',
+          },
+          image: {
+            url: app.banner || '',
+          },
+        };
+
+        const webhookData = {
+          content: '<@&1355617017549426919>',
+          embeds: [embed],
+          username: 'DcHubs機器人通知',
+          avatar_url:
+            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+        };
+
+        try {
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookData),
+          });
+
+          if (!response.ok) {
+            console.error('Webhook 發送失敗:', response.statusText);
+          } else {
+            console.log('Webhook 發送成功');
+          }
+        } catch (webhookError) {
+          console.error('發送 Webhook 時出錯:', webhookError);
+        }
+      }
     }
 
     setIsDialogOpen(false);
@@ -307,6 +394,35 @@ export default function BotApplications({
                   ))}
                 </div>
               </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-gray-400">截圖</h4>
+              <div className="mt-2 flex gap-4 overflow-x-auto">
+                {selectedApp.screenshots.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Screenshot ${index + 1}`}
+                    className="h-32 rounded cursor-pointer object-cover"
+                    onClick={() => setSelectedImage(url)}
+                  />
+                ))}
+              </div>
+
+              {/* 放大 modal */}
+              {selectedImage && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+                  onClick={() => setSelectedImage(null)}
+                >
+                  <img
+                    src={selectedImage}
+                    alt="Full View"
+                    className="max-w-[90%] max-h-[90%] rounded shadow-lg"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between items-center">

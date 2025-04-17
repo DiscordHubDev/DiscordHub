@@ -27,9 +27,13 @@ import {
   getCloudinarySignature,
 } from '@/lib/actions/image';
 import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
-import { CreateServerInput } from '@/lib/prisma_type';
+import { CreateServerInput, ServerType } from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
-import { insertServer, isOwnerexist } from '@/lib/actions/servers';
+import {
+  insertServer,
+  isOwnerexist,
+  updateServer,
+} from '@/lib/actions/servers';
 import { fetchUserInfo } from '@/lib/utils';
 
 type FormSchemaType = z.infer<typeof ServerFormSchema>;
@@ -40,10 +44,19 @@ type Screenshot = {
 };
 
 type ServerFormProps = {
-  server: ActiveServerInfo;
+  server?: ActiveServerInfo;
+  edit_server?: ServerType;
+  mode: 'create' | 'edit';
 };
 
-export default function ServerFormPage({ server }: ServerFormProps) {
+const webhookUrl =
+  'https://discord.com/api/webhooks/1361334441498378452/pa6cNfNoKTo8tpB_ClSzVZhqnO0DoAjNZ_INJYwPPEvAcT7RkjZLN-H5BQqNSSW_TTUf';
+
+export default function ServerFormPage({
+  server,
+  edit_server,
+  mode,
+}: ServerFormProps) {
   const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
     [],
   );
@@ -56,17 +69,19 @@ export default function ServerFormPage({ server }: ServerFormProps) {
     resolver: zodResolver(ServerFormSchema),
     mode: 'onChange',
     defaultValues: {
-      serverName: server.name,
-      shortDescription: '',
-      longDescription: '',
-      inviteLink: '',
-      websiteLink: '',
-      tags: [],
-      rules: [],
+      serverName: edit_server?.name || server?.name,
+      shortDescription: edit_server?.description || '',
+      longDescription: edit_server?.longDescription || '',
+      inviteLink: edit_server?.inviteUrl || '',
+      websiteLink: edit_server?.website || '',
+      tags: edit_server?.tags || [],
+      rules: edit_server?.rules || [],
+      secret: edit_server?.secret || '',
+      webhook_url: edit_server?.VoteNotificationURL || '',
     },
   });
 
-  const { handleSubmit, control, formState, register, reset } = form;
+  const { handleSubmit, control, formState, register, reset, getValues } = form;
 
   const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -141,41 +156,59 @@ export default function ServerFormPage({ server }: ServerFormProps) {
     setLoading(true);
     setError(null);
 
+    const activeServer = server ?? edit_server;
+    if (!activeServer) {
+      setError('找不到伺服器資料');
+      return;
+    }
+
     try {
       let avatar: string = '';
       let banner: string | null = null;
       let global_name: string = '未知使用者';
 
-      const existingOwner = await isOwnerexist(server.owner);
+      const memberCount =
+        'memberCount' in activeServer ? activeServer.memberCount : 0;
+      const onlineCount =
+        'OnlineMemberCount' in activeServer
+          ? activeServer.OnlineMemberCount
+          : 0;
+
+      const ownerId =
+        typeof activeServer.owner === 'string'
+          ? activeServer.owner
+          : activeServer.owner?.id;
+
+      const existingOwner = await isOwnerexist(ownerId!);
 
       if (!existingOwner) {
-        console.log('server.owner', server.owner);
-        const userInfo = await fetchUserInfo(server.owner);
-
+        const userInfo = await fetchUserInfo(ownerId!);
         avatar = userInfo.avatar_url;
         banner = userInfo.banner_url;
         global_name = userInfo.global_name;
       }
 
       const payload: CreateServerInput = {
-        id: server.id,
+        id: activeServer.id,
         name: data.serverName,
-        icon: server.icon,
-        banner: server.banner,
+        icon: activeServer.icon,
+        banner: activeServer.banner,
         description: data.shortDescription,
         longDescription: data.longDescription,
         inviteUrl: data.inviteLink,
         website: data.websiteLink,
+        VoteNotificationURL: data.webhook_url,
+        secret: data.secret,
         tags: data.tags,
-        members: server.memberCount,
-        online: server.OnlineMemberCount,
+        members: memberCount,
+        online: onlineCount,
         rules: data.rules,
         upvotes: 0,
         owner: {
           connectOrCreate: {
-            where: { id: server.owner },
+            where: { id: ownerId },
             create: {
-              id: server.owner,
+              id: ownerId!,
               username: global_name,
               avatar: avatar,
               banner: banner,
@@ -184,9 +217,58 @@ export default function ServerFormPage({ server }: ServerFormProps) {
         },
       };
 
-      await insertServer(payload);
-      reset();
+      if (mode === 'edit') {
+        await updateServer(payload);
+      } else {
+        await insertServer(payload);
+      }
+
+      // Webhook 消息
+      const embed = {
+        title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
+        description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
+        color: 0x4285f4,
+        thumbnail: {
+          url: activeServer?.icon || '',
+        },
+        image: {
+          url: activeServer?.banner || '',
+        },
+        footer: {
+          text: '由 DiscordHubs 系統發送',
+          icon_url:
+            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+        },
+      };
+
+      const webhookData = {
+        content: '<@&1355617333967585491>',
+        embeds: [embed],
+        username: 'DcHubs伺服器通知',
+        avatar_url:
+          'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+      };
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookData),
+        });
+
+        if (!response.ok) {
+          console.error('Webhook 發送失敗:', response.statusText);
+        } else {
+          console.log('Webhook 發送成功');
+        }
+      } catch (webhookError) {
+        console.error('發送 Webhook 時出錯:', webhookError);
+      }
+
       setSuccess(true);
+      reset();
     } catch (err: any) {
       console.error(err);
       setError(err.message ?? '發生未知錯誤');
@@ -194,6 +276,52 @@ export default function ServerFormPage({ server }: ServerFormProps) {
       setLoading(false);
     }
   };
+
+  // const handleTestWebhook = async () => {
+  //   const data = getValues();
+  //   const activeServer = server ?? edit_server;
+
+  //   const embed = {
+  //     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
+  //     description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
+  //     color: 0x4285f4,
+  //     thumbnail: {
+  //       url: activeServer?.icon || '',
+  //     },
+  //     image: {
+  //       url: activeServer?.banner || '',
+  //     },
+  //     footer: {
+  //       text: 'Discord Hubs',
+  //     },
+  //   };
+
+  //   const webhookData = {
+  //     content: '<@&1355617333967585491>',
+  //     embeds: [embed],
+  //     username: 'DcHubs伺服器通知',
+  //     avatar_url:
+  //       'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+  //   };
+
+  //   try {
+  //     const response = await fetch(webhookUrl, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(webhookData),
+  //     });
+
+  //     if (!response.ok) {
+  //       console.error('Webhook 發送失敗:', response.statusText);
+  //     } else {
+  //       console.log('Webhook 發送成功');
+  //     }
+  //   } catch (webhookError) {
+  //     console.error('發送 Webhook 時出錯:', webhookError);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -316,6 +444,48 @@ export default function ServerFormPage({ server }: ServerFormProps) {
               {/* 標籤 */}
               <ServerTagField name="tags" categories={Servercategories} />
 
+              {/* 投票通知 */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">投票通知</h2>
+
+                <FormField
+                  control={form.control}
+                  name="secret"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Secret（觸發投票時，Secret會加到 Auth
+                        Header，用來驗證請求是從這裡送出）
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="輸入 Secret" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="webhook_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Webhook URL（輸入 Discord Webhook 時會送出美化的投票通知
+                        Embed，自訂 Web Server 則會接收到 JSON 格式的資料）
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://https://discord.com/api/webhooks/... or http://your-webserver.com/"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               {/* 圖片上傳 */}
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">圖片上傳</h2>
@@ -357,6 +527,13 @@ export default function ServerFormPage({ server }: ServerFormProps) {
               </div>
 
               <div className="flex flex-col items-center justify-center pt-4 border-t border-[#1e1f22] space-y-2">
+                {/* <Button
+                  type="button"
+                  onClick={handleTestWebhook}
+                  className="relative discord text-white px-4 py-2 rounded flex items-center justify-center"
+                >
+                  測試 Webhook
+                </Button> */}
                 <Button
                   type="submit"
                   disabled={loading}
@@ -384,15 +561,23 @@ export default function ServerFormPage({ server }: ServerFormProps) {
                       />
                     </svg>
                   )}
-                  {loading ? '提交中...' : '提交伺服器'}
+                  {loading
+                    ? mode === 'edit'
+                      ? '儲存中...'
+                      : '提交中...'
+                    : mode === 'edit'
+                      ? '儲存變更'
+                      : '提交伺服器'}
                 </Button>
                 {error && <p className="text-red-500">{error}</p>}
               </div>
             </form>
           </Form>
           {success && (
-            <div className="mt-4 text-green-500 text-sm border border-green-500 bg-green-100/10 rounded p-3">
-              ✅ 伺服器已經提交成功，可到伺服器頁面查看！
+            <div className="... text-green-500">
+              {mode === 'edit'
+                ? '✅ 伺服器資訊已更新！'
+                : '✅ 伺服器已經提交成功！'}
             </div>
           )}
         </div>

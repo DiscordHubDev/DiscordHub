@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import type { CategoryType } from '@/lib/types';
-
+import Pagination from '@/components/pagination';
 interface CategoryFilterProps {
   categories: CategoryType[];
   onCategoryChange?: (selectedCategories: string[]) => void;
@@ -15,6 +15,21 @@ export default function CategoryFilter({
 }: CategoryFilterProps) {
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // 每頁顯示的分類數量
+  const CATEGORIES_PER_PAGE = 10;
+
+  // 計算總頁數
+  const totalPages = Math.ceil(categories.length / CATEGORIES_PER_PAGE);
+
+  // 獲取當前頁的分類
+  const getCurrentPageCategories = () => {
+    const startIndex = (currentPage - 1) * CATEGORIES_PER_PAGE;
+    const endIndex = startIndex + CATEGORIES_PER_PAGE;
+    return categories.slice(startIndex, endIndex);
+  };
 
   const toggleCategory = (id: string) => {
     const updatedCategories = categories.map(category =>
@@ -34,9 +49,14 @@ export default function CategoryFilter({
     }
   };
 
+  // 處理頁面變更
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="space-y-2">
-      {categories.map(category => (
+      {getCurrentPageCategories().map(category => (
         <div
           key={category.id}
           className="flex items-center justify-between p-2 rounded hover:bg-[#36393f] cursor-pointer transition-colors"
@@ -60,6 +80,17 @@ export default function CategoryFilter({
           </div>
         </div>
       ))}
+
+      {/* 分頁控制器 - 只有當總頁數大於1時才顯示 */}
+      {totalPages > 1 && (
+        <div className="mt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
     </div>
   );
 }
