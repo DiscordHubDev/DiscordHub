@@ -473,7 +473,7 @@ export default function ServerFormPage({
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="https://https://discord.com/api/webhooks/... or http://your-webserver.com/"
+                          placeholder="https://discord.com/api/webhooks/... or http://your-webserver.com/"
                           {...field}
                         />
                       </FormControl>
