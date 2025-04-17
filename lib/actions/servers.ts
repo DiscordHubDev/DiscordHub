@@ -38,7 +38,6 @@ export async function updateServer(data: CreateServerInput) {
       },
     });
 
-    console.log('✅ 更新伺服器成功:', updatedServer);
     return updatedServer;
   } catch (error) {
     console.error('❌ 更新伺服器失敗:', error);
@@ -52,7 +51,6 @@ export async function insertServer(data: CreateServerInput) {
       data,
     });
 
-    console.log('✅ 新增伺服器成功:', createdServer);
     return createdServer;
   } catch (error) {
     console.error('❌ 新增伺服器失敗:', error);

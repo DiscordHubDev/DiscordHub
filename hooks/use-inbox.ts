@@ -65,7 +65,6 @@ export function useInbox() {
   }, [data]);
 
   const addMail = (newRawMail: any) => {
-    console.log('newMail', newRawMail);
     const newMail = transformNotification(newRawMail);
     setMails(prev => [newMail, ...prev]);
   };

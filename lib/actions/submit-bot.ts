@@ -30,7 +30,6 @@ const insertBot = async (data: BotWithRelations) => {
       },
     });
 
-    console.log('✅ 新增機器人成功:', createdBot);
     return createdBot;
   } catch (error) {
     console.error('❌ 新增機器人失敗:', error);

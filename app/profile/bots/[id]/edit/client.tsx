@@ -29,7 +29,6 @@ export default function BotEditClient({ bot }: { bot: BotWithFavorites }) {
         })),
       }}
       onSubmit={async (data, screenshots) => {
-        console.log('?');
         await updateBot(bot.id, data, screenshots);
       }}
     />

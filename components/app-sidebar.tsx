@@ -215,7 +215,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const refreshUnreadCount = () => {
     const count = mails.filter(mail => !mail.read).length;
-    console.log('unread', count);
+
     setUnreadCount(count); // ✅ 這裡設定的是外層的 state
   };
 

@@ -38,8 +38,6 @@ export async function updateBot(
     screenshots: screenshots.map(s => s.url),
   };
 
-  console.log('🔧 Updating bot with:', botFields);
-
   await prisma.$transaction([
     prisma.bot.update({
       where: { id },

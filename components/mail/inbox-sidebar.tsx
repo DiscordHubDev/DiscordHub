@@ -41,7 +41,6 @@ export const getPriorityColorClass = (
   priority: EmailPriority,
   isRead: boolean,
 ) => {
-  console.log('priority', priority);
   const baseClass = isRead ? 'opacity-70 ' : '';
 
   switch (priority) {
@@ -107,8 +106,6 @@ export function InboxSidebar({
   // 處理郵件刪除
   const handleDeleteEmail = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-
-    console.log(id);
 
     try {
       onDeleteEmail(id);
