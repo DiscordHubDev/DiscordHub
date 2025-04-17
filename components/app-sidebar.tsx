@@ -377,10 +377,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         {showInbox && isMobile && (
           <div className="fixed inset-0 z-50 bg-background shadow-xl flex flex-col max-h-screen overflow-hidden">
-            <SidebarHeader className="shrink-0 border-b p-4 flex justify-between items-center">
-              <div className="text-base font-semibold">收件匣</div>
+            <SidebarHeader className="shrink-0 border-b p-4 flex flex-col space-y-2">
+              <div className="flex justify-between items-center">
+                <div className="text-base font-semibold">收件匣</div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">未讀</span>
+                  <Switch
+                    checked={onlyUnread}
+                    onCheckedChange={setOnlyUnread}
+                  />
+                </div>
+              </div>
+
               <button
-                className="text-sm text-muted-foreground"
+                className="text-sm text-muted-foreground mx-auto"
                 onClick={() => setShowInbox(false)}
               >
                 關閉
