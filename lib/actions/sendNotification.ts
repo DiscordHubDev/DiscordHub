@@ -7,7 +7,7 @@ import { createServerSupabaseClient } from '../server_supabase';
 type SendNotificationParams = {
   subject: string;
   teaser: string;
-  content?: string;
+  content: string;
   priority?: EmailPriority;
   name?: string;
   userIds?: Array<string | null>;
