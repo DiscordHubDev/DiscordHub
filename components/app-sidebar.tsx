@@ -255,7 +255,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     {
       title: '邀請官方機器人',
-      url: 'https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=8&integration_type=0&scope=bot',
+      url: 'https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=1126965059046400&integration_type=0&scope=bot',
       icon: BotIcon,
     },
   ];

@@ -49,7 +49,7 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
   const handleClick = () => {
     if (!server.isInServer) {
       window.open(
-        'https://discord.com/oauth2/authorize?client_id=1324996138251583580',
+        'https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=1126965059046400&integration_type=0&scope=bot',
         '_blank',
       );
     } else if (!isPublished) {
