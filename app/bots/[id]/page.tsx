@@ -37,8 +37,8 @@ export async function generateMetadata({
       images: [
         {
           url: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
-          width: 1200,
-          height: 630,
+          width: 512,
+          height: 512,
         },
       ],
     },
