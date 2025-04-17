@@ -4,6 +4,31 @@ import DiscordProvider from 'next-auth/providers/discord';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+export type PriorityInput = {
+  upvotes?: number;
+  servers?: number;
+};
+
+export function createPriorityCalculator(options?: {
+  voteWeight?: number;
+  serverWeight?: number;
+  maxScore?: number;
+}) {
+  const voteWeight = options?.voteWeight ?? 0.7;
+  const serverWeight = options?.serverWeight ?? 0.3;
+
+  return function calculatePriority(input: PriorityInput, maxScore: number) {
+    const upvotes = input.upvotes || 0;
+    const servers = input.servers || 0;
+
+    const score = upvotes * voteWeight + servers * serverWeight;
+
+    const priority = 0.5 + (score / maxScore) * 0.5;
+
+    return Math.min(1.0, Math.max(0.5, Number(priority.toFixed(2))));
+  };
+}
+
 export function getRandomEmbedColor(): number {
   return Math.floor(Math.random() * 0xffffff);
 }
