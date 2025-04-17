@@ -90,9 +90,8 @@ interface InboxSidebarProps {
 }
 
 
-export function InboxSidebar({ Emails, onSelectEmail }: InboxSidebarProps) {
+export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
   const { deleteMail, markAsRead } = useInbox();
-  const mails = Emails;
 
   // 處理郵件點擊
   const handleEmailClick = (mail: Mail) => {
