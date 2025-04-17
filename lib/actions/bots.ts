@@ -89,6 +89,19 @@ export async function getBot(id: string) {
   return bot;
 }
 
+export async function deleteBot(id: string) {
+  try {
+    const deleted = await prisma.bot.delete({
+      where: { id },
+    });
+
+    return { success: true, bot: deleted };
+  } catch (error) {
+    console.error('❌ 刪除 Bot 失敗：', error);
+    return { success: false, error };
+  }
+}
+
 export async function getPendingBots() {
   const bots = await prisma.bot.findMany({
     where: {

@@ -134,3 +134,18 @@ export const getServerByGuildId = async (
     throw error;
   }
 };
+
+export const deleteServerByGuildId = async (
+  guildId: string,
+): Promise<{ success: boolean; error?: any }> => {
+  try {
+    await prisma.server.delete({
+      where: { id: guildId },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error(`❌ 無法刪除伺服器 (${guildId}):`, error);
+    return { success: false, error };
+  }
+};
