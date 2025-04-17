@@ -1,8 +1,6 @@
-import type { IConfig } from 'next-sitemap';
-
 const siteUrl = 'https://dchubs.org';
 
-const config: IConfig = {
+const config = {
   siteUrl,
   generateRobotsTxt: true,
   sitemapSize: 5000,
