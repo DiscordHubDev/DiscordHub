@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: `個人檔案 | Discord伺服器列表 - DiscordHubs`,
   description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此管理你的伺服器和機器人，讓你的伺服器得到宣傳和管理，編輯你的個人資料和管理收藏。`,
   icons: {
-    icon: '/dchub.ico',
+    icon: '/favicon.ico',
   },
   // 關鍵詞
   keywords: keywords.join('，'),

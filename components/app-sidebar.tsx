@@ -303,7 +303,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: activeItem === item.title,
             }))}
             onSelect={title => {
-
               if (title === '私人收件匣') {
                 setShowInbox(prev => !prev); // 切換 inbox 開關
               } else {
