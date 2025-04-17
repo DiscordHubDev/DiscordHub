@@ -57,7 +57,7 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild className="hover:bg-[#5865F2]">
-                          <Badge className="bg-[#5865F2] text-white text-sm px-3 py-1 rounded-full gap-1 inline-flex items-center cursor-default hover:bg-[#5865F2] hover:text-white">
+                          <Badge className="discord text-white text-sm px-3  rounded-full gap-1 inline-flex items-center cursor-default hover:bg-[#5865F2] hover:text-white">
                             <FaCheck className="w-3.5 h-3.5" />
                             驗證
                           </Badge>
