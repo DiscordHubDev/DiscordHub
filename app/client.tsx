@@ -260,7 +260,7 @@ export default function DiscordServerListPageClient({
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs
-              defaultValue="featured"
+              defaultValue="all"
               className="mb-8"
               onValueChange={handleTabChange}
             >

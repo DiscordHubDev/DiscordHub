@@ -38,6 +38,7 @@ import {
   SidebarInput,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { NavSecondary } from './nav-secondary';
 import { useSession } from 'next-auth/react';
@@ -51,6 +52,7 @@ import { InboxSidebar } from './mail/inbox-sidebar';
 import { EmailDialog } from './mail/mail-dialog';
 import { Mail } from '@/lib/types';
 import { Session } from 'next-auth';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ADMIN_ID = ['857502876108193812', '549056425943629825'];
 
@@ -187,14 +189,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [selectedMail, setSelectedMail] = useState<Mail | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { mails, addMail, markAsRead } = useInbox();
+  const { mails, markAsRead } = useInbox();
 
   const [search, setSearch] = useState('');
 
-  const [onlyUnread, setOnlyUnread] = useState(false);
+  const onlyUnread = useState(false);
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [showInbox, setShowInbox] = useState(false);
+
+  const isMobile = useIsMobile();
+
+  const { toggleSidebar } = useSidebar();
 
   useEffect(() => {
     refreshUnreadCount();
@@ -249,7 +255,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     {
       title: '邀請官方機器人',
-      url: 'https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=8&integration_type=0&scope=bot',
+      url: 'https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=1126965059046400&integration_type=0&scope=bot',
       icon: BotIcon,
     },
   ];
@@ -291,6 +297,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return !!user?.id && item.onlyFor.includes(user.id);
   });
 
+  useEffect(() => {
+    if (isMobile) {
+      toggleSidebar();
+    }
+  }, [showInbox, isMobile]);
+
   return (
     <div className="flex h-full">
       <Sidebar collapsible="icon" {...props}>
@@ -303,7 +315,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: activeItem === item.title,
             }))}
             onSelect={title => {
-
               if (title === '私人收件匣') {
                 setShowInbox(prev => !prev); // 切換 inbox 開關
               } else {
@@ -331,44 +342,41 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarRail />
       </Sidebar>
       <div className="flex-1 flex flex-col overflow-hidden">
-        {showInbox && (
+        {showInbox && !isMobile && (
           <Sidebar collapsible="none" className="flex flex-col max-h-screen">
-            <SidebarHeader className="shrink-0 border-b p-4">
-              <div className="flex w-full items-center justify-between">
-                <div className="text-base font-medium text-foreground">
-                  收件匣
-                </div>
-                <Label className="flex items-center gap-2 text-sm">
-                  <span>未讀</span>
-                  <Switch
-                    className="shadow-none"
-                    checked={onlyUnread}
-                    onCheckedChange={setOnlyUnread}
-                  />
-                </Label>
-              </div>
+            <SidebarHeader>收件匣</SidebarHeader>
+            <InboxSidebar
+              mails={filteredMails}
+              onSelectEmail={mail => openMail(mail)}
+            />
+          </Sidebar>
+        )}
+
+        {showInbox && isMobile && (
+          <div className="fixed inset-0 z-50 bg-background shadow-xl flex flex-col max-h-screen overflow-hidden">
+            <SidebarHeader className="shrink-0 border-b p-4 flex justify-between items-center">
+              <div className="text-base font-semibold">收件匣</div>
+              <button
+                className="text-sm text-muted-foreground"
+                onClick={() => setShowInbox(false)}
+              >
+                關閉
+              </button>
+            </SidebarHeader>
+            <div className="p-4">
               <SidebarInput
                 placeholder="搜尋郵件..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
-            </SidebarHeader>
-            <SidebarContent className="flex-1 overflow-y-auto">
-              <SidebarGroup className="px-0">
-                <SidebarGroupContent>
-                  <NotificationListener
-                    onNotify={newMail => {
-                      addMail(newMail);
-                    }}
-                  />
-                  <InboxSidebar
-                    mails={filteredMails}
-                    onSelectEmail={mail => openMail(mail)}
-                  />
-                </SidebarGroupContent>
-              </SidebarGroup>
-            </SidebarContent>
-          </Sidebar>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <InboxSidebar
+                mails={filteredMails}
+                onSelectEmail={mail => openMail(mail)}
+              />
+            </div>
+          </div>
         )}
       </div>
       <EmailDialog

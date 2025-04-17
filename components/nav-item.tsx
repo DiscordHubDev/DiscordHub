@@ -1,12 +1,14 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { type LucideIcon } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import clsx from 'clsx'; // 用來組合 class（可選）
+import clsx from 'clsx';
+import { usePathname } from 'next/navigation';
 
 export function NavItem({
   items,
@@ -21,6 +23,10 @@ export function NavItem({
   }[];
   onSelect?: (title: string) => void;
 }) {
+  const router = useRouter();
+
+  const pathname = usePathname();
+
   return (
     <SidebarMenu>
       {items.map(item => {
@@ -29,11 +35,21 @@ export function NavItem({
             ? '99+'
             : item.badge;
 
+        const handleClick = () => {
+          onSelect?.(item.title);
+
+          if (pathname === item.url) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            router.push(item.url);
+          }
+        };
+
         return (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
               isActive={item.isActive}
-              onClick={() => onSelect?.(item.title)}
+              onClick={handleClick}
               className="cursor-pointer"
             >
               <div className="flex items-center gap-2">
