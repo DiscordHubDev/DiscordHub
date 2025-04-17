@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "prisma generate",
-    "build": "next-sitemap && next build",
+    "postinstall": "prisma generate && next-sitemap",
+    "build": "next build",
     "start": "next start",
     "lint:check": "next lint",
     "lint:fix": "next lint --fix",
