@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: `熱門機器人 | Discord機器人列表 - DiscordHubs`,
   description: `歡迎來到 DiscordHubs 平台，這裏擁有熱門 Discord 機器人，涵蓋免費的管理機器人、超棒的音樂機器人、遊戲實用機器人等，具有不同的標籤及分類。同時，我們提供全面的 Discord 伺服器列表，幫助您輕鬆發現、宣傳和加入各類有趣的社群群組，`,
   icons: {
-    icon: '/dchub.ico',
+    icon: '/favicon.ico',
   },
   // 關鍵詞
   keywords: keywords.join('，'),
