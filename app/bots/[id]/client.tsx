@@ -21,7 +21,13 @@ import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FavoriteButton } from '@/components/favorite-button';
 import { ReportDialog } from '@/components/ReportDialog';
-import { FaDiscord } from 'react-icons/fa6';
+import { FaCheck, FaDiscord } from 'react-icons/fa6';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type BotDetailProps = {
   allBots: BotWithRelations[];
@@ -41,7 +47,7 @@ export default function BotDetailClient({
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Banner */}
-      <div className="relative h-48 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
+      <div className="relative h-50 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
         {bot.banner ? (
           <div className="relative w-full h-full">
             <img
@@ -56,7 +62,7 @@ export default function BotDetailClient({
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-14 relative z-10">
         <div className="flex flex-col md:flex-row gap-6">
           {/* 機器人圖標和基本資訊 */}
           <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
@@ -69,28 +75,22 @@ export default function BotDetailClient({
               </Avatar>
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 <h1 className="text-2xl md:text-3xl font-bold text-white">
                   {bot.name}
                 </h1>
                 {bot.verified && (
-                  <span className="ml-2 text-[#5865f2]">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="lucide lucide-badge-check"
-                    >
-                      <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge className="bg-[#5865F2] text-white text-sm px-3 py-1 rounded-full gap-1 inline-flex items-center cursor-default hover:bg-[#5865F2] hover:text-white">
+                          <FaCheck className="w-3.5 h-3.5" />
+                          驗證
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>已驗證的 Discord 機器人</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-300 mt-2">
