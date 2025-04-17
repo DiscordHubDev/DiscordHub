@@ -32,6 +32,8 @@ export function useInbox() {
   };
 
   const deleteMail = async (mailId: string) => {
+    setMails(prev => prev.filter(mail => mail.id !== mailId));
+
     const { error } = await supabase
       .from('Notification')
       .delete()
@@ -41,8 +43,6 @@ export function useInbox() {
       console.error('❌ 刪除失敗：', error);
       throw error;
     }
-
-    setMails(prev => prev.filter(mail => mail.id !== mailId));
   };
 
   const { data, error, isLoading, mutate } = useSWR(
@@ -65,7 +65,6 @@ export function useInbox() {
   }, [data]);
 
   const addMail = (newRawMail: any) => {
-    console.log('newMail', newRawMail);
     const newMail = transformNotification(newRawMail);
     setMails(prev => [newMail, ...prev]);
   };

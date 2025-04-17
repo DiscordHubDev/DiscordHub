@@ -30,6 +30,8 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BotWithRelations, ServerType } from '@/lib/prisma_type';
+import { deleteServerByGuildId } from '@/lib/actions/servers';
+import { deleteBot } from '@/lib/actions/bots';
 
 type BotServerManagementProps = {
   bots: BotWithRelations[];
@@ -54,19 +56,20 @@ export default function BotServerManagement({
   const [itemToDelete, setItemToDelete] = useState<ManagedItem | null>(null);
   const [activeTab, setActiveTab] = useState('bots');
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!itemToDelete) return;
 
     if (itemToDelete.type === 'bot') {
       setBots(bots.filter(bot => bot.id !== itemToDelete.id));
+      await deleteBot(itemToDelete.id);
     } else {
       setServers(servers.filter(server => server.id !== itemToDelete.id));
+      await deleteServerByGuildId(itemToDelete.id);
     }
 
     setDeleteDialogOpen(false);
     setItemToDelete(null);
 
-    // 如果刪除的項目當前被選中，關閉詳情對話框
     if (selectedItem && selectedItem.id === itemToDelete.id) {
       setIsDialogOpen(false);
       setSelectedItem(null);
@@ -285,7 +288,10 @@ export default function BotServerManagement({
                           className="text-[#ED4245] hover:text-white hover:bg-[#ED4245]"
                           onClick={e => {
                             e.stopPropagation();
-                            // confirmDelete(server, "server");
+                            confirmDelete({
+                              ...server,
+                              type: 'servers',
+                            });
                           }}
                         >
                           <Trash2 className="h-4 w-4" />

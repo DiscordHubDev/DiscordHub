@@ -10,8 +10,6 @@ export async function Vote(itemId: string, itemType: string) {
 
   const normalizedType = itemType.toLowerCase() as VoteType;
 
-  console.log('type', normalizedType);
-
   if (!userId) {
     return { success: false, error: 'NOT_LOGGED_IN' };
   }

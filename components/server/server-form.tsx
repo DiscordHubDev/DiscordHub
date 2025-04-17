@@ -95,7 +95,6 @@ export default function ServerFormPage({
     setUploading(true);
 
     const sig = await getCloudinarySignature();
-    console.log('簽名資訊', sig);
 
     for (const file of fileArray) {
       const formData = new FormData();
@@ -146,7 +145,6 @@ export default function ServerFormPage({
 
     try {
       await deleteCloudinaryImage(toDelete.public_id);
-      console.log('圖片已從 Cloudinary 刪除');
     } catch (err) {
       console.error('刪除失敗', err);
     }
@@ -261,7 +259,6 @@ export default function ServerFormPage({
         if (!response.ok) {
           console.error('Webhook 發送失敗:', response.statusText);
         } else {
-          console.log('Webhook 發送成功');
         }
       } catch (webhookError) {
         console.error('發送 Webhook 時出錯:', webhookError);
@@ -316,7 +313,7 @@ export default function ServerFormPage({
   //     if (!response.ok) {
   //       console.error('Webhook 發送失敗:', response.statusText);
   //     } else {
-  //       console.log('Webhook 發送成功');
+  //
   //     }
   //   } catch (webhookError) {
   //     console.error('發送 Webhook 時出錯:', webhookError);

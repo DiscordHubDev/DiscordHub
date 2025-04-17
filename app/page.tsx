@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: `熱門伺服器 | Discord伺服器列表 - DiscordHubs`,
   description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，幫助您發現及宣傳伺服器，和加入有趣的社群群組和機器人，為伺服器增添功能和成員。`,
   icons: {
-    icon: '/dchub.ico',
+    icon: '/favicon.ico',
   },
   // 關鍵詞
   keywords: keywords.join('，'),

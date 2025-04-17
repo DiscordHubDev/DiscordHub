@@ -38,8 +38,6 @@ export async function updateBot(
     screenshots: screenshots.map(s => s.url),
   };
 
-  console.log('🔧 Updating bot with:', botFields);
-
   await prisma.$transaction([
     prisma.bot.update({
       where: { id },
@@ -87,6 +85,19 @@ export async function getBot(id: string) {
     },
   });
   return bot;
+}
+
+export async function deleteBot(id: string) {
+  try {
+    const deleted = await prisma.bot.delete({
+      where: { id },
+    });
+
+    return { success: true, bot: deleted };
+  } catch (error) {
+    console.error('❌ 刪除 Bot 失敗：', error);
+    return { success: false, error };
+  }
 }
 
 export async function getPendingBots() {

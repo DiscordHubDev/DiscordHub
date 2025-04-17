@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '../dropdown-menu';
 import { Menu } from 'lucide-react';
+import Image from 'next/image';
 
 // 定义 LinkItem 类型，允许存在 onClick 属性
 type LinkItem = {
@@ -32,31 +33,19 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="md:hidden">
           <div className="flex items-center justify-between md:hidden w-full px-4 py-2">
-            {/* 左側 Sidebar Trigger */}
             <SidebarTrigger className="-mt-1" />
-            {/* 中間 Logo 置中（用 absolute + left-1/2 + translate-x-1/2） */}
             <Link
               href="/"
-              className="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold text-white flex items-center"
+              className="text-xl font-bold text-white flex items-center"
             >
-              <span className="text-[#5865f2] mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-message-square-more"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  <path d="M8 10h.01" />
-                  <path d="M12 10h.01" />
-                  <path d="M16 10h.01" />
-                </svg>
+              <span className="mr-2">
+                <Image
+                  src="/favicon.ico"
+                  alt="Logo"
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
               </span>
               DiscordHubs
             </Link>
@@ -74,24 +63,14 @@ export default function Navbar() {
               href="/"
               className="text-xl font-bold text-white flex items-center"
             >
-              <span className="text-[#5865f2] mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-message-square-more"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  <path d="M8 10h.01" />
-                  <path d="M12 10h.01" />
-                  <path d="M16 10h.01" />
-                </svg>
+              <span className="mr-2">
+                <Image
+                  src="/favicon.ico"
+                  alt="Logo"
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
               </span>
               DiscordHubs
             </Link>

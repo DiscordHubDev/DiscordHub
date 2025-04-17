@@ -25,12 +25,9 @@ export const DeveloperListField = () => {
     name: 'developers',
   });
 
-  console.log('fields:', fields);
-
   const [inputValue, setInputValue] = useState('');
 
   const devs = useWatch({ name: 'developers' });
-  console.log('🧪 developers:', devs);
 
   const handleAddDeveloper = () => {
     const trimmed = inputValue.trim();

@@ -75,8 +75,6 @@ const BotForm: React.FC<BotFormProps> = ({
       developers: [],
       commands: [],
       tags: [],
-      webhook_url: '',
-      secret: '',
       ...(defaultValues || {}),
     },
   });
@@ -102,7 +100,6 @@ const BotForm: React.FC<BotFormProps> = ({
     setUploading(true);
 
     const sig = await getCloudinarySignature();
-    console.log('簽名資訊', sig);
 
     for (const file of fileArray) {
       const formData = new FormData();
@@ -153,7 +150,6 @@ const BotForm: React.FC<BotFormProps> = ({
 
     try {
       await deleteCloudinaryImage(toDelete.public_id);
-      console.log('圖片已從 Cloudinary 刪除');
     } catch (err) {
       console.error('刪除失敗', err);
     }
@@ -169,7 +165,7 @@ const BotForm: React.FC<BotFormProps> = ({
   const onSubmitHandler = async (data: FormData) => {
     try {
       setLoading(true);
-      console.log('表單資料:', data);
+
       await onSubmit(data, screenshotPreviews);
       setLoading(false);
       if (mode === 'create') reset();
@@ -211,7 +207,6 @@ const BotForm: React.FC<BotFormProps> = ({
         if (!response.ok) {
           console.error('Webhook 發送失敗:', response.statusText);
         } else {
-          console.log('Webhook 發送成功');
         }
       } catch (webhookError) {
         console.error('發送 Webhook 時出錯:', webhookError);
@@ -265,7 +260,7 @@ const BotForm: React.FC<BotFormProps> = ({
   //     if (!response.ok) {
   //       console.error('Webhook 發送失敗:', response.statusText);
   //     } else {
-  //       console.log('Webhook 發送成功');
+  //
   //     }
   //   } catch (webhookError) {
   //     console.error('發送 Webhook 時出錯:', webhookError);

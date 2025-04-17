@@ -47,7 +47,6 @@ import { Separator } from '@radix-ui/react-separator';
 import { Label } from '@radix-ui/react-dropdown-menu';
 import { Switch } from './ui/switch';
 import { useInbox } from '@/hooks/use-inbox';
-import { NotificationListener } from '@/app/providers/NotificationProvider';
 import { InboxSidebar } from './mail/inbox-sidebar';
 import { EmailDialog } from './mail/mail-dialog';
 import { Mail } from '@/lib/types';
@@ -189,11 +188,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [selectedMail, setSelectedMail] = useState<Mail | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { mails, markAsRead } = useInbox();
+  const { mails, markAsRead, deleteMail } = useInbox();
 
   const [search, setSearch] = useState('');
 
-  const onlyUnread = useState(false);
+  const [onlyUnread, setOnlyUnread] = useState(false);
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [showInbox, setShowInbox] = useState(false);
@@ -206,9 +205,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     refreshUnreadCount();
   }, [mails]);
 
+  const handleDeleteEmail = async (id: string) => {
+    try {
+      await deleteMail(id);
+    } catch (error) {
+      console.error('❌ 刪除郵件失敗：', error);
+    }
+  };
+
   const refreshUnreadCount = () => {
     const count = mails.filter(mail => !mail.read).length;
-    console.log('unread', count);
+
     setUnreadCount(count); // ✅ 這裡設定的是外層的 state
   };
 
@@ -247,11 +254,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Sparkles,
     },
     {
-      title: '私人收件匣',
+      title: '收件匣',
       url: '#',
       icon: Inbox,
       badge: unreadCount > 0 ? String(unreadCount) : undefined,
-      isActive: showInbox,
+      isActive: !showInbox,
     },
     {
       title: '邀請官方機器人',
@@ -315,12 +322,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: activeItem === item.title,
             }))}
             onSelect={title => {
-              if (title === '私人收件匣') {
+              if (title === '收件匣') {
                 setShowInbox(prev => !prev); // 切換 inbox 開關
               } else {
                 setShowInbox(false); // 點其他項目時強制關閉 inbox
-                setActiveItem(prev => (prev === title ? null : title));
               }
+              setActiveItem(prev => (prev === title ? null : title));
             }}
           />
         </SidebarHeader>
@@ -344,10 +351,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <div className="flex-1 flex flex-col overflow-hidden">
         {showInbox && !isMobile && (
           <Sidebar collapsible="none" className="flex flex-col max-h-screen">
-            <SidebarHeader>收件匣</SidebarHeader>
+            <SidebarHeader className="justify-between items-center px-4 py-2 flex flex-row">
+              <span className="text-sm font-medium">收件匣</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">未讀</span>
+                <Switch checked={onlyUnread} onCheckedChange={setOnlyUnread} />
+              </div>
+            </SidebarHeader>
+            <div className="p-4 border-t border-border">
+              <SidebarInput
+                placeholder="搜尋郵件..."
+                value={search}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearch(e.target.value)
+                }
+              />
+            </div>
             <InboxSidebar
               mails={filteredMails}
               onSelectEmail={mail => openMail(mail)}
+              onDeleteEmail={handleDeleteEmail}
             />
           </Sidebar>
         )}
@@ -374,6 +397,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <InboxSidebar
                 mails={filteredMails}
                 onSelectEmail={mail => openMail(mail)}
+                onDeleteEmail={handleDeleteEmail}
               />
             </div>
           </div>

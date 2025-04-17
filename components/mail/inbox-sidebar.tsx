@@ -10,16 +10,12 @@ import {
 } from 'lucide-react';
 
 import {
-  Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInput,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarProvider,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -45,7 +41,6 @@ export const getPriorityColorClass = (
   priority: EmailPriority,
   isRead: boolean,
 ) => {
-  console.log('priority', priority);
   const baseClass = isRead ? 'opacity-70 ' : '';
 
   switch (priority) {
@@ -87,11 +82,15 @@ export const getPriorityTextClass = (priority: EmailPriority) => {
 interface InboxSidebarProps {
   mails: Mail[];
   onSelectEmail: (email: Mail) => void;
+  onDeleteEmail: (mailId: string) => void;
 }
 
-
-export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
-  const { deleteMail, markAsRead } = useInbox();
+export function InboxSidebar({
+  mails,
+  onSelectEmail,
+  onDeleteEmail,
+}: InboxSidebarProps) {
+  const { markAsRead } = useInbox();
 
   // 處理郵件點擊
   const handleEmailClick = (mail: Mail) => {
@@ -108,10 +107,8 @@ export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
   const handleDeleteEmail = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
 
-    console.log(id);
-
     try {
-      deleteMail(id);
+      onDeleteEmail(id);
     } catch (error) {
       console.error('❌ 刪除郵件失敗：', error);
     }
@@ -176,7 +173,7 @@ export function InboxSidebar({ mails, onSelectEmail }: InboxSidebarProps) {
               ))
             ) : (
               <div className="px-4 py-8 text-center text-muted-foreground">
-                沒有符合條件的郵件
+                沒有郵件
               </div>
             )}
           </SidebarMenu>

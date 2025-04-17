@@ -94,7 +94,6 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     jwt: async ({ token, account, profile }) => {
       if (profile && account?.provider === 'discord') {
-        console.log('profile', profile);
         token.discordProfile = profile as JWTDiscordProfile;
         token.accessToken = account.access_token;
         token.maxAge = Math.floor(Date.now() / 1000) + 24 * 60 * 60;

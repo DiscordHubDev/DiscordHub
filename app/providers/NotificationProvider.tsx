@@ -30,7 +30,6 @@ export function NotificationListener({
           const isBroadcast = data.user_id === null;
 
           if (isForMe || isBroadcast) {
-            console.log('📩 收到通知：', data);
             onNotify(data);
           }
         },

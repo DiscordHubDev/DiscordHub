@@ -197,7 +197,6 @@ export default function VoteButton({
       if (!response.ok) {
         console.error('Webhook 發送失敗:', response.statusText);
       } else {
-        console.log('Webhook 發送成功');
       }
     } catch (error) {
       console.error('發送 Webhook 時出錯:', error);

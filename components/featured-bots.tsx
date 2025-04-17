@@ -4,6 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
 import { BotWithRelations } from '@/lib/prisma_type';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
+import { FaCheck } from 'react-icons/fa6';
 
 interface FeaturedBotsProps {
   bots: BotWithRelations[];
@@ -44,26 +51,20 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
               </div>
 
               <div className="p-4 pt-8 flex-grow">
-                <div className="flex items-center mb-2">
+                <div className="flex items-center mb-2 gap-2">
                   <h3 className="text-lg font-bold">{bot.name}</h3>
                   {bot.verified && (
-                    <span className="ml-2 text-[#5865f2]">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="lucide lucide-badge-check"
-                      >
-                        <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
-                        <path d="m9 12 2 2 4-4" />
-                      </svg>
-                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild className="hover:bg-[#5865F2]">
+                          <Badge className="discord text-white text-sm px-3  rounded-full gap-1 inline-flex items-center cursor-default hover:bg-[#5865F2] hover:text-white">
+                            <FaCheck className="w-3.5 h-3.5" />
+                            驗證
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>已驗證的 Discord 機器人</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
                 <p className="text-gray-300 text-sm mb-3 line-clamp-2">

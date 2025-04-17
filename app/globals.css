@@ -141,7 +141,7 @@
 .discord {
   background-color: var(--discord-color);
   color: white;
-  border-radius: var(--radius);
+  border-radius: var(--radius-xl);
 }
 
 .discord:hover {
