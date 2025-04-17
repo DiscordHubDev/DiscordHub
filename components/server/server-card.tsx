@@ -130,7 +130,7 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
               },
             )}
           >
-            {server.isInServer ? '發布伺服器' : '邀請機器人'}
+            {buttonText}
           </button>
         </CardFooter>
       </Card>
