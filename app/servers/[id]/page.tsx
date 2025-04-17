@@ -31,7 +31,7 @@ export async function generateMetadata({
     title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
     description: server.description,
     icons: {
-      icon: '/favicon.ico',
+      icon: '/dchub.ico',
     },
     alternates: {
       canonical: `https://dchubs.org/servers/${server.id}`,

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title: `隱私條款 | Discord伺服器列表 - DiscordHubs`,
   description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的隱私權政策和內容`,
   icons: {
-    icon: '/favicon.ico',
+    icon: '/dchub.ico',
   },
   // 關鍵詞
   keywords: keywords.join('，'),

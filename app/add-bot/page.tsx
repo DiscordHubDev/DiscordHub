@@ -123,7 +123,7 @@ const AddBotPage = () => {
         />
         <meta property="og:locale" content="zh-TW" />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="https://dchubs.org/favicon.ico" />
+        <link rel="icon" href="https://dchubs.org/dchub.ico" />
       </Head>
       <BotForm mode="create" onSubmit={handleCreate} />
     </>
