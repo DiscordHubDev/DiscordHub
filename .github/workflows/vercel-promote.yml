@@ -1,0 +1,31 @@
+name: Promote Preview to Production
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+jobs:
+  promote:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get latest Vercel preview deployment
+        id: deployments
+        run: |
+          response=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v6/deployments?projectId=${{ secrets.VERCEL_PROJECT_ID }}&state=READY&target=preview&limit=1")
+
+          echo "Response: $response"
+          id=$(echo "$response" | jq -r '.deployments[0].uid')
+          echo "deployment_id=$id" >> $GITHUB_OUTPUT
+
+      - name: Promote to Production
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            https://api.vercel.com/v13/deployments/${{ steps.deployments.outputs.deployment_id }}/promote \
+            -d '{"target":"production"}'
