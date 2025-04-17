@@ -88,6 +88,7 @@ export function EmailDialog({ email, open, onClose }: CustomEmailDialogProps) {
           <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
             <p className="text-sm text-muted-foreground">
               📩 來自: <span className="font-medium">{email.name}</span> ·{' '}
+              發送於：
               {email.createdAt}
             </p>
 

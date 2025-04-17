@@ -15,6 +15,11 @@ const fontSans = FontSans({
   variable: '--font-sans',
 });
 
+export const metadata: Metadata = {
+  title: 'DiscordHubs',
+  description: 'Discover and join amazing Discord communities',
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{

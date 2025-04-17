@@ -2,14 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AudioWaveform,
   BookOpen,
   Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
   Settings2,
   LifeBuoy,
   Send,
@@ -46,7 +40,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { NavSecondary } from './nav-secondary';
-import { getSession, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { NavItem } from './nav-item';
 import { Separator } from '@radix-ui/react-separator';
 import { Label } from '@radix-ui/react-dropdown-menu';
@@ -227,7 +221,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       return matchesSearch && matchesUnread;
     });
-  }, [search, mails, onlyUnread]);
+  }, [mails, search, onlyUnread]);
 
   const navItem = [
     {
@@ -309,11 +303,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: activeItem === item.title,
             }))}
             onSelect={title => {
+
               if (title === '私人收件匣') {
                 setShowInbox(prev => !prev); // 切換 inbox 開關
               } else {
                 setShowInbox(false); // 點其他項目時強制關閉 inbox
-                setActiveItem(title); // 正常切換 active
+                setActiveItem(prev => (prev === title ? null : title));
               }
             }}
           />
@@ -367,7 +362,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     }}
                   />
                   <InboxSidebar
-                    Emails={filteredMails}
+                    mails={filteredMails}
                     onSelectEmail={mail => openMail(mail)}
                   />
                 </SidebarGroupContent>

@@ -85,22 +85,23 @@ export const getPriorityTextClass = (priority: EmailPriority) => {
 };
 
 interface InboxSidebarProps {
-  Emails: Mail[];
+  mails: Mail[];
   onSelectEmail: (email: Mail) => void;
 }
+
 
 export function InboxSidebar({ Emails, onSelectEmail }: InboxSidebarProps) {
   const { deleteMail, markAsRead } = useInbox();
   const mails = Emails;
 
   // 處理郵件點擊
-  const handleEmailClick = (email: Mail) => {
+  const handleEmailClick = (mail: Mail) => {
     // 更新為已讀狀態
-    if (!email.read) {
-      markAsRead(email.id);
-      onSelectEmail({ ...email, read: true });
+    if (!mail.read) {
+      markAsRead(mail.id);
+      onSelectEmail({ ...mail, read: true });
     } else {
-      onSelectEmail(email);
+      onSelectEmail(mail);
     }
   };
 

@@ -32,11 +32,11 @@ export function NavItem({
         return (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
-              asChild
               isActive={item.isActive}
               onClick={() => onSelect?.(item.title)}
+              className="cursor-pointer"
             >
-              <a href={item.url} className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <span className="relative">
                   <item.icon size={20} />
                   {badgeDisplay && (
@@ -51,7 +51,7 @@ export function NavItem({
                   )}
                 </span>
                 <span>{item.title}</span>
-              </a>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         );

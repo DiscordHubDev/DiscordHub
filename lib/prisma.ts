@@ -8,7 +8,7 @@ const globalForPrisma = globalThis as unknown as {
 const dbUrl =
   process.env.NODE_ENV !== 'production'
     ? process.env.POSTGRES_URL_NON_POOLING
-    : process.env.POSTGRES_PRISMA_URL;
+    : process.env.CUSTOM_PRISMA_URL;
 
 export const prisma =
   globalForPrisma.prisma ??
