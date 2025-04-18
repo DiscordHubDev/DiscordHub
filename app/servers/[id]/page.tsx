@@ -26,6 +26,8 @@ export async function generateMetadata({
   const server = await getServerByGuildId(id);
   const ogImages = [];
 
+  if (!server) return {};
+
   if (server.banner) {
     ogImages.push({
       url: server.banner,
@@ -41,8 +43,6 @@ export async function generateMetadata({
       alt: `${server.name}的頭像`,
     });
   }
-
-  if (!server) return {};
 
   return {
     title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,

@@ -50,4 +50,22 @@ export const botCategories: CategoryType[] = [
     color: 'bg-fuchsia-500',
     selected: false,
   },
+  {
+    id: '9',
+    name: '安全',
+    color: 'bg-teal-500',
+    selected: false,
+  },
+  {
+    id: '10',
+    name: '經濟',
+    color: 'bg-emerald-500',
+    selected: false,
+  },
+  {
+    id: '11',
+    name: '紀錄',
+    color: 'bg-indigo-500',
+    selected: false,
+  },
 ];

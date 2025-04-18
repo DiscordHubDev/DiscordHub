@@ -87,8 +87,7 @@ async function sendDataToWebServerOrDiscord(
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`❌ POST 失敗: ${res.status} - ${text}`);
+    return null;
   }
 
   return res.status === 204 ? null : await res.json().catch(() => null);

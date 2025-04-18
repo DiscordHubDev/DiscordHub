@@ -75,9 +75,7 @@ export default async function HomePage() {
   // ✅ 加入 isPublished 判斷
   const activeWithStatus = await Promise.all(
     activeServers.map(async server => {
-      const isPublished = await getServerByGuildId(server.id)
-        .then(() => true)
-        .catch(() => false);
+      const isPublished = await getServerByGuildId(server.id).then(Boolean);
 
       return {
         ...server,

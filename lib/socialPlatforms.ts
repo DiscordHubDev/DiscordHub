@@ -4,11 +4,9 @@ import { FaFacebook, FaThreads, FaX } from 'react-icons/fa6';
 
 import {
   FaDiscord,
-  FaTwitter,
   FaGithub,
   FaGlobe,
   FaYoutube,
-  FaLinkedin,
   FaInstagram,
 } from 'react-icons/fa';
 
