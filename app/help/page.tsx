@@ -44,6 +44,8 @@ const keywords = [
   'DiscordHubs 使用教學',
 ];
 
+export const dynamic = 'force-static';
+
 export const metadata: Metadata = {
   title: `使用教學 | Discord伺服器列表 - DiscordHubs`,
   description: `DiscordHubs 是專為中文用戶打造的 Discord 伺服器與機器人平台，讓你輕鬆探索熱門社群和喜愛的機器人、管理已發布的內容，並靈活運用各項功能擴展影響力。`,

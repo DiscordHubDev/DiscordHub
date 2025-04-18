@@ -1,5 +1,8 @@
+import { getServerSession } from 'next-auth';
 import AddBotPageClient from './client';
 import { Metadata } from 'next';
+import { authOptions } from '@/lib/utils';
+import { redirect } from 'next/navigation';
 
 const keywords = [
   '新增 Discord 機器人',
@@ -56,6 +59,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AddBotPage() {
+export default async function AddBotPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.access_token) {
+    return redirect('/api/auth/signin?callbackUrl=/add-bot');
+  }
+
   return <AddBotPageClient />;
 }
