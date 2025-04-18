@@ -56,8 +56,8 @@ export async function generateMetadata({
         ? [
             {
               url: previewImage,
-              width: hasBanner ? 600 : 80,
-              height: hasBanner ? 240 : 80,
+              width: hasBanner ? 1200 : 80,
+              height: hasBanner ? 630 : 80,
               alt: `${bot.name} 的預覽圖`,
             },
           ]

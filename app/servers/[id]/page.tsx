@@ -50,8 +50,8 @@ export async function generateMetadata({
     ? [
         {
           url: previewImage,
-          width: hasBanner ? 960 : 80,
-          height: hasBanner ? 540 : 80,
+          width: hasBanner ? 1200 : 80,
+          height: hasBanner ? 630 : 80,
           alt: `${server.name} 的預覽圖`,
         },
       ]
