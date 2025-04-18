@@ -18,6 +18,8 @@ const keywords = [
   'DiscordHubs 隱私權條款',
 ];
 
+export const dynamic = 'force-static';
+
 export const metadata: Metadata = {
   title: `隱私條款 | Discord伺服器列表 - DiscordHubs`,
   description: `了解 DiscordHubs 如何透過隱私權政策與使用條款，保障您的資料與權益，並提供安全可靠的 Discord 中文伺服器與機器人服務。`,
