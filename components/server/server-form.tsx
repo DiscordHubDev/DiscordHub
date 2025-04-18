@@ -76,8 +76,8 @@ export default function ServerFormPage({
       websiteLink: edit_server?.website || '',
       tags: edit_server?.tags || [],
       rules: edit_server?.rules || [],
-      secret: edit_server?.secret || '',
-      webhook_url: edit_server?.VoteNotificationURL || '',
+      secret: edit_server?.secret || undefined,
+      webhook_url: edit_server?.VoteNotificationURL || undefined,
     },
   });
 
