@@ -28,14 +28,14 @@ export async function generateMetadata({
       url: bot.banner,
       width: 960,
       height: 540,
-      alt: 'bot-banner',
+      alt: `${bot.name}的橫幅`,
     });
   } else {
     ogImages.push({
       url: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
-      width: 80,
-      height: 80,
-      alt: 'bot-icon',
+      width: 512,
+      height: 512,
+      alt: `${bot.name}的頭像`,
     });
   }
 
