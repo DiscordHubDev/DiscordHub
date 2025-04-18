@@ -27,37 +27,65 @@ export async function generateMetadata({
 
   if (!server) return {};
 
+  const metaTitle = `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`;
+  const metaDescription = server.description;
+  const canonicalUrl = `https://dchubs.org/servers/${server.id}`;
+
+  const isDefaultIcon = server.icon?.endsWith('0.png') ?? true;
+  const hasCustomIcon = Boolean(server.icon) && !isDefaultIcon;
+  const hasBanner = Boolean(server.banner);
+
+  // 優先 icon，其次 banner
+  const twitterImage = hasCustomIcon
+    ? [server.icon!]
+    : hasBanner
+      ? [server.banner!]
+      : undefined;
+
+  const twitterCard =
+    hasBanner && !hasCustomIcon ? 'summary_large_image' : 'summary';
+
+  // 優先 icon，其次 banner
+  const openGraphImages = hasCustomIcon
+    ? [
+        {
+          url: server.icon!,
+          width: 80,
+          height: 80,
+          alt: `${server.name} 的圖示`,
+        },
+      ]
+    : hasBanner
+      ? [
+          {
+            url: server.banner!,
+            width: 960,
+            height: 540,
+            alt: `${server.name} 的橫幅`,
+          },
+        ]
+      : undefined;
+
   return {
-    title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
-    description: server.description,
+    title: metaTitle,
+    description: metaDescription,
     icons: {
       icon: '/favicon.ico',
     },
     alternates: {
-      canonical: `https://dchubs.org/servers/${server.id}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
-      description: server.description,
-      url: `https://dchubs.org/servers/${server.id}`,
-      images: server.banner
-        ? [
-            {
-              url: server.banner,
-              width: 960,
-              height: 540,
-              alt: `${server.name}的橫幅`,
-            },
-          ]
-        : undefined,
+      title: metaTitle,
+      description: metaDescription,
+      url: canonicalUrl,
+      images: openGraphImages,
     },
     twitter: {
-      card: 'summary',
-      title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
-      description: server.description,
-      images: [
-        `${server.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}`,
-      ],
+      card: twitterCard,
+      title: metaTitle,
+      description: metaDescription,
+      images: twitterImage,
     },
   };
 }

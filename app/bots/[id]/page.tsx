@@ -21,35 +21,63 @@ export async function generateMetadata({
 
   if (!bot) return {};
 
+  const metaTitle = `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`;
+  const metaDescription = bot.description;
+  const canonicalUrl = `https://dchubs.org/bots/${bot.id}`;
+  const isDefaultIcon = bot.icon?.endsWith('0.png') ?? true;
+  const hasCustomIcon = Boolean(bot.icon) && !isDefaultIcon;
+  const hasBanner = Boolean(bot.banner);
+
+  const twitterImage = hasCustomIcon
+    ? [bot.icon!]
+    : hasBanner
+      ? [bot.banner!]
+      : undefined;
+
+  const twitterCard =
+    hasBanner && !hasCustomIcon ? 'summary_large_image' : 'summary';
+
+  const openGraphImages =
+    hasCustomIcon && bot.icon
+      ? [
+          {
+            url: bot.icon,
+            width: 80,
+            height: 80,
+            alt: `${bot.name} 的圖示`,
+          },
+        ]
+      : hasBanner
+        ? [
+            {
+              url: bot.banner!,
+              width: 600,
+              height: 240,
+              alt: `${bot.name} 的橫幅`,
+            },
+          ]
+        : undefined;
+
   return {
-    title: `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`,
-    description: bot.description,
+    title: metaTitle,
+    description: metaDescription,
     icons: {
       icon: '/favicon.ico',
     },
     alternates: {
-      canonical: `https://dchubs.org/bots/${bot.id}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`,
-      description: bot.description,
-      url: `https://dchubs.org/bots/${bot.id}`,
-      images: bot.banner
-        ? [
-            {
-              url: bot.banner,
-              width: 600,
-              height: 240,
-              alt: `${bot.name}的橫幅`,
-            },
-          ]
-        : undefined,
+      title: metaTitle,
+      description: metaDescription,
+      url: canonicalUrl,
+      images: openGraphImages,
     },
     twitter: {
-      card: 'summary',
-      title: `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`,
-      description: bot.description,
-      images: [bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'],
+      card: twitterCard,
+      title: metaTitle,
+      description: metaDescription,
+      images: twitterImage,
     },
   };
 }

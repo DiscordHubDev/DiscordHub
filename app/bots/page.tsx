@@ -37,10 +37,8 @@ export const metadata: Metadata = {
     siteName: 'DiscordHubs',
     images: [
       {
-        url: '/DCHUSB_banner.png',
-        width: 1012,
-        height: 392,
-        alt: 'DiscordHubs-banner',
+        url: '/dchub.png',
+        alt: 'DiscordHubs-icon',
       },
     ],
     locale: 'zh-TW',
