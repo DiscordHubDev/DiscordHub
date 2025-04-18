@@ -72,6 +72,21 @@ export async function getGuildDetails(
   };
 }
 
+async function safeFetchWithRateLimit(
+  url: string,
+  options: RequestInit,
+): Promise<Response> {
+  const res = await fetch(url, options);
+  if (res.status === 429) {
+    const data = await res.json();
+    const retryAfter = data.retry_after || 1;
+    console.warn(`Rate limited. Retrying after ${retryAfter}s`);
+    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+    return safeFetchWithRateLimit(url, options); // 重试
+  }
+  return res;
+}
+
 export async function getUserGuildsWithBotStatus(
   userAccessToken: string,
 ): Promise<GuildResult> {
@@ -96,11 +111,16 @@ export async function getUserGuildsWithBotStatus(
     hasManageGuildPermission(g.permissions),
   );
 
-  const botGuildsRes = await fetch('https://discord.com/api/users/@me/guilds', {
-    headers: {
-      Authorization: `Bot ${BOT_TOKEN}`,
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  const botGuildsRes = await safeFetchWithRateLimit(
+    'https://discord.com/api/users/@me/guilds',
+    {
+      headers: {
+        Authorization: `Bot ${BOT_TOKEN}`,
+      },
     },
-  });
+  );
 
   if (!botGuildsRes.ok) {
     const errorJson = await botGuildsRes.text();

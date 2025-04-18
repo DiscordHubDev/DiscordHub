@@ -25,6 +25,8 @@ export async function updateServer(data: CreateServerInput) {
         banner: data.banner,
         website: data.website,
         inviteUrl: data.inviteUrl,
+        secret: data.secret,
+        VoteNotificationURL: data.VoteNotificationURL,
         rules: data.rules,
         features: data.features ?? [],
         screenshots: data.screenshots ?? [],
@@ -112,7 +114,7 @@ export const getServerWithFavoritedByGuildId = async (
 
 export const getServerByGuildId = async (
   guildId: string,
-): Promise<ServerType> => {
+): Promise<ServerType | undefined> => {
   try {
     const server = await prisma.server.findFirst({
       where: { id: guildId },
@@ -123,7 +125,7 @@ export const getServerByGuildId = async (
     });
 
     if (!server) {
-      throw new Error('找不到該伺服器');
+      return undefined;
     }
 
     return server;
