@@ -23,11 +23,14 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    domains: ['cdn.discordapp.com'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
       },
     ],
   },
