@@ -82,14 +82,14 @@ export default function Navbar() {
           <div className="hidden md:block">
             {session && session?.user ? (
               <Link href="/profile">
-                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
+                <Button className="cursor-pointer  bg-[#5865f2] hover:bg-[#4752c4] text-white">
                   個人資料
                 </Button>
               </Link>
             ) : (
               <Button
                 onClick={() => signIn('discord')}
-                className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                className="cursor-pointer bg-[#5865f2] hover:bg-[#4752c4] text-white"
               >
                 <FaDiscord />
                 登入 Discord
@@ -211,7 +211,7 @@ function NavLinks({
         <Link key={href} href={href} passHref>
           <Button
             variant="ghost"
-            className={`text-white hover:bg-[#36393f] ${
+            className={`text-white cursor-pointer hover:bg-[#36393f] ${
               pathname === href ? 'bg-white/10' : ''
             }`}
             onClick={e => {
