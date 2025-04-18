@@ -254,7 +254,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Sparkles,
     },
     {
-      title: '收件匣',
+      title: '個人收件匣',
       url: '#',
       icon: Inbox,
       badge: unreadCount > 0 ? String(unreadCount) : undefined,
@@ -322,7 +322,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: activeItem === item.title,
             }))}
             onSelect={title => {
-              if (title === '收件匣') {
+              if (title === '個人收件匣') {
                 setShowInbox(prev => !prev); // 切換 inbox 開關
               } else {
                 setShowInbox(false); // 點其他項目時強制關閉 inbox
@@ -352,7 +352,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {showInbox && !isMobile && (
           <Sidebar collapsible="none" className="flex flex-col max-h-screen">
             <SidebarHeader className="justify-between items-center px-4 py-2 flex flex-row">
-              <span className="text-sm font-medium">收件匣</span>
+              <span className="text-sm font-medium">個人收件匣</span>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-muted-foreground">未讀</span>
                 <Switch checked={onlyUnread} onCheckedChange={setOnlyUnread} />
@@ -379,7 +379,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="fixed inset-0 z-50 bg-background shadow-xl flex flex-col max-h-screen overflow-hidden">
             <SidebarHeader className="shrink-0 border-b p-4 flex flex-col space-y-2">
               <div className="flex justify-between items-center">
-                <div className="text-base font-semibold">收件匣</div>
+                <div className="text-base font-semibold">個人收件匣</div>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-muted-foreground">未讀</span>
                   <Switch
