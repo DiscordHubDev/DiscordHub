@@ -21,6 +21,33 @@ export async function generateMetadata({
 
   if (!bot) return {};
 
+  const ogImages = [];
+
+  if (bot.icon) {
+    ogImages.push({
+      url: bot.icon,
+      width: 80,
+      height: 80,
+      alt: 'bot-icon',
+    });
+  } else {
+    ogImages.push({
+      url: 'https://cdn.discordapp.com/embed/avatars/0.png',
+      width: 80,
+      height: 80,
+      alt: 'bot-icon',
+    });
+  }
+
+  if (bot.banner) {
+    ogImages.push({
+      url: bot.banner,
+      width: 960,
+      height: 540,
+      alt: 'bot-banner',
+    });
+  }
+
   return {
     title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
     description: bot.description,
@@ -34,21 +61,13 @@ export async function generateMetadata({
       title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
       description: bot.description,
       url: `https://dchubs.org/bots/${bot.id}`,
-      images: [
-        {
-          url: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
-          width: 512,
-          height: 512,
-        },
-      ],
+      images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',
       title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
       description: bot.description,
-      images: [
-        `${bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}`,
-      ],
+      images: [bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'],
     },
   };
 }
@@ -80,7 +99,7 @@ export default async function BotDetailPage({
             applicationCategory: 'SocialNetworkingApplication',
             description: bot.description,
             url: `https://dchubs.org/bots/${bot.id}`,
-            image: bot.icon,
+            image: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
             interactionStatistic: [
               {
                 '@type': 'InteractionCounter',
@@ -100,11 +119,7 @@ export default async function BotDetailPage({
           }),
         }}
       />
-      <BotDetailClient
-        allBots={allBots}
-        bot={bot}
-        isFavorited={isFavorited}
-      />{' '}
+      <BotDetailClient allBots={allBots} bot={bot} isFavorited={isFavorited} />
     </>
   );
 }

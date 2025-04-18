@@ -24,6 +24,32 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const server = await getServerByGuildId(id);
+  const ogImages = [];
+
+  if (server.icon) {
+    ogImages.push({
+      url: server.icon,
+      width: 80,
+      height: 80,
+      alt: 'user-icon',
+    });
+  } else {
+    ogImages.push({
+      url: 'https://cdn.discordapp.com/embed/avatars/0.png',
+      width: 80,
+      height: 80,
+      alt: 'user-icon',
+    });
+  }
+
+  if (server.banner) {
+    ogImages.push({
+      url: server.banner,
+      width: 960,
+      height: 540,
+      alt: 'user-banner',
+    });
+  }
 
   if (!server) return {};
 
@@ -40,13 +66,7 @@ export async function generateMetadata({
       title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
       description: server.description,
       url: `https://dchubs.org/servers/${server.id}`,
-      images: [
-        {
-          url: `${server.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}`,
-          width: 512,
-          height: 512,
-        },
-      ],
+      images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',
