@@ -21,44 +21,54 @@ export async function generateMetadata({
 
   if (!bot) return {};
 
-  const ogImages = [];
+  const metaTitle = `${bot.name} - ${bot.tags.slice(0, 2).join(' / ')} Discord 機器人 | DiscordHubs`;
+  const metaDescription = bot.description;
+  const canonicalUrl = `https://dchubs.org/bots/${bot.id}`;
+  const isDefaultIcon =
+    !bot.icon || bot.icon === 'https://cdn.discordapp.com/embed/avatars/0.png';
+  const hasCustomIcon = Boolean(bot.icon) && !isDefaultIcon;
+  const hasBanner = Boolean(bot.banner);
 
-  if (bot.banner) {
-    ogImages.push({
-      url: bot.banner,
-      width: 600,
-      height: 240,
-      alt: `${bot.name}的橫幅`,
-    });
-  } else {
-    ogImages.push({
-      url: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
-      width: 512,
-      height: 512,
-      alt: `${bot.name}的頭像`,
-    });
+  let previewImage: string | undefined;
+  let twitterCard: 'summary' | 'summary_large_image' = 'summary';
+
+  if (hasCustomIcon) {
+    previewImage = bot.icon!;
+    twitterCard = 'summary';
+  } else if (hasBanner) {
+    previewImage = bot.banner!;
+    twitterCard = 'summary_large_image';
   }
 
   return {
-    title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
-    description: bot.description,
+    title: metaTitle,
+    description: metaDescription,
     icons: {
       icon: '/favicon.ico',
     },
     alternates: {
-      canonical: `https://dchubs.org/bots/${bot.id}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
-      description: bot.description,
-      url: `https://dchubs.org/bots/${bot.id}`,
-      images: ogImages,
+      title: metaTitle,
+      description: metaDescription,
+      url: canonicalUrl,
+      images: previewImage
+        ? [
+            {
+              url: previewImage,
+              width: twitterCard === 'summary_large_image' ? 1200 : 80,
+              height: twitterCard === 'summary_large_image' ? 630 : 80,
+              alt: `${bot.name} 的預覽圖`,
+            },
+          ]
+        : undefined,
     },
     twitter: {
-      card: 'summary_large_image',
-      title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
-      description: bot.description,
-      images: [bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'],
+      card: twitterCard,
+      title: metaTitle,
+      description: metaDescription,
+      images: previewImage ? [previewImage] : undefined,
     },
   };
 }

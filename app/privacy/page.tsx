@@ -20,7 +20,7 @@ const keywords = [
 
 export const metadata: Metadata = {
   title: `隱私條款 | Discord伺服器列表 - DiscordHubs`,
-  description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的隱私權政策和內容`,
+  description: `了解 DiscordHubs 如何透過隱私權政策與使用條款，保障您的資料與權益，並提供安全可靠的 Discord 中文伺服器與機器人服務。`,
   icons: {
     icon: '/favicon.ico',
   },
@@ -37,25 +37,24 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://dchubs.org'),
   openGraph: {
     title: `隱私條款 | Discord伺服器列表 - DiscordHubs`,
-    description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的隱私權政策和內容`,
+    description: `了解 DiscordHubs 如何透過隱私權政策與使用條款，保障您的資料與權益，並提供安全可靠的 Discord 中文伺服器與機器人服務。`,
     url: 'https://dchubs.org',
     siteName: 'DiscordHubs',
     images: [
       {
-        url: '/DCHUSB_banner.png',
-        width: 1012,
-        height: 392,
-        alt: 'DiscordHubs-banner',
-      },
-      {
         url: '/dchub.png',
-        width: 80,
-        height: 80,
         alt: 'DiscordHubs-icon',
       },
     ],
     locale: 'zh-TW',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: `隱私條款 | Discord伺服器列表 - DiscordHubs`,
+    description:
+      '了解 DiscordHubs 如何透過隱私權政策與使用條款，保障您的資料與權益，並提供安全可靠的 Discord 中文伺服器與機器人服務。',
+    images: ['/dchub.png'],
   },
 };
 

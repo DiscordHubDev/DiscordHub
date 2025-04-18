@@ -34,25 +34,25 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://dchubs.org'),
   openGraph: {
     title: `新增機器人 | Discord機器人列表 - DiscordHubs`,
-    description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此新增你的機器人，讓你的機器人得到宣傳和管理，快速建立專屬的機器人空間。`,
+    description:
+      '在 DiscordHubs 新增你的機器人，獲得更多曝光與管理功能，輕鬆打造專屬機器人頁面，讓更多用戶發現並使用你的機器人。',
     url: 'https://dchubs.org',
     siteName: 'DiscordHubs',
     images: [
       {
-        url: '/DCHUSB_banner.png',
-        width: 1012,
-        height: 392,
-        alt: 'DiscordHubs-banner',
-      },
-      {
         url: '/dchub.png',
-        width: 80,
-        height: 80,
         alt: 'DiscordHubs-icon',
       },
     ],
     locale: 'zh-TW',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `新增機器人 | Discord機器人列表 - DiscordHubs`,
+    description:
+      '在 DiscordHubs 新增你的機器人，獲得更多曝光與管理功能，輕鬆打造專屬機器人頁面，讓更多用戶發現並使用你的機器人。',
+    images: ['/dchub.png'],
   },
 };
 

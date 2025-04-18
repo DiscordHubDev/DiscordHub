@@ -24,48 +24,61 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const server = await getServerByGuildId(id);
-  const ogImages = [];
 
   if (!server) return {};
 
-  if (server.banner) {
-    ogImages.push({
-      url: server.banner,
-      width: 960,
-      height: 540,
-      alt: `${server.name}的橫幅`,
-    });
-  } else {
-    ogImages.push({
-      url: server.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
-      width: 512,
-      height: 512,
-      alt: `${server.name}的頭像`,
-    });
+  const metaTitle = `${server.name} - ${server.tags.slice(0, 2).join(' / ')} Discord 伺服器 | DiscordHubs`;
+  const metaDescription = server.description;
+  const canonicalUrl = `https://dchubs.org/servers/${server.id}`;
+
+  const isDefaultIcon =
+    !server.icon ||
+    server.icon === 'https://cdn.discordapp.com/embed/avatars/0.png';
+  const hasCustomIcon = Boolean(server.icon) && !isDefaultIcon;
+  const hasBanner = Boolean(server.banner);
+
+  let previewImage: string | undefined;
+  let twitterCard: 'summary' | 'summary_large_image' = 'summary';
+
+  if (hasCustomIcon) {
+    previewImage = server.icon!;
+    twitterCard = 'summary';
+  } else if (hasBanner) {
+    previewImage = server.banner!;
+    twitterCard = 'summary_large_image';
   }
 
+  const openGraphImages = previewImage
+    ? [
+        {
+          url: previewImage,
+          width: twitterCard === 'summary_large_image' ? 1200 : 80,
+          height: twitterCard === 'summary_large_image' ? 630 : 80,
+          alt: `${server.name} 的預覽圖`,
+        },
+      ]
+    : undefined;
+
   return {
-    title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
-    description: server.description,
+    title: metaTitle,
+    description: metaDescription,
     icons: {
       icon: '/favicon.ico',
     },
     alternates: {
-      canonical: `https://dchubs.org/servers/${server.id}`,
+      canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
-      description: server.description,
-      url: `https://dchubs.org/servers/${server.id}`,
-      images: ogImages,
+      title: metaTitle,
+      description: metaDescription,
+      url: canonicalUrl,
+      images: openGraphImages,
     },
     twitter: {
-      card: 'summary_large_image',
-      title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
-      description: server.description,
-      images: [
-        `${server.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'}`,
-      ],
+      card: twitterCard,
+      title: metaTitle,
+      description: metaDescription,
+      images: previewImage ? [previewImage] : undefined,
     },
   };
 }

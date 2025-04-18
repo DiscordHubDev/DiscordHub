@@ -68,7 +68,7 @@ export default function MobileCategoryFilter({
       {/* 自定義分類輸入 */}
       <div className="flex gap-2 mb-4">
         <Input
-          placeholder="新增自定義分類..."
+          placeholder="新增自定義分類（等待更新）"
           value={customCategory}
           onChange={e => setCustomCategory(e.target.value)}
           className="bg-[#36393f] border-[#1e1f22] text-white placeholder:text-gray-400"

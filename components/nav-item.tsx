@@ -54,7 +54,7 @@ export function NavItem({
             >
               <div className="flex items-center gap-2">
                 <span className="relative">
-                  <item.icon size={20} />
+                  <item.icon size={15} />
                   {badgeDisplay && (
                     <span
                       className={clsx(

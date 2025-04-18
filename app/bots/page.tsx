@@ -15,7 +15,7 @@ const keywords = [
 
 export const metadata: Metadata = {
   title: `熱門機器人 | Discord機器人列表 - DiscordHubs`,
-  description: `歡迎來到 DiscordHubs 平台，這裏擁有熱門 Discord 機器人，涵蓋免費的管理機器人、超棒的音樂機器人、遊戲實用機器人等，具有不同的標籤及分類。同時，我們提供全面的 Discord 伺服器列表，幫助您輕鬆發現、宣傳和加入各類有趣的社群群組，`,
+  description: `歡迎來到 DiscordHubs，這裡網羅熱門 Discord 中文機器人，包含免費管理工具、優質音樂機器人與實用遊戲機器人，依標籤與分類輕鬆探索。同時提供完整伺服器導覽，協助您發現、宣傳並加入各類精彩社群。`,
   icons: {
     icon: '/favicon.ico',
   },
@@ -31,26 +31,24 @@ export const metadata: Metadata = {
   // 社交媒體分享優化
   metadataBase: new URL('https://dchubs.org'),
   openGraph: {
-    title: `熱門機器人 | Discord機器人列表 - DiscordHubs`,
-    description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，幫助您發現及宣傳伺服器，和加入有趣的社群群組和機器人，為伺服器增添功能和成員。`,
+    title: `熱門機器人推薦 | 精選 Discord 中文機器人 - DiscordHubs`,
+    description: `DiscordHubs 是最佳的 Discord 中文伺服器與機器人列表平台，協助您探索與宣傳伺服器，加入喜愛的機器人來為伺服器增添功能與活躍成員。`,
     url: 'https://dchubs.org',
     siteName: 'DiscordHubs',
     images: [
       {
-        url: '/DCHUSB_banner.png',
-        width: 1012,
-        height: 392,
-        alt: 'DiscordHubs-banner',
-      },
-      {
         url: '/dchub.png',
-        width: 80,
-        height: 80,
         alt: 'DiscordHubs-icon',
       },
     ],
     locale: 'zh-TW',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: `熱門機器人推薦 | 精選 Discord 中文機器人 - DiscordHubs`,
+    description: `DiscordHubs 是最佳的 Discord 中文伺服器與機器人列表平台，協助您探索與宣傳伺服器，加入喜愛的機器人來為伺服器增添功能與活躍成員。`,
+    images: ['/dchub.png'],
   },
 };
 

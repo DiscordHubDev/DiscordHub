@@ -75,7 +75,7 @@ export default function CategorySearch({
       {/* 添加自定義分類 */}
       <div className="flex gap-2">
         <Input
-          placeholder="新增自定義分類..."
+          placeholder="新增自定義分類（等待更新）"
           value={customCategory}
           onChange={e => setCustomCategory(e.target.value)}
           onKeyDown={handleKeyDown}

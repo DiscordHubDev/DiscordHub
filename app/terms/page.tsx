@@ -42,20 +42,17 @@ export const metadata: Metadata = {
     siteName: 'DiscordHubs',
     images: [
       {
-        url: '/DCHUSB_banner.png',
-        width: 1012,
-        height: 392,
-        alt: 'DiscordHubs-banner',
-      },
-      {
         url: '/dchub.png',
-        width: 80,
-        height: 80,
         alt: 'DiscordHubs-icon',
       },
     ],
     locale: 'zh-TW',
     type: 'website',
+  },
+  twitter: {
+    title: '服務條款 | Discord伺服器列表 - DiscordHubs',
+    description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的服務使用條款和內容`,
+    images: ['/dchub.png'],
   },
 };
 

@@ -38,26 +38,24 @@ export const metadata: Metadata = {
   // 社交媒體分享優化
   metadataBase: new URL('https://dchubs.org'),
   openGraph: {
-    title: `新增伺服器 | Discord伺服器列表 - DiscordHubs`,
-    description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此新增你的伺服器，讓你的伺服器得到宣傳和管理，快速建立專屬的社群空間。`,
+    title: `新增伺服器 | DiscordHubs`,
+    description: `在 DiscordHubs 上架你的 Discord 中文伺服器，提升曝光度、吸引更多成員，打造專屬高互動社群。`,
     url: 'https://dchubs.org',
     siteName: 'DiscordHubs',
     images: [
       {
-        url: '/DCHUSB_banner.png',
-        width: 1012,
-        height: 392,
-        alt: 'DiscordHubs-banner',
-      },
-      {
         url: '/dchub.png',
-        width: 80,
-        height: 80,
         alt: 'DiscordHubs-icon',
       },
     ],
     locale: 'zh-TW',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `新增伺服器 | DiscordHubs`,
+    description: `在 DiscordHubs 上架你的 Discord 中文伺服器，提升曝光度、吸引更多成員，打造專屬高互動社群。`,
+    images: ['/dchub.png'],
   },
 };
 
