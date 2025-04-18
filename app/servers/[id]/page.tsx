@@ -52,8 +52,8 @@ export async function generateMetadata({
     ? [
         {
           url: previewImage,
-          width: hasBanner ? 1200 : 80,
-          height: hasBanner ? 630 : 80,
+          width: twitterCard === 'summary_large_image' ? 1200 : 80,
+          height: twitterCard === 'summary_large_image' ? 630 : 80,
           alt: `${server.name} 的預覽圖`,
         },
       ]
