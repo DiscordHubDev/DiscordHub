@@ -166,15 +166,14 @@ export default function ServerFormPage({
       let global_name: string = '未知使用者';
 
       const memberCount =
-  'memberCount' in activeServer
-    ? activeServer.memberCount
-    : edit_server?.members ?? 0;
+        'memberCount' in activeServer
+          ? activeServer.memberCount
+          : (edit_server?.members ?? 0);
 
-const onlineCount =
-  'OnlineMemberCount' in activeServer
-    ? activeServer.OnlineMemberCount
-    : edit_server?.online ?? 0;
-
+      const onlineCount =
+        'OnlineMemberCount' in activeServer
+          ? activeServer.OnlineMemberCount
+          : (edit_server?.online ?? 0);
 
       const ownerId =
         typeof activeServer.owner === 'string'
@@ -224,50 +223,50 @@ const onlineCount =
       } else {
         await insertServer(payload);
       }
-
-      // Webhook 消息
-      const embed = {
-        title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
-        description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
-        color: 0x4285f4,
-        thumbnail: {
-          url: activeServer?.icon || '',
-        },
-        image: {
-          url: activeServer?.banner || '',
-        },
-        footer: {
-          text: '由 DiscordHubs 系統發送',
-          icon_url:
-            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-        },
-      };
-
-      const webhookData = {
-        content: '<@&1355617333967585491>',
-        embeds: [embed],
-        username: 'DcHubs伺服器通知',
-        avatar_url:
-          'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-      };
-
-      try {
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+      if (mode !== 'edit') {
+        // Webhook 消息
+        const embed = {
+          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
+          description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
+          color: 0x4285f4,
+          thumbnail: {
+            url: activeServer?.icon || '',
           },
-          body: JSON.stringify(webhookData),
-        });
+          image: {
+            url: activeServer?.banner || '',
+          },
+          footer: {
+            text: '由 DiscordHubs 系統發送',
+            icon_url:
+              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+          },
+        };
 
-        if (!response.ok) {
-          console.error('Webhook 發送失敗:', response.statusText);
-        } else {
+        const webhookData = {
+          content: '<@&1355617333967585491>',
+          embeds: [embed],
+          username: 'DcHubs伺服器通知',
+          avatar_url:
+            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+        };
+
+        try {
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookData),
+          });
+
+          if (!response.ok) {
+            console.error('Webhook 發送失敗:', response.statusText);
+          } else {
+          }
+        } catch (webhookError) {
+          console.error('發送 Webhook 時出錯:', webhookError);
         }
-      } catch (webhookError) {
-        console.error('發送 Webhook 時出錯:', webhookError);
       }
-
       setSuccess(true);
       reset();
     } catch (err: any) {
