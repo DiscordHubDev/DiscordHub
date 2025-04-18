@@ -35,36 +35,27 @@ export async function generateMetadata({
   const hasCustomIcon = Boolean(server.icon) && !isDefaultIcon;
   const hasBanner = Boolean(server.banner);
 
-  // 優先 icon，其次 banner
-  const twitterImage = hasCustomIcon
-    ? [server.icon!]
-    : hasBanner
-      ? [server.banner!]
-      : undefined;
+  let previewImage: string | undefined;
+  let twitterCard: 'summary' | 'summary_large_image' = 'summary';
 
-  const twitterCard =
-    hasBanner && !hasCustomIcon ? 'summary_large_image' : 'summary';
+  if (hasCustomIcon) {
+    previewImage = server.icon!;
+    twitterCard = 'summary';
+  } else if (hasBanner) {
+    previewImage = server.banner!;
+    twitterCard = 'summary_large_image';
+  }
 
-  // 優先 icon，其次 banner
-  const openGraphImages = hasCustomIcon
+  const openGraphImages = previewImage
     ? [
         {
-          url: server.icon!,
-          width: 80,
-          height: 80,
-          alt: `${server.name} 的圖示`,
+          url: previewImage,
+          width: hasBanner ? 960 : 80,
+          height: hasBanner ? 540 : 80,
+          alt: `${server.name} 的預覽圖`,
         },
       ]
-    : hasBanner
-      ? [
-          {
-            url: server.banner!,
-            width: 960,
-            height: 540,
-            alt: `${server.name} 的橫幅`,
-          },
-        ]
-      : undefined;
+    : undefined;
 
   return {
     title: metaTitle,
@@ -85,7 +76,7 @@ export async function generateMetadata({
       card: twitterCard,
       title: metaTitle,
       description: metaDescription,
-      images: twitterImage,
+      images: previewImage ? [previewImage] : undefined,
     },
   };
 }

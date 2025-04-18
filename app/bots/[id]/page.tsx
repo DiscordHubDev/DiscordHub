@@ -28,35 +28,16 @@ export async function generateMetadata({
   const hasCustomIcon = Boolean(bot.icon) && !isDefaultIcon;
   const hasBanner = Boolean(bot.banner);
 
-  const twitterImage = hasCustomIcon
-    ? [bot.icon!]
-    : hasBanner
-      ? [bot.banner!]
-      : undefined;
+  let previewImage: string | undefined;
+  let twitterCard: 'summary' | 'summary_large_image' = 'summary';
 
-  const twitterCard =
-    hasBanner && !hasCustomIcon ? 'summary_large_image' : 'summary';
-
-  const openGraphImages =
-    hasCustomIcon && bot.icon
-      ? [
-          {
-            url: bot.icon,
-            width: 80,
-            height: 80,
-            alt: `${bot.name} 的圖示`,
-          },
-        ]
-      : hasBanner
-        ? [
-            {
-              url: bot.banner!,
-              width: 600,
-              height: 240,
-              alt: `${bot.name} 的橫幅`,
-            },
-          ]
-        : undefined;
+  if (hasCustomIcon) {
+    previewImage = bot.icon!;
+    twitterCard = 'summary';
+  } else if (hasBanner) {
+    previewImage = bot.banner!;
+    twitterCard = 'summary_large_image';
+  }
 
   return {
     title: metaTitle,
@@ -71,13 +52,22 @@ export async function generateMetadata({
       title: metaTitle,
       description: metaDescription,
       url: canonicalUrl,
-      images: openGraphImages,
+      images: previewImage
+        ? [
+            {
+              url: previewImage,
+              width: hasBanner ? 600 : 80,
+              height: hasBanner ? 240 : 80,
+              alt: `${bot.name} 的預覽圖`,
+            },
+          ]
+        : undefined,
     },
     twitter: {
       card: twitterCard,
       title: metaTitle,
       description: metaDescription,
-      images: twitterImage,
+      images: previewImage ? [previewImage] : undefined,
     },
   };
 }
