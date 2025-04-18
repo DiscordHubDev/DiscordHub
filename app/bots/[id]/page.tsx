@@ -26,8 +26,8 @@ export async function generateMetadata({
   if (bot.banner) {
     ogImages.push({
       url: bot.banner,
-      width: 960,
-      height: 540,
+      width: 600,
+      height: 240,
       alt: `${bot.name}的橫幅`,
     });
   } else {
