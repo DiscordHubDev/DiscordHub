@@ -46,7 +46,7 @@ const keywords = [
 
 export const metadata: Metadata = {
   title: `使用教學 | Discord伺服器列表 - DiscordHubs`,
-  description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解如何充分利用及使用 DiscordHubs 平台，探索伺服器、機器人，以及管理您的內容`,
+  description: `DiscordHubs 是專為中文用戶打造的 Discord 伺服器與機器人平台，讓你輕鬆探索熱門社群和喜愛的機器人、管理已發布的內容，並靈活運用各項功能擴展影響力。`,
   icons: {
     icon: '/favicon.ico',
   },
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://dchubs.org'),
   openGraph: {
     title: `使用教學 | Discord伺服器列表 - DiscordHubs`,
-    description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解如何充分利用及使用 DiscordHubs 平台，探索伺服器、機器人，以及管理您的內容`,
+    description: `DiscordHubs 是專為中文用戶打造的 Discord 伺服器與機器人平台，讓你輕鬆探索熱門社群和喜愛的機器人、管理已發布的內容，並靈活運用各項功能擴展影響力。`,
     url: 'https://dchubs.org',
     siteName: 'DiscordHubs',
     images: [
@@ -73,15 +73,15 @@ export const metadata: Metadata = {
         height: 392,
         alt: 'DiscordHubs-banner',
       },
-      {
-        url: '/dchub.png',
-        width: 80,
-        height: 80,
-        alt: 'DiscordHubs-icon',
-      },
     ],
     locale: 'zh-TW',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: `使用教學 | Discord伺服器列表 - DiscordHubs`,
+    description: `DiscordHubs 是專為中文用戶打造的 Discord 伺服器與機器人平台，讓你輕鬆探索熱門社群和喜愛的機器人、管理已發布的內容，並靈活運用各項功能擴展影響力。`,
+    images: ['/dchub.png'],
   },
 };
 

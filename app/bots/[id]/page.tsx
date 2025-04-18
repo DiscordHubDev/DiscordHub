@@ -21,26 +21,8 @@ export async function generateMetadata({
 
   if (!bot) return {};
 
-  const ogImages = [];
-
-  if (bot.banner) {
-    ogImages.push({
-      url: bot.banner,
-      width: 600,
-      height: 240,
-      alt: `${bot.name}的橫幅`,
-    });
-  } else {
-    ogImages.push({
-      url: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
-      width: 512,
-      height: 512,
-      alt: `${bot.name}的頭像`,
-    });
-  }
-
   return {
-    title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
+    title: `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`,
     description: bot.description,
     icons: {
       icon: '/favicon.ico',
@@ -49,14 +31,23 @@ export async function generateMetadata({
       canonical: `https://dchubs.org/bots/${bot.id}`,
     },
     openGraph: {
-      title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
+      title: `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`,
       description: bot.description,
       url: `https://dchubs.org/bots/${bot.id}`,
-      images: ogImages,
+      images: bot.banner
+        ? [
+            {
+              url: bot.banner,
+              width: 600,
+              height: 240,
+              alt: `${bot.name}的橫幅`,
+            },
+          ]
+        : undefined,
     },
     twitter: {
-      card: 'summary_large_image',
-      title: `${bot.name} - ${bot.tags.slice(0, 3).join(' / ')} Discord 機器人 | DiscordHubs`,
+      card: 'summary',
+      title: `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`,
       description: bot.description,
       images: [bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'],
     },
