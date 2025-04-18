@@ -26,28 +26,19 @@ export async function generateMetadata({
   const server = await getServerByGuildId(id);
   const ogImages = [];
 
-  if (server.icon) {
-    ogImages.push({
-      url: server.icon,
-      width: 80,
-      height: 80,
-      alt: 'user-icon',
-    });
-  } else {
-    ogImages.push({
-      url: 'https://cdn.discordapp.com/embed/avatars/0.png',
-      width: 80,
-      height: 80,
-      alt: 'user-icon',
-    });
-  }
-
   if (server.banner) {
     ogImages.push({
       url: server.banner,
       width: 960,
       height: 540,
-      alt: 'user-banner',
+      alt: 'server-banner',
+    });
+  } else {
+    ogImages.push({
+      url: server.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
+      width: 80,
+      height: 80,
+      alt: 'server-icon',
     });
   }
 

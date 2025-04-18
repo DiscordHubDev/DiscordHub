@@ -23,28 +23,19 @@ export async function generateMetadata({
 
   const ogImages = [];
 
-  if (bot.icon) {
-    ogImages.push({
-      url: bot.icon,
-      width: 80,
-      height: 80,
-      alt: 'bot-icon',
-    });
-  } else {
-    ogImages.push({
-      url: 'https://cdn.discordapp.com/embed/avatars/0.png',
-      width: 80,
-      height: 80,
-      alt: 'bot-icon',
-    });
-  }
-
   if (bot.banner) {
     ogImages.push({
       url: bot.banner,
       width: 960,
       height: 540,
       alt: 'bot-banner',
+    });
+  } else {
+    ogImages.push({
+      url: bot.icon || 'https://cdn.discordapp.com/embed/avatars/0.png',
+      width: 80,
+      height: 80,
+      alt: 'bot-icon',
     });
   }
 
