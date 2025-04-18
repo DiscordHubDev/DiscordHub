@@ -311,7 +311,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [showInbox, isMobile]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full">
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
           <SidebarTrigger className="ml-0.5" />
