@@ -21,10 +21,11 @@ export async function generateMetadata({
 
   if (!bot) return {};
 
-  const metaTitle = `${bot.name} | 支援 ${bot.tags.slice(0, 3).join(' / ')} 的 Discord 機器人 - DiscordHubs`;
+  const metaTitle = `${bot.name} - ${bot.tags.slice(0, 2).join(' / ')} Discord 機器人 | DiscordHubs`;
   const metaDescription = bot.description;
   const canonicalUrl = `https://dchubs.org/bots/${bot.id}`;
-  const isDefaultIcon = bot.icon?.endsWith('0.png') ?? true;
+  const isDefaultIcon =
+    !bot.icon || bot.icon === 'https://cdn.discordapp.com/embed/avatars/0.png';
   const hasCustomIcon = Boolean(bot.icon) && !isDefaultIcon;
   const hasBanner = Boolean(bot.banner);
 

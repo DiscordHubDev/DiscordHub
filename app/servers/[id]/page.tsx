@@ -27,11 +27,13 @@ export async function generateMetadata({
 
   if (!server) return {};
 
-  const metaTitle = `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`;
+  const metaTitle = `${server.name} - ${server.tags.slice(0, 2).join(' / ')} Discord 伺服器 | DiscordHubs`;
   const metaDescription = server.description;
   const canonicalUrl = `https://dchubs.org/servers/${server.id}`;
 
-  const isDefaultIcon = server.icon?.endsWith('0.png') ?? true;
+  const isDefaultIcon =
+    !server.icon ||
+    server.icon === 'https://cdn.discordapp.com/embed/avatars/0.png';
   const hasCustomIcon = Boolean(server.icon) && !isDefaultIcon;
   const hasBanner = Boolean(server.banner);
 
