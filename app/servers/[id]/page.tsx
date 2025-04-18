@@ -25,6 +25,8 @@ export async function generateMetadata({
   const { id } = await params;
   const server = await getServerByGuildId(id);
 
+  if (!server) return {};
+
   return {
     title: `${server.name} - ${server.tags.slice(0, 3).join(' / ')} Discord 伺服器 | DiscordHubs`,
     description: server.description,
