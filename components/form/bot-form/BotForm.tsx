@@ -75,8 +75,8 @@ const BotForm: React.FC<BotFormProps> = ({
       developers: [],
       commands: [],
       tags: [],
-      secret: undefined,
-      webhook_url: undefined,
+      secret: '',
+      webhook_url: '',
       ...(defaultValues || {}),
     },
   });

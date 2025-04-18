@@ -121,4 +121,10 @@ export const Servercategories: CategoryType[] = [
     color: 'bg-zinc-500',
     selected: false,
   },
+  {
+    id: '21',
+    name: '支援群組',
+    color: 'bg-teal-500',
+    selected: false,
+  },
 ];

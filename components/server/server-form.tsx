@@ -35,6 +35,7 @@ import {
   updateServer,
 } from '@/lib/actions/servers';
 import { fetchUserInfo } from '@/lib/utils';
+import { toast } from 'react-toastify';
 
 type FormSchemaType = z.infer<typeof ServerFormSchema>;
 
@@ -62,7 +63,6 @@ export default function ServerFormPage({
   );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FormSchemaType>({
@@ -76,12 +76,12 @@ export default function ServerFormPage({
       websiteLink: edit_server?.website || '',
       tags: edit_server?.tags || [],
       rules: edit_server?.rules || [],
-      secret: edit_server?.secret || undefined,
-      webhook_url: edit_server?.VoteNotificationURL || undefined,
+      secret: edit_server?.secret || '',
+      webhook_url: edit_server?.VoteNotificationURL || '',
     },
   });
 
-  const { handleSubmit, control, formState, register, reset, getValues } = form;
+  const { handleSubmit, control, reset } = form;
 
   const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -165,15 +165,18 @@ export default function ServerFormPage({
       let banner: string | null = null;
       let global_name: string = '未知使用者';
 
-      const memberCount =
-        'memberCount' in activeServer
-          ? activeServer.memberCount
-          : (edit_server?.members ?? 0);
+      const isActiveServer = (s: any): s is ActiveServerInfo =>
+        s &&
+        typeof s.memberCount === 'number' &&
+        typeof s.OnlineMemberCount === 'number';
 
-      const onlineCount =
-        'OnlineMemberCount' in activeServer
-          ? activeServer.OnlineMemberCount
-          : (edit_server?.online ?? 0);
+      const memberCount = isActiveServer(activeServer)
+        ? activeServer.memberCount
+        : (edit_server?.members ?? 0);
+
+      const onlineCount = isActiveServer(activeServer)
+        ? activeServer.OnlineMemberCount
+        : (edit_server?.online ?? 0);
 
       const ownerId =
         typeof activeServer.owner === 'string'
@@ -223,8 +226,8 @@ export default function ServerFormPage({
       } else {
         await insertServer(payload);
       }
+
       if (mode !== 'edit') {
-        // Webhook 消息
         const embed = {
           title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
           description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
@@ -266,9 +269,9 @@ export default function ServerFormPage({
         } catch (webhookError) {
           console.error('發送 Webhook 時出錯:', webhookError);
         }
+        reset();
       }
-      setSuccess(true);
-      reset();
+      toast.success(mode === 'edit' ? '伺服器更新成功' : '伺服器發布成功');
     } catch (err: any) {
       console.error(err);
       setError(err.message ?? '發生未知錯誤');
@@ -573,13 +576,6 @@ export default function ServerFormPage({
               </div>
             </form>
           </Form>
-          {success && (
-            <div className="... text-green-500">
-              {mode === 'edit'
-                ? '✅ 伺服器資訊已更新！'
-                : '✅ 伺服器已經提交成功！'}
-            </div>
-          )}
         </div>
       </div>
     </div>

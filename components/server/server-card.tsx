@@ -34,8 +34,6 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
   const [imgError, setImgError] = useState(false);
   const isClient = useIsClient();
 
-  const router = useRouter();
-
   if (!isClient) return null;
 
   const buttonText = server.isInServer
@@ -49,7 +47,7 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
   const handleClick = () => {
     if (!server.isInServer) {
       window.open(
-        'https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=1126965059046400&integration_type=0&scope=bot',
+        `https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=1126965059046400&integration_type=0&scope=bot&guild_id=${server.id}&disable_guild_select=true`,
         '_blank',
       );
     } else if (!isPublished) {
