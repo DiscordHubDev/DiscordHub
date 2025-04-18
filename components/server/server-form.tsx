@@ -166,11 +166,15 @@ export default function ServerFormPage({
       let global_name: string = '未知使用者';
 
       const memberCount =
-        'memberCount' in activeServer ? activeServer.memberCount : edit_server.members;
-      const onlineCount =
-        'OnlineMemberCount' in activeServer
-          ? activeServer.OnlineMemberCount
-          : edit_server.online;
+  'memberCount' in activeServer
+    ? activeServer.memberCount
+    : edit_server?.members ?? 0;
+
+const onlineCount =
+  'OnlineMemberCount' in activeServer
+    ? activeServer.OnlineMemberCount
+    : edit_server?.online ?? 0;
+
 
       const ownerId =
         typeof activeServer.owner === 'string'
