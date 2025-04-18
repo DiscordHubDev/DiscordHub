@@ -61,7 +61,7 @@ const data = {
       title: '支持作者們',
       url: '#',
       icon: SquareTerminal,
-      isActive: true,
+      isActive: false,
       items: [
         {
           title: '弦樂（DawnGS）',
@@ -199,7 +199,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isMobile = useIsMobile();
 
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, open } = useSidebar();
 
   useEffect(() => {
     refreshUnreadCount();
@@ -311,10 +311,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [showInbox, isMobile]);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col">
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
-          <SidebarTrigger />
+          <SidebarTrigger className="ml-0.5" />
 
           <NavItem
             items={navItem.map(item => ({
