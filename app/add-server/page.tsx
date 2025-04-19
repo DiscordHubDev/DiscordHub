@@ -63,7 +63,7 @@ export default async function HomePage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.access_token) {
-    return redirect('/api/auth/signin?callbackUrl=/add-server');
+    return redirect('/api/auth/signin/discord?callbackUrl=/add-server');
   }
 
   const { activeServers, inactiveServers } = await getUserGuildsWithBotStatus(

@@ -26,6 +26,7 @@ import { CommandListField } from '@/components/form/bot-form/CommandListField';
 import { DeveloperListField } from '@/components/form/bot-form/DeveloperListField';
 import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
+import { toast } from 'react-toastify';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {
@@ -564,7 +565,7 @@ const BotForm: React.FC<BotFormProps> = ({
             <div className="mt-4 text-green-500 text-sm border border-green-500 bg-green-100/10 rounded p-3">
               {mode === 'create'
                 ? '✅ 機器人已成功提交，請等待審核人員審核，審核結果將會在網站的收件匣和官方群組的通知中出現。'
-                : '機器人已成功保存！'}
+                : '✅ 機器人已成功保存！'}
             </div>
           )}
         </div>

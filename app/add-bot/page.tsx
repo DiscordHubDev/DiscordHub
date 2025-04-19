@@ -63,7 +63,7 @@ export default async function AddBotPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.access_token) {
-    return redirect('/api/auth/signin?callbackUrl=/add-bot');
+    return redirect('/api/auth/signin/discord?callbackUrl=/add-bot');
   }
 
   return <AddBotPageClient />;
