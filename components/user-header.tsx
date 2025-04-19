@@ -72,15 +72,6 @@ export default function UserHeader({ user }: UserHeaderProps) {
               </div>
             </div>
           </div>
-
-          <div className="flex-shrink-0 mt-4 md:mt-0 md:ml-auto">
-            <Button
-              size="sm"
-              className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
-            >
-              編輯個人資料
-            </Button>
-          </div>
         </div>
 
         {/* Bio */}
