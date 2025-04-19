@@ -133,9 +133,9 @@ export default function UserProfile({ id }: { id?: string }) {
               )}
             </div>
 
-            {viewedUser.ownedServers.length > 0 ? (
+            {managedServers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {viewedUser.ownedServers.map(server => (
+                {managedServers.map(server => (
                   <Link
                     href={`/servers/${server.id}`}
                     key={server.id}
@@ -201,7 +201,9 @@ export default function UserProfile({ id }: { id?: string }) {
               </div>
             ) : (
               <div className="bg-[#2b2d31] rounded-lg p-8 text-center">
-                <p className="text-gray-300 mb-4">你尚未建立任何伺服器</p>
+                <p className="text-gray-300 mb-4">
+                  {isOwner ? '你' : '他'}尚未建立任何伺服器
+                </p>
                 {isOwner && (
                   <Link href="/add-server">
                     <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
