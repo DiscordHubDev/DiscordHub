@@ -38,7 +38,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const bots = await prisma.bot.findMany({ where: { status: 'approved' } });
+    const bots = await prisma.bot.findMany({
+      where: { status: 'approved' },
+      orderBy: { servers: 'desc' },
+    });
     const updatedBots: {
       name: string;
       prevServers: number;
@@ -62,7 +65,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      await sleep(3000);
+      await sleep(10000);
     }
 
     return NextResponse.json({
