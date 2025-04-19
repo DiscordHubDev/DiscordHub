@@ -87,6 +87,20 @@ export async function getBot(id: string) {
   return bot;
 }
 
+export async function getBotForEdit(id: string) {
+  const bot = await prisma.bot.findFirst({
+    where: {
+      id,
+    },
+    include: {
+      developers: true,
+      commands: true,
+      favoritedBy: true,
+    },
+  });
+  return bot;
+}
+
 export async function deleteBot(id: string) {
   try {
     const deleted = await prisma.bot.delete({

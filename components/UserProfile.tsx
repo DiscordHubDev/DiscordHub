@@ -14,7 +14,15 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Bot, Star, Settings, Plus } from 'lucide-react';
+import {
+  Users,
+  Bot,
+  Star,
+  Settings,
+  Plus,
+  Clock,
+  CheckCircle,
+} from 'lucide-react';
 import { getUserById } from '@/lib/actions/user';
 import UserSettingsForm from './form/user-form/SettingsForm';
 import UserHeader from './user-header';
@@ -276,6 +284,19 @@ export default function UserProfile({ id }: { id?: string }) {
                           <Users size={14} className="mr-1" />
                           <span>{bot.servers.toLocaleString()} 伺服器</span>
                         </div>
+                        {bot.status === 'pending' && (
+                          <div className="flex items-center text-sm text-yellow-500 mt-2">
+                            <Clock size={14} className="mr-1" />
+                            <span>機器人仍在審核中</span>
+                          </div>
+                        )}
+
+                        {bot.status === 'approved' && (
+                          <div className="flex items-center text-sm text-green-500 mt-2">
+                            <CheckCircle size={14} className="mr-1" />
+                            <span>機器人已通過審核</span>
+                          </div>
+                        )}
                       </CardContent>
                       {isOwner && (
                         <CardFooter>
