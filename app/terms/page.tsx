@@ -20,6 +20,14 @@ const keywords = [
 
 export const dynamic = 'force-static';
 
+function resolveMetadataBase(): URL {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org');
+  } catch {
+    return new URL('https://dchubs.org');
+  }
+}
+
 export const metadata: Metadata = {
   title: `服務條款 | Discord伺服器列表 - DiscordHubs`,
   description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的服務使用條款和內容`,
@@ -36,7 +44,7 @@ export const metadata: Metadata = {
     },
   ],
   // 社交媒體分享優化
-  metadataBase: new URL('https://dchubs.org'),
+  metadataBase: resolveMetadataBase(),
   openGraph: {
     title: `服務條款 | Discord伺服器列表 - DiscordHubs`,
     description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的服務使用條款和內容`,
