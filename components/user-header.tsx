@@ -23,9 +23,9 @@ export default function UserHeader({ user }: UserHeaderProps) {
   return (
     <div>
       {/* Banner */}
-      <div className="h-48 bg-[#36393f] relative overflow-hidden">
+      <div className="h-90 bg-[#36393f] relative overflow-hidden">
         {user.banner ? (
-          <div className="relative w-full h-48 overflow-hidden">
+          <div className="relative w-full h-full overflow-hidden">
             <div
               className="absolute inset-0 bg-center bg-cover blur-sm scale-110"
               style={{ backgroundImage: `url(${user.banner})` }}

@@ -84,7 +84,7 @@ export default function UserProfile({ id }: { id?: string }) {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="servers" className="mb-8">
-          <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22]w-full h-full overflow-x-auto overflow-y-auto">
+          <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
             <TabsTrigger
               value="servers"
               className="data-[state=active]:bg-[#36393f]"
