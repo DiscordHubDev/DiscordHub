@@ -3,6 +3,8 @@
 import { BotWithRelations, BotWithRelationsInput } from '@/lib/prisma_type';
 import { getDevelopersByIds } from '../get-developers';
 import { prisma } from '@/lib/prisma';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { toast } from 'react-toastify';
 
 const insertBot = async (data: BotWithRelations) => {
   const { commands, developers, ...bot } = data;
@@ -30,10 +32,16 @@ const insertBot = async (data: BotWithRelations) => {
       },
     });
 
-    return createdBot;
-  } catch (error) {
-    console.error('❌ 新增機器人失敗:', error);
-    throw error;
+    return { success: true, bot: createdBot };
+  } catch (error: any) {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      return { success: false, message: '機器人已經申請過了！' };
+    }
+
+    return { success: false, message: '發生未知錯誤，請稍後再試' };
   }
 };
 
@@ -42,7 +50,7 @@ export async function submitBot(data: BotWithRelationsInput) {
     data.developers.map(dev => dev.id),
   );
 
-  await insertBot({
+  return await insertBot({
     ...data,
     developers,
   });
