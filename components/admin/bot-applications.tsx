@@ -17,7 +17,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Bot, ExternalLink, Check, X, Search } from 'lucide-react';
+import {
+  Bot,
+  ExternalLink,
+  Check,
+  X,
+  Search,
+  MailPlus,
+  Link2,
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { BotWithRelations } from '@/lib/prisma_type';
 import { updateBotStatus } from '@/lib/actions/update-bot-status';
@@ -26,6 +34,7 @@ import RejectBotDialog from '@/components/RejectBotDialog';
 import { toast } from 'react-toastify';
 import { updateBotServerCount } from '@/lib/actions/bots';
 import MarkdownRenderer from '../MarkdownRenderer';
+import Link from 'next/link';
 
 const webhookUrl =
   'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
@@ -292,6 +301,22 @@ export default function BotApplications({
                           <Check className="h-4 w-4 mr-1" /> 批准
                         </Button>
                         <Button
+                          asChild
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Link
+                            href={app.inviteUrl ?? ''}
+                            className="discord flex items-center space-x-2"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Link2 className="h-4 w-4" />
+                            <span>點我邀請</span>
+                          </Link>
+                        </Button>
+                        <Button
                           size="sm"
                           className="bg-red-700/80 hover:bg-red-700"
                           onClick={(e: React.MouseEvent) => {
@@ -437,6 +462,22 @@ export default function BotApplications({
                     }}
                   >
                     <Check className="h-4 w-4 mr-1" /> 批准
+                  </Button>
+                  <Button
+                    asChild
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <Link
+                      href={selectedApp.inviteUrl ?? ''}
+                      className="discord flex items-center space-x-2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Link2 className="h-4 w-4" />
+                      <span>點我邀請</span>
+                    </Link>
                   </Button>
                   <Button
                     className="bg-red-700/80 hover:bg-red-700"

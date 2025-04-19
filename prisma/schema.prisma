@@ -128,6 +128,9 @@ model Bot {
 
   commands BotCommand[] // One-to-many relation
   Review   Review[]
+
+  isAdmin       Boolean  @default(false)
+
 }
 
 model BotCommand {
@@ -210,4 +213,8 @@ model Vote {
 enum VoteType {
   server
   bot
+}
+
+model Administrators {
+  id String @id
 }

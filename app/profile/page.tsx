@@ -35,7 +35,7 @@ import UserProfile from '@/components/UserProfile';
 //     },
 //   ],
 //   // 社交媒體分享優化
-//   metadataBase: new URL('https://dchubs.org'),
+//   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dchubs.org'),
 //   openGraph: {
 //     title: `個人檔案 | Discord伺服器列表 - DiscordHubs`,
 //     description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此管理你的伺服器和機器人，讓你的伺服器得到宣傳和管理，編輯你的個人資料和管理收藏。`,

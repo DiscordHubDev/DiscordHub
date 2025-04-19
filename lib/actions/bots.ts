@@ -1,14 +1,17 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { BotFormData, Screenshot } from '../types';
+import { BotFormData, DiscordBotRPCInfo, Screenshot } from '../types';
 import { BotUpdateInput } from '../prisma_type';
+import { hasAdministratorPermission } from '../utils';
 
 export async function transformToBotUpdateData(
   formData: BotFormData,
+  isAdmin: boolean,
 ): Promise<BotUpdateInput> {
   return {
     name: formData.botName,
+    isAdmin,
     prefix: formData.botPrefix,
     description: formData.botDescription,
     longDescription: formData.botLongDescription ?? null,
@@ -33,8 +36,23 @@ export async function updateBot(
   formData: BotFormData,
   screenshots: Screenshot[],
 ) {
+  const res = await fetch(
+    `https://discord.com/api/v10/applications/${id.trim()}/rpc`,
+    {
+      headers: {
+        'User-Agent': 'DiscordHubs/1.0',
+      },
+    },
+  );
+
+  const rpcData: DiscordBotRPCInfo = await res.json();
+
+  const isAdmin = hasAdministratorPermission(
+    rpcData.install_params.permissions,
+  );
+
   const botFields = {
-    ...(await transformToBotUpdateData(formData)),
+    ...(await transformToBotUpdateData(formData, isAdmin)),
     screenshots: screenshots.map(s => s.url),
   };
 

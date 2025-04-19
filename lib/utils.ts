@@ -9,6 +9,12 @@ export type PriorityInput = {
   servers?: number;
 };
 
+export function hasAdministratorPermission(permissions: string): boolean {
+  const ADMINISTRATOR = 0x00000008; // 管理員權限
+  const perms = BigInt(permissions);
+  return (perms & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR);
+}
+
 export function createPriorityCalculator(options?: {
   voteWeight?: number;
   serverWeight?: number;
