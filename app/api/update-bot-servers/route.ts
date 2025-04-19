@@ -3,11 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 對內部 API 發送請求，拿 bot 的 server count
 async function fetchBotServerCount(botId: string): Promise<number | null> {
   try {
     const res = await fetch(
-      `${process.env.BASE_URL}/api/get_bot_server_count`,
+      `https://getbotserver.dawngs.top/get_bot_server_count`,
       {
         method: 'POST',
         headers: {
@@ -39,24 +38,37 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const bots = await prisma.bot.findMany();
+    const bots = await prisma.bot.findMany({ where: { status: 'approved' } });
+    const updatedBots: {
+      name: string;
+      prevServers: number;
+      servers: number;
+    }[] = [];
 
     for (const bot of bots) {
+      const prevServers = bot.servers;
       const count = await fetchBotServerCount(bot.id);
 
       if (count !== null) {
         await prisma.bot.update({
           where: { id: bot.id },
-          data: {
-            servers: count,
-          },
+          data: { servers: count },
+        });
+
+        updatedBots.push({
+          name: bot.name,
+          prevServers,
+          servers: count,
         });
       }
 
       await sleep(3000);
     }
 
-    return NextResponse.json({ ok: true, updated: bots.length });
+    return NextResponse.json({
+      ok: true,
+      updated: updatedBots,
+    });
   } catch (err) {
     console.error('❌ 更新時發生錯誤', err);
     return NextResponse.json({ ok: false, error: '更新失敗' }, { status: 500 });

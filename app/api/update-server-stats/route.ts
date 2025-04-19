@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+const BOT_TOKEN = process.env.BOT_TOKEN;
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
