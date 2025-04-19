@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ServerList from '@/components/server-list';
-import FeaturedServers from '@/components/featured-servers';
 import CategoryFilter from '@/components/category-filter';
 import CategorySearch from '@/components/category-search';
 import MobileCategoryFilter from '@/components/mobile-category-filter';
@@ -18,7 +17,7 @@ import { ServerType } from '@/lib/prisma_type';
 import Link from 'next/link';
 import Pagination from '@/components/pagination';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 type DiscordServerListProps = {
   servers: ServerType[];
@@ -264,7 +263,7 @@ export default function DiscordServerListPageClient({
               className="mb-8"
               onValueChange={handleTabChange}
             >
-              <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full overflow-x-auto">
+              <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
                 <TabsTrigger
                   value="all"
                   className="data-[state=active]:bg-[#36393f]"

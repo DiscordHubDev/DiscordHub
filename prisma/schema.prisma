@@ -32,6 +32,8 @@ model User {
   reports Report[] @relation("UserReports")
   handledReports Report[]  @relation("HandledReports")
   handledBots Bot[]  @relation("HandleBots")
+
+  adminIn    Server[]   @relation("ServerAdmins")
 }
 
 enum EmailPriority {
@@ -80,6 +82,7 @@ model Server {
   rules           String[]
   features        String[]
   screenshots     String[]
+  admins     User[]     @relation("ServerAdmins")
 
   VoteNotificationURL String?
   secret String?

@@ -6,8 +6,43 @@ import {
   ServerWithMinimalFavorited,
 } from '@/lib/prisma_type';
 import { prisma } from '@/lib/prisma';
+import { fetchUserInfo } from '../utils';
+import { getHaveGuildManagePermissionMembers } from '../get-user-guild';
 
-export async function updateServer(data: CreateServerInput) {
+export async function fetchAdminIdsForGuild(
+  guildId: string,
+): Promise<string[]> {
+  return await getHaveGuildManagePermissionMembers(guildId);
+}
+
+export async function buildConnectOrCreateAdmins(
+  admins: (string | { id: string })[],
+) {
+  return await Promise.all(
+    admins
+      .map(admin => (typeof admin === 'string' ? admin : admin.id))
+      .filter(Boolean)
+      .map(async userId => {
+        const info = await fetchUserInfo(userId);
+        return {
+          where: { id: userId },
+          create: {
+            id: userId,
+            username: info.global_name ?? 'Unknown',
+            avatar: info.avatar_url ?? '',
+            banner: info.banner_url ?? null,
+            joinedAt: new Date(),
+            social: {},
+          },
+        };
+      }),
+  );
+}
+
+export async function updateServer(
+  data: CreateServerInput,
+  connectOrCreateAdmins?: any[],
+) {
   try {
     const updatedServer = await prisma.server.update({
       where: {
@@ -30,6 +65,8 @@ export async function updateServer(data: CreateServerInput) {
         rules: data.rules,
         features: data.features ?? [],
         screenshots: data.screenshots ?? [],
+
+        // connect owner
         owner: data.owner?.connectOrCreate
           ? {
               connect: {
@@ -37,9 +74,21 @@ export async function updateServer(data: CreateServerInput) {
               },
             }
           : undefined,
+
+        // connectOrCreate admins
+        admins:
+          connectOrCreateAdmins && connectOrCreateAdmins.length > 0
+            ? {
+                set: [],
+                connectOrCreate: connectOrCreateAdmins,
+              }
+            : undefined,
       },
     });
 
+    console.log(
+      `✅ 已更新伺服器 ${data.name}，並同步 ${connectOrCreateAdmins?.length ?? 0} 位管理員`,
+    );
     return updatedServer;
   } catch (error) {
     console.error('❌ 更新伺服器失敗:', error);
@@ -47,10 +96,18 @@ export async function updateServer(data: CreateServerInput) {
   }
 }
 
-export async function insertServer(data: CreateServerInput) {
+export async function insertServer(
+  data: CreateServerInput,
+  connectOrCreateAdmins?: any[],
+) {
   try {
     const createdServer = await prisma.server.create({
-      data,
+      data: {
+        ...data,
+        admins: {
+          connectOrCreate: connectOrCreateAdmins,
+        },
+      },
     });
 
     return createdServer;
@@ -71,6 +128,7 @@ export const getAllServers = async () => {
       include: {
         owner: true,
         favoritedBy: true,
+        admins: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -121,6 +179,7 @@ export const getServerByGuildId = async (
       include: {
         owner: true,
         favoritedBy: true,
+        admins: true,
       },
     });
 

@@ -21,7 +21,10 @@ import {
   FormMessage,
   FormLabel,
 } from '@/components/ui/form';
-import { ActiveServerInfo } from '@/lib/get-user-guild';
+import {
+  ActiveServerInfo,
+  getHaveGuildManagePermissionMembers,
+} from '@/lib/get-user-guild';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
@@ -30,6 +33,8 @@ import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
 import { CreateServerInput, ServerType } from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
 import {
+  buildConnectOrCreateAdmins,
+  fetchAdminIdsForGuild,
   insertServer,
   isOwnerexist,
   updateServer,
@@ -183,6 +188,10 @@ export default function ServerFormPage({
           ? activeServer.owner
           : activeServer.owner?.id;
 
+      const adminIds = await fetchAdminIdsForGuild(activeServer.id);
+
+      const connectOrCreateAdmins = await buildConnectOrCreateAdmins(adminIds);
+
       const existingOwner = await isOwnerexist(ownerId!);
 
       if (!existingOwner) {
@@ -207,6 +216,7 @@ export default function ServerFormPage({
         members: memberCount,
         online: onlineCount,
         rules: data.rules,
+        screenshots: screenshotPreviews.map(s => s.url),
         upvotes: 0,
         owner: {
           connectOrCreate: {
@@ -222,9 +232,9 @@ export default function ServerFormPage({
       };
 
       if (mode === 'edit') {
-        await updateServer(payload);
+        await updateServer(payload, connectOrCreateAdmins);
       } else {
-        await insertServer(payload);
+        await insertServer(payload, connectOrCreateAdmins);
       }
 
       if (mode !== 'edit') {
@@ -331,7 +341,9 @@ export default function ServerFormPage({
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-[#2b2d31] rounded-lg p-6 shadow-lg">
-          <h1 className="text-2xl font-bold mb-6">新增您的 Discord 伺服器</h1>
+          <h1 className="text-2xl font-bold mb-6">
+            {mode === 'edit' ? '編輯' : '新增'}您的 Discord 伺服器
+          </h1>
           <Form {...form}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* 基本資訊 */}

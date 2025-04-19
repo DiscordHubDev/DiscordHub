@@ -59,7 +59,7 @@ export default function ServerDetailClientPage({
                 <AvatarImage
                   src={server.icon || undefined}
                   alt={server.name}
-                  className="object-cover"
+                  className="object-cover w-full h-full"
                 />
                 <AvatarFallback className="bg-[#36393f] text-white text-sm">
                   {server.name?.[0] || '伺'}
@@ -142,7 +142,7 @@ export default function ServerDetailClientPage({
           {/* 側邊欄 */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="about" className="mb-8">
-              <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full overflow-x-auto">
+              <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
                 <TabsTrigger
                   value="about"
                   className="data-[state=active]:bg-[#36393f]"

@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+components/server/server-form.tsx
+public/sitemap-0.xml
+public/robots.txt
+public/sitemap.xml

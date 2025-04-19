@@ -16,6 +16,7 @@ export type UserType = Prisma.UserGetPayload<{
     favoriteBots: true;
     ownedServers: true;
     developedBots: true;
+    adminIn: true;
   };
 }>;
 
@@ -62,6 +63,7 @@ export type ServerType = Prisma.ServerGetPayload<{
   include: {
     owner: true;
     favoritedBy: true;
+    admins: true;
   };
 }>;
 

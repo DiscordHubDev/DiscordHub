@@ -10,7 +10,6 @@ import {
 import { UploadedFile } from '@/lib/types';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils';
-import { sendNotification } from './sendNotification';
 
 type Params = {
   reportId: string;

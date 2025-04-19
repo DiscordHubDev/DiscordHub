@@ -1,5 +1,5 @@
 // app/bots/[id]/edit/page.tsx
-import { getBot } from '@/lib/actions/bots';
+import { getBotForEdit } from '@/lib/actions/bots';
 import BotEditClient from './client';
 
 export default async function BotEditPage({
@@ -8,7 +8,7 @@ export default async function BotEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const bot = await getBot(id);
+  const bot = await getBotForEdit(id);
 
   if (!bot) return <div className="text-white p-4">找不到機器人</div>;
 

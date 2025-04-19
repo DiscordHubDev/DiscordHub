@@ -509,7 +509,7 @@ const BotForm: React.FC<BotFormProps> = ({
                       <Info size={16} className="text-[#5865f2] mt-0.5" />
                       <p className="text-sm text-gray-400">
                         {mode === 'edit'
-                          ? '保存後，變更可能需要一段時間才會顯示在平台上。'
+                          ? '保存後，變更可能需要一段時間才會套用。'
                           : '提交後，我們將審核您的機器人。審核通常需要 1-2 個工作日。'}
                       </p>
                     </div>

@@ -14,7 +14,15 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Bot, Star, Settings, Plus } from 'lucide-react';
+import {
+  Users,
+  Bot,
+  Star,
+  Settings,
+  Plus,
+  Clock,
+  CheckCircle,
+} from 'lucide-react';
 import { getUserById } from '@/lib/actions/user';
 import UserSettingsForm from './form/user-form/SettingsForm';
 import UserHeader from './user-header';
@@ -67,6 +75,8 @@ export default function UserProfile({ id }: { id?: string }) {
     );
   }
 
+  const managedServers = [...viewedUser.ownedServers, ...viewedUser.adminIn];
+
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* 使用者標頭 */}
@@ -74,7 +84,7 @@ export default function UserProfile({ id }: { id?: string }) {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="servers" className="mb-8">
-          <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full overflow-x-auto">
+          <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22]w-full h-full overflow-x-auto overflow-y-auto">
             <TabsTrigger
               value="servers"
               className="data-[state=active]:bg-[#36393f]"
@@ -274,6 +284,19 @@ export default function UserProfile({ id }: { id?: string }) {
                           <Users size={14} className="mr-1" />
                           <span>{bot.servers.toLocaleString()} 伺服器</span>
                         </div>
+                        {bot.status === 'pending' && (
+                          <div className="flex items-center text-sm text-yellow-500 mt-2">
+                            <Clock size={14} className="mr-1" />
+                            <span>機器人仍在審核中</span>
+                          </div>
+                        )}
+
+                        {bot.status === 'approved' && (
+                          <div className="flex items-center text-sm text-green-500 mt-2">
+                            <CheckCircle size={14} className="mr-1" />
+                            <span>機器人已通過審核</span>
+                          </div>
+                        )}
                       </CardContent>
                       {isOwner && (
                         <CardFooter>
@@ -315,9 +338,9 @@ export default function UserProfile({ id }: { id?: string }) {
               {/* 收藏的伺服器 */}
               <div>
                 <h2 className="text-2xl font-bold mb-4">收藏的伺服器</h2>
-                {viewedUser.favoriteServers.length > 0 ? (
+                {managedServers.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {viewedUser.favoriteServers.map(server => (
+                    {managedServers.map(server => (
                       <Link
                         href={`/servers/${server.id}`}
                         key={server.id}
