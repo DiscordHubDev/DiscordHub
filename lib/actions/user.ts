@@ -20,6 +20,7 @@ export async function GetUserBySession(session: Session) {
       favoriteBots: true,
       ownedServers: true,
       developedBots: true,
+      adminIn: true,
     },
   });
 
@@ -47,6 +48,7 @@ export async function upsertUserFromSession(session: Session) {
       favoriteBots: true,
       ownedServers: true,
       developedBots: true,
+      adminIn: true,
     },
   });
 
