@@ -76,7 +76,7 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
 
         {/* Server Icon */}
         <div className="relative -mt-8 ml-4">
-          <Avatar className="w-full h-full border-4 border-[#2f3136] bg-[#36393f]">
+          <Avatar className="w-16 h-16 border-4 border-[#2f3136] bg-[#36393f]">
             <AvatarImage
               className="object-cover w-full h-full"
               src={!imgError && server.icon !== '' ? server.icon : undefined}
