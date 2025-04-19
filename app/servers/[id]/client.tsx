@@ -30,14 +30,12 @@ export default function ServerDetailClientPage({
     window.open(server.inviteUrl!, '_blank', 'noopener,noreferrer');
   };
 
-  const { data: session } = useSession();
-
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Banner */}
       <div className="relative h-48 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
         {server.banner ? (
-          <div className="relative w-full h-full">
+          <div className="relative h-48 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
             {' '}
             <img
               src={server.banner || '/placeholder.svg?height=300&width=1200'}
@@ -54,7 +52,7 @@ export default function ServerDetailClientPage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
         <div className="flex flex-col md:flex-row gap-6">
           {/* 伺服器圖標和基本資訊 */}
-          <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-4 mt-3">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-[#36393f] border-4 border-[#1e1f22] overflow-hidden">
               <Avatar className="w-full h-full">
                 <AvatarImage
@@ -68,9 +66,11 @@ export default function ServerDetailClientPage({
               </Avatar>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl md:text-3xl font-bold text-white">
-                {server.name}
-              </h1>
+              <div className="flex flex-col">
+                <h1 className="lg:text-2xl md:text-1xl font-bold text-white">
+                  {server.name}
+                </h1>
+              </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-300 mt-2">
                 <div className="flex items-center">
                   <Users size={16} className="mr-1" />

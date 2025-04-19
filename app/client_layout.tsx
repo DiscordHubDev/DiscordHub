@@ -16,11 +16,10 @@ export default function ClientLayout({
   const isAdminPage = pathname.startsWith('/admin');
 
   return (
-    <main className="h-full w-full flex flex-col md:flex-row overflow-auto">
-      <AppSidebar />
-      <SidebarInset className="flex-grow flex flex-col">
+    <main className="h-full w-full flex flex-col md:flex-row overflow-x-hidden">
+      <AppSidebar className="w-64 shrink-0" />
+      <SidebarInset className="flex-grow flex flex-col overflow-x-hidden">
         <div className="flex-grow pb-20 bg-[#1e1f22]">
-          {' '}
           <Navbar />
           {children}
           <ToastContainer position="bottom-right" autoClose={3000} />
