@@ -1,5 +1,3 @@
-import { is } from 'date-fns/locale';
-
 type BaseServerInfo = {
   id: string;
   name: string;
@@ -13,6 +11,7 @@ export type ActiveServerInfo = BaseServerInfo & {
   memberCount: number;
   OnlineMemberCount: number;
   isPublished: boolean;
+  admins: string[];
 };
 
 export type InactiveServerInfo = BaseServerInfo & {
@@ -34,15 +33,72 @@ type DiscordGuild = {
 };
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
+const LIMIT = 1000;
 
-const hasManageGuildPermission = (permissions: number) => {
-  return (permissions & 0x20) === 0x20;
+const hasManageGuildPermission = (permissions: string | number | bigint) => {
+  return (BigInt(permissions) & BigInt(0x20)) === BigInt(0x20);
 };
+
+export async function getHaveGuildManagePermissionMembers(
+  guildId: string,
+): Promise<string[]> {
+  let allMembers: any[] = [];
+  let after: string | undefined = undefined;
+
+  while (true) {
+    const url = new URL(`https://discord.com/api/guilds/${guildId}/members`);
+    url.searchParams.set('limit', `${LIMIT}`);
+    if (after) url.searchParams.set('after', after);
+
+    const res = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bot ${BOT_TOKEN}`,
+      },
+    });
+
+    if (!res.ok) throw new Error(`❌ 取得成員失敗 (${res.status})`);
+
+    const members = await res.json();
+    allMembers.push(...members);
+
+    if (members.length < LIMIT) break;
+    after = members[members.length - 1].user.id;
+  }
+
+  const rolesRes = await fetch(
+    `https://discord.com/api/guilds/${guildId}/roles`,
+    {
+      headers: {
+        Authorization: `Bot ${BOT_TOKEN}`,
+      },
+    },
+  );
+
+  if (!rolesRes.ok) throw new Error(`❌ 取得角色失敗 (${rolesRes.status})`);
+
+  const roles = await rolesRes.json();
+
+  const manageGuildRoleIds = roles
+    .filter((role: any) => hasManageGuildPermission(role.permissions))
+    .map((role: any) => role.id);
+
+  const qualifiedUserIds = allMembers
+    .filter(
+      (member: any) =>
+        !member.user.bot &&
+        (member.roles ?? []).some((roleId: string) =>
+          manageGuildRoleIds.includes(roleId),
+        ),
+    )
+    .map((member: any) => member.user.id);
+
+  return qualifiedUserIds;
+}
 
 export async function getGuildDetails(
   guildId: string,
 ): Promise<ActiveServerInfo | null> {
-  const res = await fetch(
+  const res = await safeFetchWithRateLimit(
     `https://discord.com/api/guilds/${guildId}?with_counts=true`,
     {
       headers: {
@@ -50,6 +106,8 @@ export async function getGuildDetails(
       },
     },
   );
+
+  const managerUserIds = await getHaveGuildManagePermissionMembers(guildId);
 
   if (!res.ok) return null;
 
@@ -67,6 +125,7 @@ export async function getGuildDetails(
     owner: data.owner_id,
     memberCount: data.approximate_member_count ?? 0,
     OnlineMemberCount: data.approximate_presence_count ?? 0,
+    admins: managerUserIds,
     isInServer: true,
     isPublished: false,
   };

@@ -123,6 +123,7 @@ export async function getUserById(id: string): Promise<UserType | null> {
       favoriteBots: true,
       ownedServers: true,
       developedBots: true,
+      adminIn: true,
     },
   });
 
