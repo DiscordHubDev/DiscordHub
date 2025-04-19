@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
@@ -21,7 +21,14 @@ async function safeFetchWithRateLimit(url: string, options: RequestInit) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', {
+      status: 401,
+    });
+  }
+
   const servers = await prisma.server.findMany();
 
   for (const server of servers) {
