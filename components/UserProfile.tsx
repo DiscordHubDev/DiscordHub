@@ -32,7 +32,7 @@ export default function UserProfile({ id }: { id?: string }) {
   const { data: session } = useSession();
 
   if (!session) {
-    redirect('/api/auth/signin?callbackUrl=/profile');
+    redirect('/api/auth/signin/discord?callbackUrl=/profile');
   }
 
   const [viewedUser, setViewedUser] = useState<UserType>();
