@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FavoriteButton } from '@/components/favorite-button';
 import { useSession } from 'next-auth/react';
 import { ReportDialog } from '@/components/ReportDialog';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 type ServerDetailPageProps = {
   allServers: ServerType[];
@@ -166,9 +167,7 @@ export default function ServerDetailClientPage({
               <TabsContent value="about" className="mt-6">
                 <div className="bg-[#2b2d31] rounded-lg p-6">
                   <h2 className="text-xl font-bold mb-4">伺服器介紹</h2>
-                  <p className="text-gray-300 whitespace-pre-line mb-6">
-                    {server.longDescription}
-                  </p>
+                  <MarkdownRenderer content={server.longDescription || ''} />
 
                   {server.features && server.features.length > 0 && (
                     <div className="mt-8">

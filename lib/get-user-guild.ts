@@ -50,7 +50,7 @@ export async function getHaveGuildManagePermissionMembers(
     url.searchParams.set('limit', `${LIMIT}`);
     if (after) url.searchParams.set('after', after);
 
-    const res = await fetch(url.toString(), {
+    const res = await safeFetchWithRateLimit(url.toString(), {
       headers: {
         Authorization: `Bot ${BOT_TOKEN}`,
       },
@@ -65,7 +65,7 @@ export async function getHaveGuildManagePermissionMembers(
     after = members[members.length - 1].user.id;
   }
 
-  const rolesRes = await fetch(
+  const rolesRes = await safeFetchWithRateLimit(
     `https://discord.com/api/guilds/${guildId}/roles`,
     {
       headers: {
@@ -149,7 +149,7 @@ async function safeFetchWithRateLimit(
 export async function getUserGuildsWithBotStatus(
   userAccessToken: string,
 ): Promise<GuildResult> {
-  const userGuildsRes = await fetch(
+  const userGuildsRes = await safeFetchWithRateLimit(
     'https://discord.com/api/users/@me/guilds',
     {
       headers: {

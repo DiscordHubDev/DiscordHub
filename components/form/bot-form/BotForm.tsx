@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -27,6 +27,7 @@ import { DeveloperListField } from '@/components/form/bot-form/DeveloperListFiel
 import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
 import { toast } from 'react-toastify';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {
@@ -86,10 +87,37 @@ const BotForm: React.FC<BotFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const { handleSubmit, control, formState, register, reset, getValues } = form;
+  const { handleSubmit, control, formState, watch, reset } = form;
+
+  const longDescription = watch('botLongDescription');
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
 
   const webhookUrl =
     'https://discord.com/api/webhooks/1361383631796572345/zwDOea-BFSW7aDksperh06YX0tjEWQPxLJT_pO3MMGEY3fWC2zjqY4kuO3gFPG1-uW38';
+
+  const handleScroll = () => {
+    const textarea = textareaRef.current;
+    const preview = previewRef.current;
+
+    if (textarea && preview) {
+      // 取得 textarea 的捲動百分比：
+      // scrollTop 是目前捲動的距離，
+      // scrollHeight 是內容總高度，
+      // clientHeight 是可視範圍的高度
+      const scrollRatio =
+        textarea.scrollTop / (textarea.scrollHeight - textarea.clientHeight);
+
+      // 根據捲動比例，計算出 preview 應該捲到的高度：
+      // 如果 textarea 捲了 50%，preview 也要捲到自己內容的 50%
+      const previewScrollTop =
+        scrollRatio * (preview.scrollHeight - preview.clientHeight);
+
+      // 設定 preview 的捲動位置
+      preview.scrollTop = previewScrollTop;
+    }
+  };
 
   const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -348,15 +376,29 @@ const BotForm: React.FC<BotFormProps> = ({
                       <FormLabel>詳細描述 *</FormLabel>
                       <FormControl>
                         <Textarea
-                          rows={10}
-                          placeholder="請輸入詳細描述"
                           {...field}
+                          rows={10}
+                          placeholder="請輸入詳細描述 (支援Markdown)"
+                          ref={el => {
+                            field.ref(el);
+                            textareaRef.current = el;
+                          }}
+                          onScroll={handleScroll}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                <div
+                  ref={previewRef}
+                  className="h-[250px] overflow-auto bg-[#1e1f22] border border-gray-700 rounded-md p-4 mt-4"
+                >
+                  <MarkdownRenderer
+                    content={longDescription || '詳細描述預覽 (支援Markdown)'}
+                  />
+                </div>
 
                 <FormField
                   control={control}

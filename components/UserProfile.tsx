@@ -84,27 +84,27 @@ export default function UserProfile({ id }: { id?: string }) {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="servers" className="mb-8">
-          <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22]w-full h-full overflow-x-auto overflow-y-auto">
+          <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
             <TabsTrigger
               value="servers"
               className="data-[state=active]:bg-[#36393f]"
             >
               <Users size={16} className="mr-2" />
-              我的伺服器
+              {isOwner ? '我' : '他'}的伺服器
             </TabsTrigger>
             <TabsTrigger
               value="bots"
               className="data-[state=active]:bg-[#36393f]"
             >
               <Bot size={16} className="mr-2" />
-              我的機器人
+              {isOwner ? '我' : '他'}的機器人
             </TabsTrigger>
             <TabsTrigger
               value="favorites"
               className="data-[state=active]:bg-[#36393f]"
             >
               <Star size={16} className="mr-2" />
-              我的收藏
+              {isOwner ? '我' : '他'}的收藏
             </TabsTrigger>
             {isOwner && (
               <TabsTrigger
@@ -120,7 +120,9 @@ export default function UserProfile({ id }: { id?: string }) {
           {/* 我的伺服器 */}
           <TabsContent value="servers" className="mt-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">我的伺服器</h2>
+              <h2 className="text-2xl font-bold">
+                {isOwner ? '我' : '他'}的伺服器
+              </h2>
               {isOwner && (
                 <Link href="/add-server">
                   <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
@@ -131,9 +133,9 @@ export default function UserProfile({ id }: { id?: string }) {
               )}
             </div>
 
-            {viewedUser.ownedServers.length > 0 ? (
+            {managedServers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {viewedUser.ownedServers.map(server => (
+                {managedServers.map(server => (
                   <Link
                     href={`/servers/${server.id}`}
                     key={server.id}
@@ -199,7 +201,9 @@ export default function UserProfile({ id }: { id?: string }) {
               </div>
             ) : (
               <div className="bg-[#2b2d31] rounded-lg p-8 text-center">
-                <p className="text-gray-300 mb-4">你尚未建立任何伺服器</p>
+                <p className="text-gray-300 mb-4">
+                  {isOwner ? '你' : '他'}尚未建立任何伺服器
+                </p>
                 {isOwner && (
                   <Link href="/add-server">
                     <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
@@ -215,7 +219,9 @@ export default function UserProfile({ id }: { id?: string }) {
           {/* 我的機器人 */}
           <TabsContent value="bots" className="mt-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">我的機器人</h2>
+              <h2 className="text-2xl font-bold">
+                {isOwner ? '我' : '他'}的機器人
+              </h2>
               {isOwner && (
                 <Link href="/add-bot">
                   <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">
@@ -319,7 +325,9 @@ export default function UserProfile({ id }: { id?: string }) {
               </div>
             ) : (
               <div className="bg-[#2b2d31] rounded-lg p-8 text-center">
-                <p className="text-gray-300 mb-4">你尚未建立任何機器人</p>
+                <p className="text-gray-300 mb-4">
+                  {isOwner ? '你' : '他'}尚未建立任何機器人
+                </p>
                 {isOwner && (
                   <Link href="/add-bot">
                     <Button className="bg-[#5865f2] hover:bg-[#4752c4]">

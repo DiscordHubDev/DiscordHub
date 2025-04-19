@@ -1,5 +1,15 @@
 {
   "build": {
     "corepack": true
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/update-bot-servers",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/update-server-stats",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

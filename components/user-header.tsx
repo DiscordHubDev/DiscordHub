@@ -23,9 +23,9 @@ export default function UserHeader({ user }: UserHeaderProps) {
   return (
     <div>
       {/* Banner */}
-      <div className="h-48 bg-[#36393f] relative overflow-hidden">
+      <div className="h-90 bg-[#36393f] relative overflow-hidden">
         {user.banner ? (
-          <div className="relative w-full h-48 overflow-hidden">
+          <div className="relative w-full h-full overflow-hidden">
             <div
               className="absolute inset-0 bg-center bg-cover blur-sm scale-110"
               style={{ backgroundImage: `url(${user.banner})` }}
@@ -71,15 +71,6 @@ export default function UserHeader({ user }: UserHeaderProps) {
                 </span>
               </div>
             </div>
-          </div>
-
-          <div className="flex-shrink-0 mt-4 md:mt-0 md:ml-auto">
-            <Button
-              size="sm"
-              className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
-            >
-              編輯個人資料
-            </Button>
           </div>
         </div>
 
