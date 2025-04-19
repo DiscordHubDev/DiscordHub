@@ -75,7 +75,19 @@ export default function UserProfile({ id }: { id?: string }) {
     );
   }
 
-  const managedServers = [...viewedUser.ownedServers, ...viewedUser.adminIn];
+  const managedServersMap = new Map<
+    string,
+    (typeof viewedUser.ownedServers)[number]
+  >();
+
+  [...viewedUser.ownedServers, ...viewedUser.adminIn].forEach(server => {
+    const serverId = String(server.id);
+    if (!managedServersMap.has(serverId)) {
+      managedServersMap.set(serverId, server);
+    }
+  });
+
+  const managedServers = Array.from(managedServersMap.values());
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -169,15 +181,17 @@ export default function UserProfile({ id }: { id?: string }) {
                           {server.description}
                         </p>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {server.tags.slice(0, 3).map(tag => (
-                            <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="bg-[#36393f] text-gray-300 text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
+                          {(server.tags.slice(0, 3) as string[]).map(
+                            (tag: string) => (
+                              <Badge
+                                key={tag}
+                                variant="secondary"
+                                className="bg-[#36393f] text-gray-300 text-xs"
+                              >
+                                {tag}
+                              </Badge>
+                            ),
+                          )}
                         </div>
                       </CardContent>
                       {isOwner && (
