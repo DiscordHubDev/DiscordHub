@@ -3,15 +3,17 @@
 import { prisma } from '@/lib/prisma';
 import { BotFormData, DiscordBotRPCInfo, Screenshot } from '../types';
 import { BotUpdateInput } from '../prisma_type';
-import { hasAdministratorPermission } from '../utils';
+import { fetchUserInfo, hasAdministratorPermission } from '../utils';
 
 export async function transformToBotUpdateData(
   formData: BotFormData,
   isAdmin: boolean,
+  banner?: string | undefined,
 ): Promise<BotUpdateInput> {
   return {
     name: formData.botName,
     isAdmin,
+    banner: banner ?? null,
     prefix: formData.botPrefix,
     description: formData.botDescription,
     longDescription: formData.botLongDescription ?? null,
@@ -51,8 +53,10 @@ export async function updateBot(
     rpcData.install_params.permissions,
   );
 
+  const info = await fetchUserInfo(id);
+
   const botFields = {
-    ...(await transformToBotUpdateData(formData, isAdmin)),
+    ...(await transformToBotUpdateData(formData, isAdmin, info.banner_url)),
     screenshots: screenshots.map(s => s.url),
   };
 

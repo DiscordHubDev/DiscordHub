@@ -7,7 +7,7 @@ import { BotFormData, DiscordBotRPCInfo, Screenshot } from '@/lib/types';
 import BotForm from '@/components/form/bot-form/BotForm';
 import { toast } from 'react-toastify';
 import { signIn, useSession } from 'next-auth/react';
-import { hasAdministratorPermission } from '@/lib/utils';
+import { fetchUserInfo, hasAdministratorPermission } from '@/lib/utils';
 
 const AddBotPageClient = () => {
   const { data: session } = useSession();
@@ -39,6 +39,8 @@ const AddBotPageClient = () => {
 
     const rpcData: DiscordBotRPCInfo = await res.json();
 
+    const info = await fetchUserInfo(client_id);
+
     const isAdmin = hasAdministratorPermission(
       rpcData.install_params.permissions,
     );
@@ -64,7 +66,7 @@ const AddBotPageClient = () => {
       users: 0,
       upvotes: 0,
       icon: icon,
-      banner: null,
+      banner: info.banner_url ?? null,
       featured: false,
       createdAt: new Date(),
       prefix: data.botPrefix,
