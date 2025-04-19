@@ -6,8 +6,15 @@ import { BotWithRelationsInput } from '@/lib/prisma_type';
 import { BotFormData, DiscordBotRPCInfo, Screenshot } from '@/lib/types';
 import BotForm from '@/components/form/bot-form/BotForm';
 import { toast } from 'react-toastify';
+import { signIn, useSession } from 'next-auth/react';
 
 const AddBotPageClient = () => {
+  const { data: session } = useSession();
+  if (!session?.access_token) {
+    signIn('discord');
+    return;
+  }
+
   const handleCreate = async (data: BotFormData, screenshots: Screenshot[]) => {
     const client_id = new URL(data.botInvite).searchParams.get('client_id');
     if (!client_id) {
