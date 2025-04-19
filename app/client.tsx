@@ -394,6 +394,15 @@ export default function DiscordServerListPageClient({
               </div>
             </div>
 
+            <div className="mb-6 mt-4">
+              <iframe
+                src="https://discord.com/widget?id=1297055626014490695&theme=dark"
+                width="290"
+                height="500"
+                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+              ></iframe>
+            </div>
+
             <div className="bg-[#2b2d31] rounded-lg p-5">
               <h3 className="text-lg font-semibold mb-4">新增您的伺服器</h3>
               <p className="text-gray-300 text-sm mb-4">
