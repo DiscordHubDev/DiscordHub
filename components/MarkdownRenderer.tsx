@@ -1,44 +1,56 @@
 // components/MarkdownRenderer.tsx
 'use client';
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github-dark.css'; // 你也可以換成其他風格
-
+import Markdown from 'markdown-to-jsx';
 type Props = {
   content: string;
 };
 
 export default function MarkdownRenderer({ content }: Props) {
+  const formattedContent = content.replace(/([^\n])\n(?!\n)/g, '$1<br />\n');
   return (
-    <div className="prose prose-invert max-w-none text-gray-300 prose-li:marker:text-gray-400 prose-ul:pl-5 whitespace-pre-line">
-      <ReactMarkdown
-        children={content}
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={{
-          a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer">
-              {children}
-            </a>
-          ),
-          img: ({ src, alt }) => (
-            <img src={src || ''} alt={alt || ''} loading="lazy" />
-          ),
-          p: ({ children }) => (
-            <p className="whitespace-pre-line text-gray-300 text-sm">
-              {children}
-            </p>
-          ),
-          ul: ({ children }) => (
-            <ul className="list-disc pl-5 mb-2">{children}</ul>
-          ),
-          li: ({ children }) => (
-            <li className="text-sm text-gray-300">{children}</li>
-          ),
+    <div className="text-gray-300 whitespace-pre-wrap">
+      <Markdown
+        options={{
+          forceBlock: true,
+          forceInline: false,
+          overrides: {
+            h1: {
+              component: ({ children }) => (
+                <h1 className="text-2xl font-bold mt-4 mb-3">{children}</h1>
+              ),
+            },
+            h2: {
+              component: ({ children }) => (
+                <h2 className="text-xl font-semibold mt-3 mb-2">{children}</h2>
+              ),
+            },
+            h3: {
+              component: ({ children }) => (
+                <h3 className="text-lg font-medium mt-2 mb-2">{children}</h3>
+              ),
+            },
+            ul: {
+              component: ({ children }) => (
+                <ul className="list-disc pl-5 space-y-2">{children}</ul>
+              ),
+            },
+            li: {
+              component: ({ children }) => (
+                <li className="text-sm">{children}</li>
+              ),
+            },
+            p: {
+              component: ({ children }) => <p className="mb-3">{children}</p>,
+            },
+            hr: {
+              component: () => <hr className="my-4 border-gray-600" />,
+            },
+          },
         }}
-      />
+      >
+        {formattedContent}
+      </Markdown>
     </div>
   );
 }

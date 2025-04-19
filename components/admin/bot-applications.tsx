@@ -25,6 +25,7 @@ import { sendNotification } from '@/lib/actions/sendNotification';
 import RejectBotDialog from '@/components/RejectBotDialog';
 import { toast } from 'react-toastify';
 import { updateBotServerCount } from '@/lib/actions/bots';
+import MarkdownRenderer from '../MarkdownRenderer';
 
 const webhookUrl =
   'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
@@ -375,9 +376,9 @@ export default function BotApplications({
 
               <div>
                 <h4 className="text-sm font-medium text-gray-400">詳細描述</h4>
-                <p className="mt-1 break-words whitespace-pre-wrap">
-                  {selectedApp.longDescription}
-                </p>
+                <MarkdownRenderer
+                  content={selectedApp.longDescription || '無'}
+                />
               </div>
 
               <div>
