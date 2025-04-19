@@ -10,6 +10,7 @@ import {
   Globe,
   MessageSquare,
   Terminal,
+  AlertTriangle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
@@ -91,6 +92,28 @@ export default function BotDetailClient({
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent>已驗證的 Discord 機器人</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {bot.isAdmin && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-yellow-600 hover:text-yellow-500 cursor-pointer">
+                          <AlertTriangle className="w-5 h-5" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-yellow-100 border border-yellow-400 text-yellow-900 max-w-sm px-3 py-2 rounded-md text-sm">
+                        <div className="flex flex-col space-y-1">
+                          <span>
+                            此機器人所需的權限包含 <strong>管理者權限</strong>
+                            ，可能會有潛在的安全疑慮，請謹慎邀請。
+                          </span>
+                          <span className="text-xs text-yellow-700">
+                            （僅為提醒用途，並非禁止邀請。請確認您信任此機器人開發者）
+                          </span>
+                        </div>
+                      </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 )}
