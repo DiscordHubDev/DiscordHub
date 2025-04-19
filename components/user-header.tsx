@@ -45,7 +45,11 @@ export default function UserHeader({ user }: UserHeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-13 relative z-10">
         <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
           <Avatar className="w-32 h-32 border-4 border-[#1e1f22] bg-[#36393f]">
-            <AvatarImage src={user.avatar} alt={user.username} />
+            <AvatarImage
+              src={user.avatar}
+              alt={user.username}
+              className="object-cover w-full h-full"
+            />
             <AvatarFallback className="text-3xl bg-[#5865f2]">
               {user.username.charAt(0).toUpperCase()}
             </AvatarFallback>

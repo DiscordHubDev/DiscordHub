@@ -67,10 +67,12 @@ export default function BotDetailClient({
           {/* 機器人圖標和基本資訊 */}
           <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-[#36393f] border-4 border-[#1e1f22] overflow-hidden">
-              <Avatar className="w-32 h-32">
-                {' '}
-                {/* 你可以自由調整尺寸 */}
-                <AvatarImage src={bot.icon || undefined} alt={bot.name} />
+              <Avatar className="w-full h-full">
+                <AvatarImage
+                  className="object-cover w-full h-full"
+                  src={bot.icon || undefined}
+                  alt={bot.name}
+                />
                 <AvatarFallback>{bot.name?.[0]}</AvatarFallback>
               </Avatar>
             </div>
