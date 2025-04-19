@@ -128,6 +128,7 @@ export const getAllServers = async () => {
       include: {
         owner: true,
         favoritedBy: true,
+        admins: true,
       },
       orderBy: {
         createdAt: 'desc',

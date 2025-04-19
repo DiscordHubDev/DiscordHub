@@ -38,7 +38,6 @@ type BotServerManagementProps = {
   servers: ServerType[];
 };
 
-type BotServerManagementType = 'bot' | 'servers';
 type ManagedItem =
   | (BotWithRelations & { type: 'bot' })
   | (ServerType & { type: 'servers' });
@@ -340,9 +339,28 @@ export default function BotServerManagement({
                   <h3 className="text-lg font-semibold break-words line-clamp-1">
                     {selectedItem.name}
                   </h3>
-                  <p className="text-gray-400 break-words line-clamp-1">
-                    擁有者 {selectedItem.type}
-                  </p>
+                  {selectedItem.type === 'bot' ? (
+                    <div className="text-gray-400 space-y-2">
+                      <p className="font-semibold">開發者</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {selectedItem.developers.map(developer => (
+                          <li key={developer.id}>{developer.username}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="text-gray-400 space-y-2">
+                      <p className="font-semibold">
+                        擁有者：{selectedItem.owner!.username}
+                      </p>
+                      <p className="font-semibold">伺服器管理</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {selectedItem.admins?.map(admin => (
+                          <li key={admin.id}>{admin.username}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -417,16 +435,7 @@ export default function BotServerManagement({
                       </h4>
                       <div className="flex items-center gap-1 mt-1">
                         <Users className="h-4 w-4 text-gray-400" />
-                        <span>0</span> {/* TODO: servers */}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-400">
-                        機器人數
-                      </h4>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Bot className="h-4 w-4 text-gray-400" />
-                        <span>0</span> {/* TODO: bots */}
+                        <span>{selectedItem.members}</span>
                       </div>
                     </div>
                   </>
