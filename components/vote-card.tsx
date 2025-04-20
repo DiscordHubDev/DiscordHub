@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowUp, Users, Bot } from 'lucide-react';
 import VoteButton from '@/components/vote-button';
 import Link from 'next/link';
+import { useState } from 'react';
 
 interface VoteCardProps {
   id: string;
@@ -33,6 +34,10 @@ export default function VoteCard({
   servers,
   verified,
 }: VoteCardProps) {
+  const [voteCount, setVoteCount] = useState<number>(votes);
+  const handleVoteButtonClick = (vote: number) => {
+    setVoteCount(vote);
+  };
   return (
     <Card className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200">
       <CardHeader className="pb-2">
@@ -107,6 +112,7 @@ export default function VoteCard({
           type={type}
           initialVotes={votes}
           size="sm"
+          onVote={handleVoteButtonClick}
           className="bg-[#5865f2] hover:bg-[#4752c4]"
         />
       </CardFooter>

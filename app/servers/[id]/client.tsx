@@ -280,7 +280,7 @@ export default function ServerDetailClientPage({
                   <div className="flex items-center text-[#5865f2]">
                     <ArrowUp size={16} className="mr-1" />
                     <span className="font-bold">
-                      {server.upvotes.toLocaleString()}
+                      {voteCount.toLocaleString()}
                     </span>
                   </div>
                 </div>
