@@ -124,7 +124,7 @@ export default function ServerCard({ server }: ServerCardProps) {
           </div>
 
           {/* Server Banner (desktop) */}
-          {server.banner && (
+          {/* {server.banner && (
             <div className="hidden md:block w-48 h-auto bg-[#36393f] flex-shrink-0">
               <img
                 src={server.banner || '/placeholder.svg'}
@@ -132,7 +132,7 @@ export default function ServerCard({ server }: ServerCardProps) {
                 className="w-full h-full object-cover"
               />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Link>
