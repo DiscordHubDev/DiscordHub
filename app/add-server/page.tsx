@@ -3,7 +3,7 @@ import ServerClient from '@/components/server/server-home';
 import { authOptions } from '@/lib/utils';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { getServerByGuildId } from '@/lib/actions/servers';
+import { addServerAdmin, getServerByGuildId } from '@/lib/actions/servers';
 import { Metadata } from 'next';
 
 const keywords = [
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: `新增伺服器 | DiscordHubs`,
     description: `在 DiscordHubs 上架你的 Discord 中文伺服器，提升曝光度、吸引更多成員，打造專屬高互動社群。`,
     images: ['/dchub.png'],
@@ -76,23 +76,12 @@ export default async function HomePage() {
 
   const { activeServers, inactiveServers } = await getUserGuildsWithBotStatus(
     session.access_token,
-  );
-
-  // ✅ 加入 isPublished 判斷
-  const activeWithStatus = await Promise.all(
-    activeServers.map(async server => {
-      const isPublished = await getServerByGuildId(server.id).then(Boolean);
-
-      return {
-        ...server,
-        isPublished,
-      };
-    }),
+    session.discordProfile?.id!,
   );
 
   return (
     <ServerClient
-      activeServers={activeWithStatus}
+      activeServers={activeServers}
       inactiveServers={inactiveServers}
     />
   );

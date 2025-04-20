@@ -7,13 +7,7 @@ import {
 } from '@/lib/prisma_type';
 import { prisma } from '@/lib/prisma';
 import { fetchUserInfo } from '../utils';
-import { getHaveGuildManagePermissionMembers } from '../get-user-guild';
-
-export async function fetchAdminIdsForGuild(
-  guildId: string,
-): Promise<string[]> {
-  return await getHaveGuildManagePermissionMembers(guildId);
-}
+import { MinimalServerInfo } from '../get-user-guild';
 
 export async function buildConnectOrCreateAdmins(
   admins: (string | { id: string })[],
@@ -207,6 +201,56 @@ export const getServerByGuildId = async (
     throw error;
   }
 };
+
+export async function getServerAdmins(guildId: string) {
+  const server = await prisma.server.findUnique({
+    where: { id: guildId },
+    include: {
+      admins: true, // ✅ 拉出所有 admin user
+    },
+  });
+
+  if (!server) return null;
+  return server.admins;
+}
+
+export async function addServerAdmin(guild: MinimalServerInfo, userId: string) {
+  try {
+    // 檢查 server 是否存在
+    const server = await prisma.server.findUnique({
+      where: { id: guild.id },
+    });
+
+    if (!server) {
+      return null;
+    }
+
+    // 檢查 user 是否存在
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    // 雙方都存在才進行連結
+    return await prisma.server.update({
+      where: { id: guild.id },
+      data: {
+        admins: {
+          connect: { id: userId },
+        },
+      },
+    });
+  } catch (err) {
+    console.error(
+      `❌ 加入 admin 時發生錯誤 (guild: ${guild.id}, user: ${userId})`,
+      err,
+    );
+    return null;
+  }
+}
 
 export const deleteServerByGuildId = async (
   guildId: string,
