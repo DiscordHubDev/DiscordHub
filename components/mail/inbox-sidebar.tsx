@@ -47,20 +47,20 @@ export const getPriorityColorClass = (
     case 'success':
       return (
         baseClass +
-        'border-l-4 border-green-500 bg-green-50 dark:bg-green-950/30'
+        'border-l-4 border-green-500 bg-green-50 dark:bg-green-950/90'
       );
     case 'info':
       return (
-        baseClass + 'border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+        baseClass + 'border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/90'
       );
     case 'warning':
       return (
         baseClass +
-        'border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/30'
+        'border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/90'
       );
     case 'danger':
       return (
-        baseClass + 'border-l-4 border-red-500 bg-red-50 dark:bg-red-950/30'
+        baseClass + 'border-l-4 border-red-500 bg-red-50 dark:bg-red-950/90'
       );
   }
 };

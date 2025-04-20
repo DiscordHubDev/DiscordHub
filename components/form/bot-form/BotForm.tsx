@@ -26,7 +26,7 @@ import { CommandListField } from '@/components/form/bot-form/CommandListField';
 import { DeveloperListField } from '@/components/form/bot-form/DeveloperListField';
 import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
-import { toast } from 'react-toastify';
+import { v4 as uuidv4 } from 'uuid';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 const getBotAvatarUrl = async (botId: any) => {
@@ -139,6 +139,14 @@ const BotForm: React.FC<BotFormProps> = ({
       formData.append('timestamp', sig.timestamp.toString());
       formData.append('signature', sig.signature);
       formData.append('upload_preset', sig.uploadPreset);
+
+      // 👉 加上唯一檔名
+      const timestamp = Date.now();
+      const uniqueId = uuidv4().slice(0, 8);
+      const extension = file.name.split('.').pop();
+      const baseName = file.name.split('.')[0].replace(/\s+/g, '_');
+      const customFilename = `${baseName}_${timestamp}_${uniqueId}.${extension}`;
+      formData.append('public_id', `uploads/${customFilename}`);
 
       try {
         const res = await fetch(

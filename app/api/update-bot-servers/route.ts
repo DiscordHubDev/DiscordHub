@@ -22,7 +22,11 @@ async function fetchBotServerCount(botId: string): Promise<number | null> {
     }
 
     const data = await res.json();
-    return data.server_count ?? null;
+    const server_count = Array.isArray(data)
+      ? data.find(item => typeof item.server_count === 'number')
+      : null;
+
+    return server_count ?? null;
   } catch (error) {
     console.error(`❌ ${botId} 發生錯誤：`, error);
     return null;
@@ -64,6 +68,8 @@ export async function GET(request: NextRequest) {
           servers: count,
         });
       }
+
+      await sleep(5000);
     }
 
     return NextResponse.json({
