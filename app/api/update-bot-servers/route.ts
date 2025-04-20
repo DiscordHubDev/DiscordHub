@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      await sleep(10000);
+      await sleep(5000);
     }
 
     return NextResponse.json({
