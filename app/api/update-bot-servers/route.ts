@@ -64,8 +64,6 @@ export async function GET(request: NextRequest) {
           servers: count,
         });
       }
-
-      await sleep(5000);
     }
 
     return NextResponse.json({
