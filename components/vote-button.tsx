@@ -99,6 +99,7 @@ interface VoteButtonProps {
   initialVotes: number;
   className?: string;
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  onVote: (votes: number) => void;
   variant?:
     | 'default'
     | 'outline'
@@ -113,6 +114,7 @@ export default function VoteButton({
   type,
   initialVotes,
   className,
+  onVote,
   size = 'default',
   variant = 'default',
 }: VoteButtonProps) {
@@ -209,6 +211,7 @@ export default function VoteButton({
     setIsVoting(true);
 
     const vote = await Vote(id, type.toUpperCase() as VoteType);
+    const updatedVotes = vote.upvotes ?? 0;
 
     const user = await GetUserBySession(session);
 
@@ -242,7 +245,8 @@ export default function VoteButton({
       return;
     }
 
-    setVotes(vote.upvotes ?? 0);
+    setVotes(updatedVotes);
+    onVote(updatedVotes);
     setCooldown(43200);
     setHasVoted(true);
     setShowDialog(true);
