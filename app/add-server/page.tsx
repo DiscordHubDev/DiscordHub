@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: `新增伺服器 | DiscordHubs`,
     description: `在 DiscordHubs 上架你的 Discord 中文伺服器，提升曝光度、吸引更多成員，打造專屬高互動社群。`,
     images: ['/dchub.png'],
