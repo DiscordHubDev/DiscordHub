@@ -3,7 +3,7 @@ import ServerClient from '@/components/server/server-home';
 import { authOptions } from '@/lib/utils';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { getServerByGuildId } from '@/lib/actions/servers';
+import { addServerAdmin, getServerByGuildId } from '@/lib/actions/servers';
 import { Metadata } from 'next';
 
 const keywords = [
@@ -76,23 +76,12 @@ export default async function HomePage() {
 
   const { activeServers, inactiveServers } = await getUserGuildsWithBotStatus(
     session.access_token,
-  );
-
-  // ✅ 加入 isPublished 判斷
-  const activeWithStatus = await Promise.all(
-    activeServers.map(async server => {
-      const isPublished = await getServerByGuildId(server.id).then(Boolean);
-
-      return {
-        ...server,
-        isPublished,
-      };
-    }),
+    session.discordProfile?.id!,
   );
 
   return (
     <ServerClient
-      activeServers={activeWithStatus}
+      activeServers={activeServers}
       inactiveServers={inactiveServers}
     />
   );

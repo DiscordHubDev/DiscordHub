@@ -21,10 +21,7 @@ import {
   FormMessage,
   FormLabel,
 } from '@/components/ui/form';
-import {
-  ActiveServerInfo,
-  getHaveGuildManagePermissionMembers,
-} from '@/lib/get-user-guild';
+import { ActiveServerInfo } from '@/lib/get-user-guild';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
@@ -34,7 +31,7 @@ import { CreateServerInput, ServerType } from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
 import {
   buildConnectOrCreateAdmins,
-  fetchAdminIdsForGuild,
+  getServerAdmins,
   insertServer,
   isOwnerexist,
   updateServer,
@@ -215,9 +212,11 @@ export default function ServerFormPage({
           ? activeServer.owner
           : activeServer.owner?.id;
 
-      const adminIds = await fetchAdminIdsForGuild(activeServer.id);
+      const adminIds = await getServerAdmins(activeServer.id);
 
-      const connectOrCreateAdmins = await buildConnectOrCreateAdmins(adminIds);
+      const connectOrCreateAdmins = await buildConnectOrCreateAdmins(
+        adminIds ?? [],
+      );
 
       const existingOwner = await isOwnerexist(ownerId!);
 
