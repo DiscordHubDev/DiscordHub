@@ -18,7 +18,8 @@ interface BotCardProps {
 }
 
 export default function BotCard({ bot }: BotCardProps) {
-  const handleInviteButtonClick = () => {
+  const handleInviteButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
   };
 
@@ -205,6 +206,7 @@ export default function BotCard({ bot }: BotCardProps) {
                   <Button
                     size="sm"
                     className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                    onClick={handleInviteButtonClick}
                   >
                     邀請機器人
                   </Button>

@@ -44,7 +44,13 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
 
   const isDisabled = server.isInServer && isPublished;
 
-  const handleClick = () => {
+  /**
+   * Handles the click event on the server card.
+   * If the server is not in the bot list, open the Discord OAuth2 authorization page in a new tab.
+   * If the server is in the bot list but not published, redirect to the server management page.
+   */
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!server.isInServer) {
       window.open(
         `https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=1126965059046400&integration_type=0&scope=bot&guild_id=${server.id}&disable_guild_select=true`,

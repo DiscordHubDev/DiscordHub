@@ -44,7 +44,8 @@ export default function BotDetailClient({
 }: BotDetailProps) {
   const [voteCount, setVoteCount] = useState<number>(bot.upvotes);
 
-  const handleInviteButtonClick = () => {
+  const handleInviteButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
   };
 

@@ -116,6 +116,14 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                 <Button
                   size="sm"
                   className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    window.open(
+                      bot.inviteUrl!,
+                      '_blank',
+                      'noopener,noreferrer',
+                    );
+                  }}
                 >
                   邀請機器人
                 </Button>
