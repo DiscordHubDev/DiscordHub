@@ -14,6 +14,7 @@ import { FavoriteButton } from '@/components/favorite-button';
 import { useSession } from 'next-auth/react';
 import { ReportDialog } from '@/components/ReportDialog';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
+import { useState } from 'react';
 
 type ServerDetailPageProps = {
   allServers: ServerType[];
@@ -28,6 +29,12 @@ export default function ServerDetailClientPage({
 }: ServerDetailPageProps) {
   const handleInviteButtonClick = () => {
     window.open(server.inviteUrl!, '_blank', 'noopener,noreferrer');
+  };
+
+  const [voteCount, setVoteCount] = useState<number>(server.upvotes);
+
+  const handleServerVoteClick = (vote: number) => {
+    setVoteCount(vote);
   };
 
   return (
@@ -282,6 +289,7 @@ export default function ServerDetailClientPage({
                 id={server.id}
                 type="server"
                 initialVotes={server.upvotes}
+                onVote={handleServerVoteClick}
                 className="w-full bg-[#5865f2] hover:bg-[#4752c4]"
               />
               <p className="text-gray-400 text-xs mt-2 text-center">
