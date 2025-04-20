@@ -138,12 +138,12 @@ const data = {
   navSecondary: [
     {
       title: '獲得支援',
-      url: 'https://discord.gg/puQ9DPdG3',
+      url: 'https://discord.gg/puQ9DPdG3M',
       icon: LifeBuoy,
     },
     {
       title: '回報問題',
-      url: 'https://discord.gg/puQ9DPdG3',
+      url: 'https://discord.gg/puQ9DPdG3M',
       icon: Send,
     },
     {
