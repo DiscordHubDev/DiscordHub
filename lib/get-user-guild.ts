@@ -139,7 +139,7 @@ async function safeFetchWithRateLimit(
   if (res.status === 429) {
     const data = await res.json();
     const retryAfter = data.retry_after || 1;
-    console.warn(`Rate limited. Retrying after ${retryAfter}s`);
+    console.warn(`${url} Rate limited. Retrying after ${retryAfter}s`);
     await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
     return safeFetchWithRateLimit(url, options); // 重试
   }
