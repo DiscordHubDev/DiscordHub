@@ -23,7 +23,7 @@ async function fetchBotServerCount(botId: string): Promise<number | null> {
 
     const data = await res.json();
     const server_count = Array.isArray(data)
-      ? data.find(item => typeof item.server_count === 'number')
+      ? data.find(item => typeof item.server_count === 'number')?.server_count
       : null;
 
     return server_count ?? null;

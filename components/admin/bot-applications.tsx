@@ -79,7 +79,7 @@ export default function BotApplications({
       const data = await response.json();
 
       const server_count = Array.isArray(data)
-        ? data.find(item => typeof item.server_count === 'number')
+        ? data.find(item => typeof item.server_count === 'number')?.server_count
         : null;
 
       if (server_count !== undefined) {
