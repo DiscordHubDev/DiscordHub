@@ -29,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useState } from 'react';
 
 type BotDetailProps = {
   allBots: BotWithRelations[];
@@ -41,8 +42,14 @@ export default function BotDetailClient({
   allBots,
   isFavorited,
 }: BotDetailProps) {
+  const [voteCount, setVoteCount] = useState<number>(bot.upvotes);
+
   const handleInviteButtonClick = () => {
     window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleVoteButtonClick = (vote: number) => {
+    setVoteCount(vote);
   };
 
   return (
@@ -258,7 +265,7 @@ export default function BotDetailClient({
                   <div className="flex items-center text-[#5865f2]">
                     <ArrowUp size={16} className="mr-1" />
                     <span className="font-bold">
-                      {bot.upvotes.toLocaleString()}
+                      {voteCount.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -268,6 +275,7 @@ export default function BotDetailClient({
                 type="bot"
                 initialVotes={bot.upvotes}
                 className="w-full bg-[#5865f2] hover:bg-[#4752c4]"
+                onVote={handleVoteButtonClick}
               />
               <p className="text-gray-400 text-xs mt-2 text-center">
                 每 12 小時可投一次票

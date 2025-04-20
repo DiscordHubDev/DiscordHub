@@ -78,8 +78,12 @@ export default function BotApplications({
 
       const data = await response.json();
 
-      if (data.server_count !== undefined) {
-        await updateBotServerCount(botId, data.server_count);
+      const server_count = Array.isArray(data)
+        ? data.find(item => typeof item.server_count === 'number')
+        : null;
+
+      if (server_count !== undefined) {
+        await updateBotServerCount(botId, server_count);
       } else {
         toast.error('伺服器回傳錯誤');
       }
@@ -429,25 +433,10 @@ export default function BotApplications({
                     key={index}
                     src={url}
                     alt={`Screenshot ${index + 1}`}
-                    className="h-32 rounded cursor-pointer object-cover"
-                    onClick={() => setSelectedImage(url)}
+                    className="h-32 rounded object-cover"
                   />
                 ))}
               </div>
-
-              {/* 放大 modal */}
-              {selectedImage && (
-                <div
-                  className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-                  onClick={() => setSelectedImage(null)}
-                >
-                  <img
-                    src={selectedImage}
-                    alt="Full View"
-                    className="max-w-[90%] max-h-[90%] rounded shadow-lg"
-                  />
-                </div>
-              )}
             </div>
 
             <div className="flex justify-between items-center">
