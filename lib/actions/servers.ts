@@ -43,6 +43,20 @@ export async function updateServer(
   data: CreateServerInput,
   connectOrCreateAdmins?: any[],
 ) {
+  const existingServer = await prisma.server.findUnique({
+    where: { id: data.id },
+    select: { screenshots: true },
+  });
+
+  const oldScreenshots = existingServer?.screenshots ?? [];
+  const newScreenshots = Array.isArray(data.screenshots)
+    ? data.screenshots
+    : [];
+
+  const mergedScreenshots = Array.from(
+    new Set([...oldScreenshots, ...newScreenshots]),
+  );
+
   try {
     const updatedServer = await prisma.server.update({
       where: {
@@ -64,7 +78,7 @@ export async function updateServer(
         VoteNotificationURL: data.VoteNotificationURL,
         rules: data.rules,
         features: data.features ?? [],
-        screenshots: data.screenshots ?? [],
+        screenshots: { set: mergedScreenshots },
 
         // connect owner
         owner: data.owner?.connectOrCreate
