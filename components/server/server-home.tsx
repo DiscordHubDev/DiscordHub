@@ -1,11 +1,14 @@
 'use client';
 
 import { ServerGrid } from '@/components/server/server-grid';
-import type { InactiveServerInfo, ServerInfo } from '@/lib/get-user-guild';
+import type {
+  InactiveServerInfo,
+  MinimalServerInfo,
+} from '@/lib/get-user-guild';
 
 interface Props {
-  activeServers: ServerInfo[];
-  inactiveServers: InactiveServerInfo[];
+  activeServers: MinimalServerInfo[];
+  inactiveServers: MinimalServerInfo[];
 }
 
 export default function ServerClient({

@@ -1,3 +1,9 @@
+import pLimit from 'p-limit';
+import { getCache, setCache } from './cache';
+import { addServerAdmin, getServerByGuildId } from './actions/servers';
+
+const limit = pLimit(10); // 同時處理最多 5 個伺服器
+
 type BaseServerInfo = {
   id: string;
   name: string;
@@ -20,84 +26,61 @@ export type InactiveServerInfo = BaseServerInfo & {
 
 export type ServerInfo = ActiveServerInfo | InactiveServerInfo;
 
-type GuildResult = {
-  activeServers: ActiveServerInfo[];
-  inactiveServers: InactiveServerInfo[];
+export type MinimalServerInfo = {
+  id: string;
+  name: string;
+  icon: string;
+  banner: string;
+  memberCount: number;
+  isInServer: boolean;
+  isPublished: boolean;
 };
 
 type DiscordGuild = {
   id: string;
   name: string;
   icon: string | null;
+  approximate_member_count: number | null;
+  banner: string | null;
   permissions: number;
 };
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const LIMIT = 1000;
 
 const hasManageGuildPermission = (permissions: string | number | bigint) => {
   return (BigInt(permissions) & BigInt(0x20)) === BigInt(0x20);
 };
 
-export async function getHaveGuildManagePermissionMembers(
+async function getGuildDetailsWithCache(
   guildId: string,
-): Promise<string[]> {
-  let allMembers: any[] = [];
-  let after: string | undefined = undefined;
+): Promise<ActiveServerInfo | null> {
+  const cacheKey = `guild:details:${guildId}`;
 
-  while (true) {
-    const url = new URL(`https://discord.com/api/guilds/${guildId}/members`);
-    url.searchParams.set('limit', `${LIMIT}`);
-    if (after) url.searchParams.set('after', after);
+  const cached = await getCache<ActiveServerInfo>(cacheKey);
+  if (cached) return cached;
 
-    const res = await safeFetchWithRateLimit(url.toString(), {
-      headers: {
-        Authorization: `Bot ${BOT_TOKEN}`,
-      },
-    });
+  try {
+    const details = await getGuildDetails(guildId);
 
-    if (!res.ok) throw new Error(`❌ 取得成員失敗 (${res.status})`);
+    console.log(`getGuildDetailsWithCache(${guildId}) details`, details);
 
-    const members = await res.json();
-    allMembers.push(...members);
+    if (details) {
+      await setCache(cacheKey, details, 300);
+    }
 
-    if (members.length < LIMIT) break;
-    after = members[members.length - 1].user.id;
+    return details;
+  } catch (error) {
+    console.warn(`❌ getGuildDetailsWithCache(${guildId}) 發生錯誤：`, error);
+    return null;
   }
-
-  const rolesRes = await safeFetchWithRateLimit(
-    `https://discord.com/api/guilds/${guildId}/roles`,
-    {
-      headers: {
-        Authorization: `Bot ${BOT_TOKEN}`,
-      },
-    },
-  );
-
-  if (!rolesRes.ok) throw new Error(`❌ 取得角色失敗 (${rolesRes.status})`);
-
-  const roles = await rolesRes.json();
-
-  const manageGuildRoleIds = roles
-    .filter((role: any) => hasManageGuildPermission(role.permissions))
-    .map((role: any) => role.id);
-
-  const qualifiedUserIds = allMembers
-    .filter(
-      (member: any) =>
-        !member.user.bot &&
-        (member.roles ?? []).some((roleId: string) =>
-          manageGuildRoleIds.includes(roleId),
-        ),
-    )
-    .map((member: any) => member.user.id);
-
-  return qualifiedUserIds;
 }
 
 export async function getGuildDetails(
   guildId: string,
 ): Promise<ActiveServerInfo | null> {
+  const cacheKey = `guild:details:${guildId}`;
+
+  console.time(`⏱ fetch:details-${guildId}`);
   const res = await safeFetchWithRateLimit(
     `https://discord.com/api/guilds/${guildId}?with_counts=true`,
     {
@@ -106,14 +89,16 @@ export async function getGuildDetails(
       },
     },
   );
+  console.timeEnd(`⏱ fetch:details-${guildId}`);
 
-  const managerUserIds = await getHaveGuildManagePermissionMembers(guildId);
-
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.timeEnd(`⏱ getGuildDetails-${guildId}`);
+    return null;
+  }
 
   const data = await res.json();
 
-  return {
+  const guildInfo: ActiveServerInfo = {
     id: data.id,
     name: data.name,
     icon: data.icon
@@ -125,10 +110,16 @@ export async function getGuildDetails(
     owner: data.owner_id,
     memberCount: data.approximate_member_count ?? 0,
     OnlineMemberCount: data.approximate_presence_count ?? 0,
-    admins: managerUserIds,
+    admins: [],
     isInServer: true,
     isPublished: false,
   };
+
+  await setCache(cacheKey, guildInfo, 300);
+
+  console.timeEnd(`⏱ getGuildDetails-${guildId}`);
+
+  return guildInfo;
 }
 
 async function safeFetchWithRateLimit(
@@ -140,40 +131,41 @@ async function safeFetchWithRateLimit(
     const data = await res.json();
     const retryAfter = data.retry_after || 1;
     console.warn(`${url} Rate limited. Retrying after ${retryAfter}s`);
-    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+    await new Promise(resolve =>
+      setTimeout(resolve, retryAfter * 1000 * Math.random() + 500),
+    );
     return safeFetchWithRateLimit(url, options); // 重试
   }
   return res;
 }
 
 export async function getUserGuildsWithBotStatus(
-  userAccessToken: string,
-): Promise<GuildResult> {
+  accessToken: string,
+  userId: string,
+): Promise<{
+  activeServers: MinimalServerInfo[];
+  inactiveServers: MinimalServerInfo[];
+}> {
+  // 拉使用者有管理權限的 guilds
   const userGuildsRes = await safeFetchWithRateLimit(
-    'https://discord.com/api/users/@me/guilds',
+    'https://discord.com/api/users/@me/guilds?with_counts=true',
     {
       headers: {
-        Authorization: `Bearer ${userAccessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     },
   );
 
-  if (!userGuildsRes.ok) {
-    const errorJson = await userGuildsRes.text();
-    console.error('Discord API Error:', errorJson);
-    throw new Error('Failed to fetch user guilds');
-  }
-
+  if (!userGuildsRes.ok) throw new Error('Failed to fetch user guilds');
   const userGuilds: DiscordGuild[] = await userGuildsRes.json();
 
   const manageableGuilds = userGuilds.filter(g =>
     hasManageGuildPermission(g.permissions),
   );
 
-  await new Promise(resolve => setTimeout(resolve, 500));
-
+  // 拉 bot 加入的 guilds
   const botGuildsRes = await safeFetchWithRateLimit(
-    'https://discord.com/api/users/@me/guilds',
+    'https://discord.com/api/users/@me/guilds?with_counts=true',
     {
       headers: {
         Authorization: `Bot ${BOT_TOKEN}`,
@@ -181,41 +173,44 @@ export async function getUserGuildsWithBotStatus(
     },
   );
 
-  if (!botGuildsRes.ok) {
-    const errorJson = await botGuildsRes.text();
-    console.error('Discord API Error:', errorJson);
-    throw new Error('Failed to fetch bot guilds');
-  }
-
+  if (!botGuildsRes.ok) throw new Error('Failed to fetch bot guilds');
   const botGuilds: DiscordGuild[] = await botGuildsRes.json();
-  const botGuildIds = botGuilds.map(g => g.id);
+  const botGuildIdSet = new Set(botGuilds.map(g => g.id));
 
-  const activeServers: ActiveServerInfo[] = [];
-  const inactiveServers: InactiveServerInfo[] = [];
+  const activeServers: MinimalServerInfo[] = [];
+  const inactiveServers: MinimalServerInfo[] = [];
 
-  for (const guild of manageableGuilds) {
-    const isInServer = botGuildIds.includes(guild.id);
+  await Promise.all(
+    manageableGuilds.map(guild =>
+      limit(async () => {
+        const isInServer = botGuildIdSet.has(guild.id);
+        const isPublished = await getServerByGuildId(guild.id).then(Boolean);
+        const banner = guild.banner;
 
-    const baseData = {
-      id: guild.id,
-      name: guild.name,
-      icon: guild.icon
-        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
-        : '',
-      banner: '',
-      isInServer,
-      isPublished: false,
-    };
+        const basic: MinimalServerInfo = {
+          id: guild.id,
+          name: guild.name,
+          icon: guild.icon
+            ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
+            : '',
+          banner: banner
+            ? `https://cdn.discordapp.com/banners/${guild.id}/${banner}.${banner.startsWith('a_') ? 'gif' : 'png'}?size=1024`
+            : '',
+          memberCount: guild.approximate_member_count ?? 0,
+          isInServer,
+          isPublished,
+        };
 
-    if (isInServer) {
-      const details = await getGuildDetails(guild.id);
-      if (details) {
-        activeServers.push(details);
-      }
-    } else {
-      inactiveServers.push(baseData);
-    }
-  }
+        await addServerAdmin(basic, userId);
+
+        if (isInServer) {
+          activeServers.push(basic);
+        } else {
+          inactiveServers.push(basic);
+        }
+      }),
+    ),
+  );
 
   return {
     activeServers,

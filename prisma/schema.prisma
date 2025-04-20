@@ -130,7 +130,6 @@ model Bot {
   Review   Review[]
 
   isAdmin       Boolean  @default(false)
-
 }
 
 model BotCommand {

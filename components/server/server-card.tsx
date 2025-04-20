@@ -6,19 +6,8 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { useRouter } from 'next/navigation';
-
-interface ServerCardProps {
-  server: {
-    id: string;
-    name: string;
-    icon: string;
-    banner: string;
-    memberCount?: number;
-    isInServer: boolean;
-  };
-  isPublished: boolean;
-}
+import { MinimalServerInfo } from '@/lib/get-user-guild';
+import { getServerByGuildId } from '@/lib/actions/servers';
 
 function useIsClient() {
   const [isClient, setIsClient] = useState(false);
@@ -29,8 +18,13 @@ function useIsClient() {
 
   return isClient;
 }
+interface ServerCardProps {
+  server: MinimalServerInfo;
+}
 
-export function ServerCard({ server, isPublished }: ServerCardProps) {
+export function ServerCard({ server }: ServerCardProps) {
+  const isPublished = server.isPublished;
+
   const [imgError, setImgError] = useState(false);
   const isClient = useIsClient();
 
@@ -44,11 +38,6 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
 
   const isDisabled = server.isInServer && isPublished;
 
-  /**
-   * Handles the click event on the server card.
-   * If the server is not in the bot list, open the Discord OAuth2 authorization page in a new tab.
-   * If the server is in the bot list but not published, redirect to the server management page.
-   */
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!server.isInServer) {
@@ -65,12 +54,13 @@ export function ServerCard({ server, isPublished }: ServerCardProps) {
     <>
       <Card className="overflow-hidden bg-[#2f3136] border-[#1e1f22] transition-all duration-200 hover:shadow-md hover:shadow-[#5865f2]/10 hover:-translate-y-1">
         {/* Banner */}
-        <div className="relative h-24 w-full">
+        <div className="relative h-35 w-full">
           {server.banner !== '' ? (
             <Image
               src={server.banner}
               alt={`${server.name} banner`}
               fill
+              unoptimized
               className="object-cover"
             />
           ) : (
