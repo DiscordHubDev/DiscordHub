@@ -93,13 +93,14 @@ export default async function ServerDetailPage({
   const session = await getServerSession(authOptions);
   const userId = session?.discordProfile?.id;
 
+  // 然後在呼叫端處理
   const server = await getServerWithFavoritedByGuildId(userId, id);
-
-  const isFavorited = !!server.favoritedBy?.length;
 
   if (!server) {
     notFound();
   }
+
+  const isFavorited = !!server.favoritedBy?.length;
 
   return (
     <ServerDetailClientPage

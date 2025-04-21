@@ -1,6 +1,6 @@
 export default function NotFound() {
   return (
-    <div className="h-screen bg-black flex items-center justify-center text-center px-4">
+    <div className="h-screen bg-[#1e1f22] flex items-center justify-center text-center px-4">
       <div>
         <h1 className="text-4xl font-bold mb-4 text-white">404 - 找不到頁面</h1>
         <p className="text-white text-lg">
