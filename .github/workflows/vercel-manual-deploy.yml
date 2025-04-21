@@ -21,7 +21,7 @@ jobs:
           node-version: 22
 
       - name: Install Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
 
       - name: Install Vercel CLI
         run: npm install -g vercel
@@ -31,6 +31,15 @@ jobs:
 
       - name: Install dependencies with Bun
         run: bun install
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
 
       - name: Build the project
         run: bun run build
