@@ -1,43 +1,73 @@
-name: GitHub Actions Vercel Preview Deployment
+name: Vercel Preview Deploy (Bun)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-on:
-  pull_request:
-
 jobs:
-  build:
+  Deploy-Preview:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout source
+        uses: actions/checkout@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
 
       - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+        uses: oven-sh/setup-bun@v2
 
       - name: Install Vercel CLI
         run: npm install -g vercel
 
+      - name: Install GitHub CLI
+        run: sudo apt install gh
+
+      - name: Pull Vercel project settings
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
       - name: Pull Vercel env vars
         run: vercel env pull .env --yes --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Install dependencies
+      - name: Install dependencies with Bun
         run: bun install
 
-      - name: Build
-        run: bun run build
-        env:
-          # .env.local 會自動被 dotenv 讀取，如果你使用 dotenv
-          # 如果需要明確 export，可加以下兩行：
-          CUSTOM_PRISMA_URL: ${{ secrets.CUSTOM_PRISMA_URL }}
-          POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
 
+      - name: Build project for Vercel (Preview)
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (Preview)
+        id: vercel_deploy
+        run: |
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --output preview-url.txt
+          echo "preview_url=$(cat preview-url.txt)" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          export GH_TOKEN=${GITHUB_TOKEN}
+          gh pr comment ${{ github.event.pull_request.number }} --body "🚀 Preview ready: ${{ steps.vercel_deploy.outputs.preview_url }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
