@@ -1,23 +1,25 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
-	"name": "Node.js & TypeScript",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
-	"updateContentCommand": "pnpm install",
-	"postAttachCommand": "pnpm run dev",
+	"name": "Bun + TypeScript",
+	"image": "oven/bun",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"configureZshAsDefaultShell": true
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"moby": false,
+			"dockerDashComposeVersion": "v2"
+		}
+	},
+	"updateContentCommand": "bun install",
+	"postAttachCommand": "bun run dev",
 	"forwardPorts": [3000],
 	"portsAttributes": {
-
-        "3000": {
-
-            "label": "Application",
-
-            "onAutoForward": "openPreview"
-
-        }
-
-    },
+		"3000": {
+			"label": "Application",
+			"onAutoForward": "openPreview"
+		}
+	},
 	"waitFor": "updateContentCommand",
 	"customizations": {
 		"vscode": {
@@ -31,19 +33,4 @@
 			]
 		}
 	}
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "yarn install",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
 }

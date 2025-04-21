@@ -1,0 +1,20 @@
+# 設定 registry 為官方 npm registry
+registry = "https://registry.npmjs.org"
+
+# 快取目錄（可省略，預設會用系統快取目錄）
+# cache-dir = "./.bun-cache"
+
+# 安裝時是否記錄 lock file（建議 true）
+save-lockfile = true
+
+# 忽略 postinstall script（如果不需要執行，可以開啟）
+# ignore-scripts = true
+
+# 自訂全域 alias（像是模組別名，需搭配 tsconfig 使用）
+# [install.alias]
+# "lodash" = "lodash-es"
+
+# External 模組（防止 bun 打包進去，用在 build bundler 模式時）
+# [install.external]
+# "react" = true
+# "react-dom" = true

@@ -1,0 +1,7 @@
+.next/cache
+node_modules
+.bun
+*.log
+*.map
+*.zip
+*.rsc
