@@ -1,5 +1,9 @@
 name: Vercel Preview Deploy (Bun)
 
+permissions:
+  pull-requests: write
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
