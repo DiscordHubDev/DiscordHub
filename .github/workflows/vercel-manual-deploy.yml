@@ -41,8 +41,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-
 
-      - name: Build the project
-        run: bun run build
+      - name: Build project for Vercel
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel (Production)
         run: vercel --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
