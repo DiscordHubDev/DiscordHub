@@ -77,7 +77,7 @@ const AddBotPageClient = () => {
       status: 'pending',
       inviteUrl: data.botInvite,
       supportServer: data.botSupport || null,
-      verified: false,
+      verified: rpcData.is_verified,
       features: [],
       screenshots: screenshots.map(s => s.url),
       commands: commandPayload,

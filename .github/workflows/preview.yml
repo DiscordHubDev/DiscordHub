@@ -1,5 +1,9 @@
 name: Vercel Preview Deploy (Bun)
 
+permissions:
+  pull-requests: write
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -58,7 +62,7 @@ jobs:
       - name: Deploy to Vercel (Preview)
         id: vercel_deploy
         run: |
-          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --output preview-url.txt
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > preview-url.txt
           echo "preview_url=$(cat preview-url.txt)" >> $GITHUB_OUTPUT
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

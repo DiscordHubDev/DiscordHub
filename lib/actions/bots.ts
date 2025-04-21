@@ -8,6 +8,7 @@ import { fetchUserInfo, hasAdministratorPermission } from '../utils';
 export async function transformToBotUpdateData(
   formData: BotFormData,
   isAdmin: boolean,
+  is_verified: boolean,
   banner?: string | undefined,
 ): Promise<BotUpdateInput> {
   return {
@@ -20,6 +21,7 @@ export async function transformToBotUpdateData(
     inviteUrl: formData.botInvite,
     website: formData.botWebsite || null,
     supportServer: formData.botSupport || null,
+    verified: is_verified,
     VoteNotificationURL: formData.webhook_url,
     secret: formData.secret,
     tags: {
@@ -56,7 +58,12 @@ export async function updateBot(
   const info = await fetchUserInfo(id);
 
   const botFields = {
-    ...(await transformToBotUpdateData(formData, isAdmin, info.banner_url)),
+    ...(await transformToBotUpdateData(
+      formData,
+      isAdmin,
+      rpcData.is_verified,
+      info.banner_url,
+    )),
     screenshots: screenshots.map(s => s.url),
   };
 
