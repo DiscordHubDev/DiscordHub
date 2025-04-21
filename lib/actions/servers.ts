@@ -154,28 +154,19 @@ export const getAllServers = async () => {
 export const getServerWithFavoritedByGuildId = async (
   userId: string | undefined,
   guildId: string,
-): Promise<ServerWithMinimalFavorited> => {
-  try {
-    const server = await prisma.server.findUnique({
-      where: { id: guildId },
-      include: {
-        owner: true,
-        favoritedBy: {
-          where: { id: userId },
-          select: { id: true },
-        },
+): Promise<ServerWithMinimalFavorited | null> => {
+  const server = await prisma.server.findUnique({
+    where: { id: guildId },
+    include: {
+      owner: true,
+      favoritedBy: {
+        where: { id: userId },
+        select: { id: true },
       },
-    });
+    },
+  });
 
-    if (!server) {
-      throw new Error('找不到該伺服器');
-    }
-
-    return server;
-  } catch (error) {
-    console.error(`❌ 無法獲取伺服器 (${guildId}):`, error);
-    throw error;
-  }
+  return server;
 };
 
 export const getServerByGuildId = async (
