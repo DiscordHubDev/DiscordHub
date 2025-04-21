@@ -360,9 +360,9 @@ export default function UserProfile({ id }: { id?: string }) {
               {/* 收藏的伺服器 */}
               <div>
                 <h2 className="text-2xl font-bold mb-4">收藏的伺服器</h2>
-                {managedServers.length > 0 ? (
+                {viewedUser.favoriteServers.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {managedServers.map(server => (
+                    {viewedUser.favoriteServers.map(server => (
                       <Link
                         href={`/servers/${server.id}`}
                         key={server.id}
