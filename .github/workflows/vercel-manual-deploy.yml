@@ -13,10 +13,21 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel env vars
+        run: vercel env pull .env.local --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Install dependencies with Bun
         run: bun install
