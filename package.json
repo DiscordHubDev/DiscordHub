@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "build": "next build && next-sitemap",
+    "build": "next build && next-sitemap && open-next build",
     "start": "next start",
     "lint:check": "next lint",
     "lint:fix": "next lint --fix",
@@ -62,6 +62,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@opennextjs/cloudflare": "",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.17.30",
     "@types/react": "^19",
