@@ -1,7 +1,4 @@
 {
-  "build": {
-    "corepack": true
-  },
   "crons": [
     {
       "path": "/api/update-bot-servers",

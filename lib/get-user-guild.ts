@@ -92,7 +92,6 @@ export async function getGuildDetails(
   console.timeEnd(`⏱ fetch:details-${guildId}`);
 
   if (!res.ok) {
-    console.timeEnd(`⏱ getGuildDetails-${guildId}`);
     return null;
   }
 
@@ -116,8 +115,6 @@ export async function getGuildDetails(
   };
 
   await setCache(cacheKey, guildInfo, 300);
-
-  console.timeEnd(`⏱ getGuildDetails-${guildId}`);
 
   return guildInfo;
 }
