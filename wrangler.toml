@@ -1,11 +1,15 @@
 name = "dchub"
-compatibility_date = "2024-04-22"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-30"
 compatibility_flags = ["nodejs_compat"]
 
-main = "./.open-next/worker/entrypoint.mjs"
-
 [site]
-bucket = "./.open-next/static"
+bucket = ".open-next/assets"
+binding = "ASSETS"
+
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "dchub"
 
 [vars]
 BOT_TOKEN="MTMyNDk5NjEzODI1MTU4MzU4MA.GnfLZp.eLaQrtV8Dlqb8xibgpIaWBN_gFGIHCuKxEXIOs"
