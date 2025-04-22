@@ -5,8 +5,6 @@ import { BotFormData, DiscordBotRPCInfo, Screenshot } from '../types';
 import { BotUpdateInput } from '../prisma_type';
 import { fetchUserInfo, hasAdministratorPermission } from '../utils';
 
-export const runtime = 'edge';
-
 export async function transformToBotUpdateData(
   formData: BotFormData,
   isAdmin: boolean,
