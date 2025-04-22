@@ -1,6 +1,12 @@
 import pLimit from 'p-limit';
 import { getCache, setCache } from './cache';
-import { addServerAdmin, getServerByGuildId } from './actions/servers';
+import {
+  addServerAdmin,
+  bulkInsertServerAdmins,
+  getPublishedServerMap,
+  getServerByGuildId,
+} from './actions/servers';
+import { prisma } from './prisma';
 
 const limit = pLimit(10); // 同時處理最多 5 個伺服器
 
@@ -64,7 +70,7 @@ async function getGuildDetailsWithCache(
 
     console.log(`getGuildDetailsWithCache(${guildId}) details`, details);
 
-    if (details) {
+    if (!cached && details) {
       await setCache(cacheKey, details, 300);
     }
 
@@ -143,7 +149,21 @@ export async function getUserGuildsWithBotStatus(
   activeServers: MinimalServerInfo[];
   inactiveServers: MinimalServerInfo[];
 }> {
-  // 拉使用者有管理權限的 guilds
+  // 先確認 user 是否存在
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+
+  if (!user) {
+    console.warn(`⚠️ User ${userId} 不存在，跳過流程`);
+    return {
+      activeServers: [],
+      inactiveServers: [],
+    };
+  }
+
+  // 取得使用者有管理權限的 guilds
   const userGuildsRes = await safeFetchWithRateLimit(
     'https://discord.com/api/users/@me/guilds?with_counts=true',
     {
@@ -160,7 +180,7 @@ export async function getUserGuildsWithBotStatus(
     hasManageGuildPermission(g.permissions),
   );
 
-  // 拉 bot 加入的 guilds
+  // 取得 bot 所在的 guilds
   const botGuildsRes = await safeFetchWithRateLimit(
     'https://discord.com/api/users/@me/guilds?with_counts=true',
     {
@@ -171,18 +191,22 @@ export async function getUserGuildsWithBotStatus(
   );
 
   if (!botGuildsRes.ok) throw new Error('Failed to fetch bot guilds');
+
   const botGuilds: DiscordGuild[] = await botGuildsRes.json();
   const botGuildIdSet = new Set(botGuilds.map(g => g.id));
 
   const activeServers: MinimalServerInfo[] = [];
   const inactiveServers: MinimalServerInfo[] = [];
+  const serverAdminPairs: { serverId: string; userId: string }[] = [];
+
+  const guildIds = manageableGuilds.map(g => g.id);
+  const publishedGuildSet = await getPublishedServerMap(guildIds);
 
   await Promise.all(
     manageableGuilds.map(guild =>
       limit(async () => {
         const isInServer = botGuildIdSet.has(guild.id);
-        const isPublished = await getServerByGuildId(guild.id).then(Boolean);
-        const banner = guild.banner;
+        const isPublished = publishedGuildSet.has(guild.id);
 
         const basic: MinimalServerInfo = {
           id: guild.id,
@@ -190,15 +214,17 @@ export async function getUserGuildsWithBotStatus(
           icon: guild.icon
             ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
             : '',
-          banner: banner
-            ? `https://cdn.discordapp.com/banners/${guild.id}/${banner}.${banner.startsWith('a_') ? 'gif' : 'png'}?size=1024`
+          banner: guild.banner
+            ? `https://cdn.discordapp.com/banners/${guild.id}/${guild.banner}.${guild.banner.startsWith('a_') ? 'gif' : 'png'}?size=1024`
             : '',
           memberCount: guild.approximate_member_count ?? 0,
           isInServer,
           isPublished,
         };
 
-        await addServerAdmin(basic, userId);
+        if (isPublished) {
+          serverAdminPairs.push({ serverId: guild.id, userId });
+        }
 
         if (isInServer) {
           activeServers.push(basic);
@@ -208,6 +234,8 @@ export async function getUserGuildsWithBotStatus(
       }),
     ),
   );
+
+  await bulkInsertServerAdmins(serverAdminPairs);
 
   return {
     activeServers,

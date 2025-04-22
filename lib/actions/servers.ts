@@ -169,6 +169,46 @@ export const getServerWithFavoritedByGuildId = async (
   return server;
 };
 
+function chunk<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
+}
+
+export async function getPublishedServerMap(
+  ids: string[],
+): Promise<Set<string>> {
+  const chunks = chunk(ids, 100);
+  const results = await Promise.all(
+    chunks.map(chunk =>
+      prisma.server.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true },
+      }),
+    ),
+  );
+
+  return new Set(results.flat().map(s => s.id));
+}
+
+export async function bulkInsertServerAdmins(
+  pairs: { serverId: string; userId: string }[],
+) {
+  if (pairs.length === 0) return;
+
+  const values = pairs
+    .map(({ serverId, userId }) => `('${serverId}', '${userId}')`)
+    .join(',');
+
+  await prisma.$executeRawUnsafe(`
+    INSERT INTO "_ServerAdmins" ("A", "B")
+    VALUES ${values}
+    ON CONFLICT DO NOTHING;
+  `);
+}
+
 export const getServerByGuildId = async (
   guildId: string,
 ): Promise<ServerType | undefined> => {
@@ -207,25 +247,29 @@ export async function getServerAdmins(guildId: string) {
 
 export async function addServerAdmin(guild: MinimalServerInfo, userId: string) {
   try {
-    // 檢查 server 是否存在
-    const server = await prisma.server.findUnique({
-      where: { id: guild.id },
-    });
+    const [server, user] = await Promise.all([
+      prisma.server.findUnique({ where: { id: guild.id } }),
+      prisma.user.findUnique({ where: { id: userId } }),
+    ]);
 
-    if (!server) {
+    if (!server || !user) {
       return null;
     }
 
-    // 檢查 user 是否存在
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    const isAlreadyAdmin = await prisma.server.findFirst({
+      where: {
+        id: guild.id,
+        admins: {
+          some: { id: userId },
+        },
+      },
+      select: { id: true },
     });
 
-    if (!user) {
+    if (isAlreadyAdmin) {
       return null;
     }
 
-    // 雙方都存在才進行連結
     return await prisma.server.update({
       where: { id: guild.id },
       data: {
