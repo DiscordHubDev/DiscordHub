@@ -1,7 +1,12 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { BotFormData, DiscordBotRPCInfo, Screenshot } from '../types';
+import {
+  BotFormData,
+  DiscordBotRPCInfo,
+  Screenshot,
+  UserProfile,
+} from '../types';
 import { BotUpdateInput } from '../prisma_type';
 import { fetchUserInfo, hasAdministratorPermission } from '../utils';
 
@@ -9,12 +14,13 @@ export async function transformToBotUpdateData(
   formData: BotFormData,
   isAdmin: boolean,
   is_verified: boolean,
-  banner?: string | undefined,
+  info: UserProfile,
 ): Promise<BotUpdateInput> {
   return {
-    name: formData.botName,
+    name: info.username,
     isAdmin,
-    banner: banner ?? null,
+    banner: info.banner_url ?? null,
+    icon: info.avatar_url ?? null,
     prefix: formData.botPrefix,
     description: formData.botDescription,
     longDescription: formData.botLongDescription ?? null,

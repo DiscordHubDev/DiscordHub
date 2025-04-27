@@ -5,6 +5,14 @@ import { z } from 'zod';
 
 export type BotFormData = z.infer<typeof botFormSchema>;
 
+export type UserProfile = {
+  username: string;
+  global_name: string;
+  avatar_url: string;
+  banner_url: string | null;
+  accent_color: string | null;
+};
+
 export interface CategoryType {
   id: string;
   name: string;
