@@ -132,8 +132,6 @@ export default function BotApplications({
 
       // 發送Webhook消息
       if (isApproved) {
-        await handleFetchBotServerCount(app.id);
-
         const developerNames = app.developers
           .map(dev => dev.username || '未知')
           .join('\n');
@@ -179,6 +177,7 @@ export default function BotApplications({
           console.error('發送 Webhook 時出錯:', webhookError);
         }
       }
+      await handleFetchBotServerCount(app.id);
     }
 
     setIsDialogOpen(false);
