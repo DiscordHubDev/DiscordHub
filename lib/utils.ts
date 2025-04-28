@@ -3,6 +3,7 @@ import { NextAuthOptions } from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { UserProfile } from './types';
 
 export type PriorityInput = {
   upvotes?: number;
@@ -53,7 +54,7 @@ export type Simplify<T> = {
   [KeyType in keyof T]: T[KeyType];
 } & {};
 
-export async function fetchUserInfo(id: string) {
+export async function fetchUserInfo(id: string): Promise<UserProfile> {
   const res = await fetch(`https://dchub.mantou.dev/member/${id}`);
 
   if (!res.ok) {
