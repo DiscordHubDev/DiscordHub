@@ -42,7 +42,12 @@ export async function upsertUserFromSession(session: Session) {
       banner: banner_url,
       banner_color: banner_color || null,
     },
-    update: {},
+    update: {
+      username: global_name,
+      avatar: image_url,
+      banner: banner_url,
+      banner_color: banner_color || null,
+    },
     include: {
       favoriteServers: true,
       favoriteBots: true,
