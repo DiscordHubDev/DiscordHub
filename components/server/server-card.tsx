@@ -32,7 +32,7 @@ export function ServerCard({ server }: ServerCardProps) {
 
   const buttonText = server.isInServer
     ? isPublished
-      ? '已發布伺服器'
+      ? '編輯伺服器'
       : '發布伺服器'
     : '邀請機器人';
 
@@ -45,9 +45,14 @@ export function ServerCard({ server }: ServerCardProps) {
         `https://discord.com/oauth2/authorize?client_id=1324996138251583580&permissions=1126965059046400&integration_type=0&scope=bot&guild_id=${server.id}&disable_guild_select=true`,
         '_blank',
       );
-    } else if (!isPublished) {
-      window.location.href = `/add-server/${server.id}`;
+      return;
     }
+
+    if (!isPublished) {
+      window.location.href = `/add-server/${server.id}`;
+      return;
+    }
+    window.location.href = `/profile/servers/${server.id}/edit`;
   };
 
   return (
@@ -120,9 +125,6 @@ export function ServerCard({ server }: ServerCardProps) {
               server.isInServer
                 ? 'bg-[#4f545c] hover:bg-[#686d73] text-white'
                 : 'bg-[#5865f2] hover:bg-[#4752c4] text-white',
-              {
-                'cursor-not-allowed opacity-60': isDisabled,
-              },
             )}
           >
             {buttonText}
