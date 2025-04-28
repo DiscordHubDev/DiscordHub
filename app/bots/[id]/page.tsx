@@ -5,6 +5,8 @@ import BotDetailClient from './client';
 
 const allBots = await getAllBots();
 
+export const revalidate = 60;
+
 export async function generateStaticParams() {
   return allBots.map(bot => ({
     id: bot.id,

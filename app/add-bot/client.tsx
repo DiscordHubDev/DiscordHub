@@ -7,7 +7,12 @@ import { BotFormData, DiscordBotRPCInfo, Screenshot } from '@/lib/types';
 import BotForm from '@/components/form/bot-form/BotForm';
 import { toast } from 'react-toastify';
 import { signIn, useSession } from 'next-auth/react';
-import { fetchUserInfo, hasAdministratorPermission } from '@/lib/utils';
+import {
+  extractPermissionsFromInviteUrl,
+  fetchUserInfo,
+  hasAdministratorPermission,
+} from '@/lib/utils';
+import { getBot } from '@/lib/actions/bots';
 
 const AddBotPageClient = () => {
   const { data: session } = useSession();
@@ -20,6 +25,13 @@ const AddBotPageClient = () => {
     const client_id = new URL(data.botInvite).searchParams.get('client_id');
     if (!client_id) {
       throw new Error('Invite link 無效，找不到 client_id');
+    }
+
+    const bot = await getBot(client_id);
+
+    if (bot) {
+      toast.error('此 Bot 已存在');
+      return;
     }
 
     const res = await fetch(
@@ -42,7 +54,9 @@ const AddBotPageClient = () => {
     const info = await fetchUserInfo(client_id);
 
     const isAdmin = hasAdministratorPermission(
-      rpcData.install_params.permissions,
+      rpcData.install_params
+        ? rpcData.install_params.permissions
+        : (extractPermissionsFromInviteUrl(data.botInvite) ?? '0'),
     );
 
     const commandPayload = data.commands.map(cmd => ({

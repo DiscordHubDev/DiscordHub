@@ -11,6 +11,8 @@ import { Metadata } from 'next';
 
 const allServers = await getAllServers();
 
+export const revalidate = 60;
+
 export async function generateStaticParams() {
   return allServers.map(server => ({
     id: server.id,

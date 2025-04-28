@@ -46,6 +46,16 @@ export default function MarkdownRenderer({ content }: Props) {
             hr: {
               component: () => <hr className="my-4 border-gray-600" />,
             },
+            a: {
+              component: ({ children, ...props }) => (
+                <a
+                  {...props}
+                  className="text-blue-400 hover:text-blue-600 underline transition-colors duration-200"
+                >
+                  {children}
+                </a>
+              ),
+            },
           },
         }}
       >

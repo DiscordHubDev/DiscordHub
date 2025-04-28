@@ -28,6 +28,7 @@ import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
 import { v4 as uuidv4 } from 'uuid';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
+import { toast } from 'react-toastify';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {
@@ -245,6 +246,9 @@ const BotForm: React.FC<BotFormProps> = ({
       }
       setScreenshotPreviews([]);
       setSuccess(true);
+      if (mode === 'edit') {
+        toast.success('編輯成功');
+      }
     } catch (err: any) {
       console.error(err);
     } finally {

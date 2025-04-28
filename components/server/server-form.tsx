@@ -389,7 +389,7 @@ export default function ServerFormPage({
                           id="server-name"
                           placeholder="輸入您的伺服器名稱"
                           className="bg-[#36393f] border-[#1e1f22] text-white"
-                          disabled
+                          disabled={mode === 'create'}
                           {...field}
                         />
                       </FormControl>

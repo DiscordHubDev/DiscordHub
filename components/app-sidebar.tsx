@@ -199,7 +199,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isMobile = useIsMobile();
 
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, openMobile, setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    if (isMobile && openMobile) {
+      setOpenMobile(false); // 如果是手機，且 sidebar 有打開，就關掉
+    }
+  }, [isMobile, openMobile, setOpenMobile]);
 
   useEffect(() => {
     refreshUnreadCount();
@@ -290,7 +296,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           id: '',
         }
       : {
-          display_name: session?.discordProfile?.global_name ?? '未登入',
+          display_name:
+            session?.discordProfile?.global_name ??
+            session?.discordProfile?.username ??
+            '未登入',
           username: session?.discordProfile?.username ?? '未登入',
           avatar:
             session?.user?.image ??

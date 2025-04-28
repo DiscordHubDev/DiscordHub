@@ -8,7 +8,11 @@ import {
   UserProfile,
 } from '../types';
 import { BotUpdateInput } from '../prisma_type';
-import { fetchUserInfo, hasAdministratorPermission } from '../utils';
+import {
+  extractPermissionsFromInviteUrl,
+  fetchUserInfo,
+  hasAdministratorPermission,
+} from '../utils';
 
 export async function transformToBotUpdateData(
   formData: BotFormData,
@@ -58,7 +62,9 @@ export async function updateBot(
   const rpcData: DiscordBotRPCInfo = await res.json();
 
   const isAdmin = hasAdministratorPermission(
-    rpcData.install_params.permissions,
+    rpcData.install_params
+      ? rpcData.install_params.permissions
+      : (extractPermissionsFromInviteUrl(formData.botInvite) ?? '0'),
   );
 
   const info = await fetchUserInfo(id);
@@ -68,7 +74,7 @@ export async function updateBot(
       formData,
       isAdmin,
       rpcData.is_verified,
-      info.banner_url,
+      info,
     )),
     screenshots: screenshots.map(s => s.url),
   };

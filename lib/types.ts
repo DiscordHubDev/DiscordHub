@@ -98,7 +98,7 @@ export type DiscordBotRPCInfo = {
   bot_require_code_grant: boolean;
   terms_of_service_url: string | null;
   privacy_policy_url: string | null;
-  install_params: {
+  install_params?: {
     scopes: string[];
     permissions: string;
   };
