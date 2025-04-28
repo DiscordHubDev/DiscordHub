@@ -15,7 +15,7 @@ export function hasAdministratorPermission(permissions: string): boolean {
   return (perms & BigInt(ADMINISTRATOR)) === BigInt(ADMINISTRATOR);
 }
 
-export function extractPermissionsFromUrl(url: string): string | null {
+export function extractPermissionsFromInviteUrl(url: string): string | null {
   const parsedUrl = new URL(url);
   const permissions = parsedUrl.searchParams.get('permissions');
   return permissions;
