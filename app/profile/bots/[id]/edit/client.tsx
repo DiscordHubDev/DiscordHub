@@ -21,6 +21,7 @@ export default function BotEditClient({ bot }: { bot: BotWithFavorites }) {
         developers: bot.developers.map(dev => ({ name: dev.id })),
         webhook_url: bot.VoteNotificationURL || '',
         secret: bot.secret || '',
+        screenshots: bot.screenshots,
         commands: bot.commands.map(cmd => ({
           name: cmd.name,
           description: cmd.description,

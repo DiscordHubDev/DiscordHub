@@ -35,10 +35,10 @@ export default function ScreenshotGrid({
             />
             <button
               type="button"
-              className="absolute top-2 right-2 bg-[#1e1f22] text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-2 right-2 bg-[#1e1f22] text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               onClick={() => removeScreenshot(index)}
             >
-              <X size={14} />
+              <X size={20} />
             </button>
           </div>
         ))}
@@ -59,10 +59,10 @@ export default function ScreenshotGrid({
               className="w-full h-full object-contain"
             />
             <button
-              className="absolute top-4 right-4 bg-black bg-opacity-70 text-white p-2 rounded-full"
+              className="absolute top-4 right-4 bg-black bg-opacity-70 text-white p-2 rounded-full cursor-pointer"
               onClick={() => setPreviewImage(null)}
             >
-              <X size={24} />
+              <X size={30} />
             </button>
           </div>
         </div>

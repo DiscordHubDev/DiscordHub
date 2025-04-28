@@ -42,15 +42,6 @@ export async function updateServer(
     select: { screenshots: true },
   });
 
-  const oldScreenshots = existingServer?.screenshots ?? [];
-  const newScreenshots = Array.isArray(data.screenshots)
-    ? data.screenshots
-    : [];
-
-  const mergedScreenshots = Array.from(
-    new Set([...oldScreenshots, ...newScreenshots]),
-  );
-
   try {
     const updatedServer = await prisma.server.update({
       where: {
@@ -72,7 +63,9 @@ export async function updateServer(
         VoteNotificationURL: data.VoteNotificationURL,
         rules: data.rules,
         features: data.features ?? [],
-        screenshots: { set: mergedScreenshots },
+        screenshots: {
+          set: Array.isArray(data.screenshots) ? data.screenshots : [],
+        },
 
         // connect owner
         owner: data.owner?.connectOrCreate

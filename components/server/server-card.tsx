@@ -36,8 +36,6 @@ export function ServerCard({ server }: ServerCardProps) {
       : '發布伺服器'
     : '邀請機器人';
 
-  const isDisabled = server.isInServer && isPublished;
-
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!server.isInServer) {
@@ -118,10 +116,9 @@ export function ServerCard({ server }: ServerCardProps) {
 
         <CardFooter className="border-t border-[#40444b] pt-3 pb-4">
           <button
-            disabled={isDisabled}
             onClick={handleClick}
             className={cn(
-              'w-full py-2 rounded-md font-medium text-sm transition-colors',
+              'w-full py-2 rounded-md font-medium text-sm transition-colors cursor-pointer',
               server.isInServer
                 ? 'bg-[#4f545c] hover:bg-[#686d73] text-white'
                 : 'bg-[#5865f2] hover:bg-[#4752c4] text-white',
