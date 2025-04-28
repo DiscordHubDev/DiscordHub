@@ -194,14 +194,14 @@ export default function BotDetailClient({
                 {bot.developers && (
                   <div className="mb-4">
                     <h4 className="text-gray-400 mb-2">開發者</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 group rounded-lg transition duration-200 hover:bg-white/10 transform group-hover:-translate-y-1">
+                    <div className="grid gap-4 rounded-lg">
                       {bot.developers.map(dev => (
                         <Link
                           key={dev.id}
                           href={`/users/${dev.id}`}
-                          className=""
+                          className="group"
                         >
-                          <div className="flex items-center p-4 space-x-4 transition duration-200 group">
+                          <div className="flex items-center p-4 space-x-4 transition duration-200 rounded-lg hover:bg-white/10 transform group-hover:-translate-y-1">
                             <img
                               src={dev.avatar}
                               alt={`${dev.username} avatar`}
