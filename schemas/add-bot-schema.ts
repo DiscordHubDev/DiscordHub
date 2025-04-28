@@ -81,4 +81,5 @@ export const botFormSchema = z.object({
         message: '請輸入正確的連結',
       },
     ),
+  screenshots: z.array(z.string()).optional(),
 });

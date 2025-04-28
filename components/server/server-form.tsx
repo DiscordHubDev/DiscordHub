@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -64,6 +64,24 @@ export default function ServerFormPage({
   const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
     [],
   );
+
+  useEffect(() => {
+    if (edit_server?.screenshots && Array.isArray(edit_server.screenshots)) {
+      const previews = edit_server.screenshots.map(url => {
+        // 取得 public_id
+        const parts = url.split('/');
+        const filename = parts[parts.length - 1]; // 取最後一段：xsivjbdalarm8e1jrknw.png
+        const publicId = filename.split('.')[0]; // 去掉副檔名
+
+        return {
+          url,
+          public_id: publicId,
+        };
+      });
+      setScreenshotPreviews(previews);
+    }
+  }, [edit_server?.screenshots]);
+
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -119,7 +137,41 @@ export default function ServerFormPage({
     const files = event.target.files;
     if (!files) return;
 
-    const fileArray = Array.from(files).slice(0, 5 - screenshotPreviews.length);
+    const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+    const MAX_GIF_SIZE_BYTES = 10 * 1024 * 1024;
+    const ALLOWED_IMAGE_TYPES = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ];
+
+    const validFiles: File[] = [];
+    for (const file of files) {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        toast.warn('請傳送動圖或者是一般圖片！');
+        continue;
+      }
+
+      if (file.type === 'image/gif' && file.size > MAX_GIF_SIZE_BYTES) {
+        toast.warn(
+          `動圖 ${file.name} 大於 ${MAX_GIF_SIZE_BYTES / (1024 * 1024)}MB，請傳送更小的動圖。`,
+        );
+        continue;
+      }
+
+      if (file.type !== 'image/gif' && file.size > MAX_IMAGE_SIZE_BYTES) {
+        toast.warn(
+          `圖片 ${file.name} 大於 ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)}MB，請傳送更小的圖片。`,
+        );
+
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    const fileArray = validFiles.slice(0, 5 - screenshotPreviews.length);
     if (fileArray.length === 0) return;
 
     setUploading(true);
@@ -162,12 +214,14 @@ export default function ServerFormPage({
           { url: imageUrl, public_id: publicId },
         ]);
       } catch (error) {
+        toast.error('未知錯誤');
         console.error('Unexpected error:', error);
       }
     }
 
     setUploading(false);
   };
+
   const removeScreenshot = async (index: number) => {
     const toDelete = screenshotPreviews[index];
     setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));

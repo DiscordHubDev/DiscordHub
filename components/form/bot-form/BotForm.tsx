@@ -1,5 +1,5 @@
 'use client';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -26,7 +26,6 @@ import { CommandListField } from '@/components/form/bot-form/CommandListField';
 import { DeveloperListField } from '@/components/form/bot-form/DeveloperListField';
 import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
-import { v4 as uuidv4 } from 'uuid';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { toast } from 'react-toastify';
 
@@ -62,6 +61,26 @@ const BotForm: React.FC<BotFormProps> = ({
   const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
     [],
   );
+
+  useEffect(() => {
+    if (
+      defaultValues?.screenshots &&
+      Array.isArray(defaultValues.screenshots)
+    ) {
+      const previews = defaultValues.screenshots.map(url => {
+        const parts = url.split('/');
+        const filename = parts[parts.length - 1];
+        const publicId = filename.split('.')[0];
+
+        return {
+          url,
+          public_id: publicId,
+        };
+      });
+      setScreenshotPreviews(previews);
+    }
+  }, [defaultValues?.screenshots]);
+
   const [uploading, setUploading] = useState(false);
 
   const form = useForm<FormData>({
@@ -85,7 +104,7 @@ const BotForm: React.FC<BotFormProps> = ({
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const { handleSubmit, control, formState, watch, reset } = form;
@@ -126,7 +145,41 @@ const BotForm: React.FC<BotFormProps> = ({
     const files = event.target.files;
     if (!files) return;
 
-    const fileArray = Array.from(files).slice(0, 5 - screenshotPreviews.length);
+    const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+    const MAX_GIF_SIZE_BYTES = 10 * 1024 * 1024;
+    const ALLOWED_IMAGE_TYPES = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ];
+
+    const validFiles: File[] = [];
+    for (const file of files) {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        toast.warn('請傳送動圖或者是一般圖片！');
+        continue;
+      }
+
+      if (file.type === 'image/gif' && file.size > MAX_GIF_SIZE_BYTES) {
+        toast.warn(
+          `動圖 ${file.name} 大於 ${MAX_GIF_SIZE_BYTES / (1024 * 1024)}MB，請傳送更小的動圖。`,
+        );
+        continue;
+      }
+
+      if (file.type !== 'image/gif' && file.size > MAX_IMAGE_SIZE_BYTES) {
+        toast.warn(
+          `圖片 ${file.name} 大於 ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)}MB，請傳送更小的圖片。`,
+        );
+
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    const fileArray = validFiles.slice(0, 5 - screenshotPreviews.length);
     if (fileArray.length === 0) return;
 
     setUploading(true);
@@ -169,6 +222,7 @@ const BotForm: React.FC<BotFormProps> = ({
           { url: imageUrl, public_id: publicId },
         ]);
       } catch (error) {
+        toast.error('未知錯誤');
         console.error('Unexpected error:', error);
       }
     }
@@ -244,7 +298,6 @@ const BotForm: React.FC<BotFormProps> = ({
           console.error('發送 Webhook 時出錯:', webhookError);
         }
       }
-      setScreenshotPreviews([]);
       setSuccess(true);
       if (mode === 'edit') {
         toast.success('編輯成功');
@@ -570,7 +623,7 @@ const BotForm: React.FC<BotFormProps> = ({
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="relative discord text-white px-4 py-2 rounded disabled:opacity-50 flex items-center justify-center"
+                    className="relative discord text-white px-4 py-2 rounded disabled:opacity-50 flex items-center justify-center cursor-pointer"
                   >
                     {loading && (
                       <svg

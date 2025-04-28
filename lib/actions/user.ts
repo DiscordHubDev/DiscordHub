@@ -30,20 +30,20 @@ export async function GetUserBySession(session: Session) {
 export async function upsertUserFromSession(session: Session) {
   if (!session?.discordProfile) return null;
 
-  const { id, global_name, image_url, banner_url, banner_color } =
+  const { id, global_name, image_url, banner_url, banner_color, username } =
     session.discordProfile;
 
   const user = await prisma.user.upsert({
     where: { id },
     create: {
       id,
-      username: global_name,
+      username: global_name ?? username,
       avatar: image_url,
       banner: banner_url,
       banner_color: banner_color || null,
     },
     update: {
-      username: global_name,
+      username: global_name ?? username,
       avatar: image_url,
       banner: banner_url,
       banner_color: banner_color || null,
