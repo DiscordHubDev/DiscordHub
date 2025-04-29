@@ -111,13 +111,16 @@ export default function Footer({ className = '' }: { className?: string }) {
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {/* Icons */}
-            <SocialIcon href="https://discord.gg/puQ9DPdG3M" title="Twitter">
+            <SocialIcon href="https://discord.gg/puQ9DPdG3M" title="Discord">
               <FaDiscord />
             </SocialIcon>
-            <SocialIcon href="#" title="GitHub">
+            <SocialIcon href="https://github.com/DiscordHubDev" title="GitHub">
               <GitHubIcon />
             </SocialIcon>
-            <SocialIcon href="#" title="Instagram">
+            <SocialIcon
+              href="https://www.instagram.com/_dchubs_?igsh=OHJwMjNoanMzbndh"
+              title="Instagram"
+            >
               <InstagramIcon />
             </SocialIcon>
           </div>
