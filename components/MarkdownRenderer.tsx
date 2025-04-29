@@ -15,6 +15,13 @@ export default function MarkdownRenderer({ content }: Props) {
           forceBlock: true,
           forceInline: false,
           overrides: {
+            iframe: {
+              component: ({ node, ...props }) => (
+                <div style={{ width: '100%', overflowX: 'auto' }}>
+                  <iframe {...props} style={{ width: '100%' }} />
+                </div>
+              ),
+            },
             h1: {
               component: ({ children }) => (
                 <h1 className="text-2xl font-bold mt-4 mb-3">{children}</h1>
