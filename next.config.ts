@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         source: '/bot-sitemap.xml',
         destination: '/sitemap/bots',
       },
+      {
+        source: '/api/get_bot_server_count',
+        destination: 'https://getbotserver.dawngs.top',
+      },
     ];
   },
   eslint: {
