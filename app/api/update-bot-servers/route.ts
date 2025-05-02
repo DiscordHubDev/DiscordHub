@@ -1,7 +1,43 @@
+import { getBotListChunked } from '@/lib/actions/bots';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export interface BotInfo {
+  global_name: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
+}
+
+export async function fetchBotInfo(botId: string): Promise<BotInfo | null> {
+  try {
+    const res = await fetch(`https://dchub.mantou.dev/member/${botId}`);
+
+    if (!res.ok) {
+      console.error(`❌ 無法取得 ${botId} 的資訊，狀態碼: ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+
+    const global_name =
+      typeof data.global_name === 'string' ? data.global_name : null;
+    const avatar_url =
+      typeof data.avatar_url === 'string' ? data.avatar_url : null;
+    const banner_url =
+      typeof data.banner_url === 'string' ? data.banner_url : null;
+
+    return {
+      global_name,
+      avatar_url,
+      banner_url,
+    };
+  } catch (error) {
+    console.error(`❌ ${botId} 發生錯誤：`, error);
+    return null;
+  }
+}
 
 async function fetchBotServerCount(botId: string): Promise<number | null> {
   try {
@@ -42,10 +78,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const bots = await prisma.bot.findMany({
-      where: { status: 'approved' },
-      orderBy: { servers: 'desc' },
-    });
+    const bots = await getBotListChunked();
+
     const updatedBots: {
       name: string;
       prevServers: number;
@@ -53,19 +87,25 @@ export async function GET(request: NextRequest) {
     }[] = [];
 
     for (const bot of bots) {
-      const prevServers = bot.servers;
-      const count = await fetchBotServerCount(bot.id);
+      const prev = bot.servers;
+      const updatedServerCount = await fetchBotServerCount(bot.id);
+      const info = await fetchBotInfo(bot.id);
 
-      if (count !== null) {
+      if (updatedServerCount !== null) {
         await prisma.bot.update({
           where: { id: bot.id },
-          data: { servers: count },
+          data: {
+            servers: updatedServerCount,
+            name: info?.global_name ?? bot.name,
+            icon: info?.avatar_url ?? bot.icon,
+            banner: info?.banner_url ?? bot.banner,
+          },
         });
 
         updatedBots.push({
           name: bot.name,
-          prevServers,
-          servers: count,
+          prevServers: prev,
+          servers: updatedServerCount,
         });
       }
 

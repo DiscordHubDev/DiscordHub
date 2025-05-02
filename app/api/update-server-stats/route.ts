@@ -1,3 +1,4 @@
+import { getAllServerIdsChunked } from '@/lib/actions/servers';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -29,11 +30,9 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const servers = await prisma.server.findMany();
+  const serverIds = await getAllServerIdsChunked();
 
-  for (const server of servers) {
-    const guildId = server.id;
-
+  for (const guildId of serverIds) {
     const data = await safeFetchWithRateLimit(
       `https://discord.com/api/guilds/${guildId}?with_counts=true`,
       {
@@ -48,12 +47,18 @@ export async function GET(request: NextRequest) {
     await prisma.server.update({
       where: { id: guildId },
       data: {
-        members: data.approximate_member_count ?? server.members,
-        online: data.approximate_presence_count ?? server.online ?? 0,
+        icon: data.icon
+          ? `https://cdn.discordapp.com/icons/${guildId}/${data.icon}.png`
+          : '',
+        banner: data.banner
+          ? `https://cdn.discordapp.com/banners/${guildId}/${data.banner}.png`
+          : '',
+        members: data.approximate_member_count,
+        online: data.approximate_presence_count,
       },
     });
+
     await sleep(3000);
   }
-
   return NextResponse.json({ ok: true });
 }

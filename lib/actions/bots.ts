@@ -45,6 +45,45 @@ export async function transformToBotUpdateData(
   };
 }
 
+export async function getBotListChunked(): Promise<
+  {
+    id: string;
+    name: string;
+    servers: number;
+    icon: string | null;
+    banner: string | null;
+  }[]
+> {
+  const CHUNK_SIZE = 500;
+  const total = await prisma.bot.count({
+    where: { status: 'approved' },
+  });
+
+  const pages = Math.ceil(total / CHUNK_SIZE);
+
+  const results = await Promise.all(
+    Array.from({ length: pages }).map((_, i) =>
+      prisma.bot.findMany({
+        where: { status: 'approved' },
+        skip: i * CHUNK_SIZE,
+        take: CHUNK_SIZE,
+        select: {
+          id: true,
+          name: true,
+          servers: true,
+          icon: true,
+          banner: true,
+        },
+        orderBy: {
+          servers: 'desc',
+        },
+      }),
+    ),
+  );
+
+  return results.flat();
+}
+
 export async function updateBot(
   id: string,
   formData: BotFormData,
