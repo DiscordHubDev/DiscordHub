@@ -35,7 +35,7 @@ export default function ScreenshotGrid({
             />
             <button
               type="button"
-              className="absolute top-2 right-2 bg-[#1e1f22] text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full cursor-pointer md:opacity-0 md:group-hover:opacity-100 transition-opacity"
               onClick={() => removeScreenshot(index)}
             >
               <X size={20} />

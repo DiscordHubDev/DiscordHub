@@ -208,7 +208,9 @@ export default function BotDetailClient({
                               className="w-10 h-10 rounded-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
                             />
                             <p className="font-medium whitespace-nowrap transition-colors duration-200">
-                              {dev.username}
+                              {dev.username.length > 10
+                                ? `${dev.username.slice(0, 10)}...`
+                                : dev.username}
                             </p>
                           </div>
                         </Link>
