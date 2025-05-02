@@ -9,6 +9,8 @@ import { prisma } from '@/lib/prisma';
 import { fetchUserInfo } from '../utils';
 import { MinimalServerInfo } from '../get-user-guild';
 
+const CHUNK_SIZE = 500;
+
 export async function buildConnectOrCreateAdmins(
   admins: (string | { id: string })[],
 ) {
@@ -184,6 +186,23 @@ export async function getPublishedServerMap(
   );
 
   return new Set(results.flat().map(s => s.id));
+}
+
+export async function getAllServerIdsChunked(): Promise<string[]> {
+  const totalCount = await prisma.server.count();
+  const pages = Math.ceil(totalCount / CHUNK_SIZE);
+
+  const results = await Promise.all(
+    Array.from({ length: pages }).map((_, i) =>
+      prisma.server.findMany({
+        skip: i * CHUNK_SIZE,
+        take: CHUNK_SIZE,
+        select: { id: true },
+      }),
+    ),
+  );
+
+  return results.flat().map(s => s.id);
 }
 
 export async function bulkInsertServerAdmins(

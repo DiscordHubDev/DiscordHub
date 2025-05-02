@@ -42,6 +42,24 @@ export function createPriorityCalculator(options?: {
   };
 }
 
+export async function getBotGuildIds(): Promise<string[]> {
+  const token = process.env.BOT_TOKEN;
+
+  const res = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+    headers: {
+      Authorization: `Bot ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    console.error(await res.text());
+    throw new Error('Failed to fetch guilds from Discord');
+  }
+
+  const guilds = await res.json();
+  return guilds.map((g: any) => g.id);
+}
+
 export function getRandomEmbedColor(): number {
   return Math.floor(Math.random() * 0xffffff);
 }
