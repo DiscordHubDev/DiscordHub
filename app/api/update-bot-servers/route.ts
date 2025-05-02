@@ -4,13 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export interface BotInfo {
+interface BotInfo {
   global_name: string | null;
   avatar_url: string | null;
   banner_url: string | null;
 }
 
-export async function fetchBotInfo(botId: string): Promise<BotInfo | null> {
+async function fetchBotInfo(botId: string): Promise<BotInfo | null> {
   try {
     const res = await fetch(`https://dchub.mantou.dev/member/${botId}`);
 
