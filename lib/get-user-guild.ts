@@ -54,32 +54,12 @@ type DiscordGuild = {
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
 const hasManageGuildPermission = (permissions: string | number | bigint) => {
-  return (BigInt(permissions) & BigInt(0x20)) === BigInt(0x20);
+  const perms = BigInt(permissions);
+  const MANAGE_GUILD = BigInt(0x20);
+  const ADMINISTRATOR = BigInt(0x8);
+
+  return (perms & (MANAGE_GUILD | ADMINISTRATOR)) !== BigInt(0);
 };
-
-async function getGuildDetailsWithCache(
-  guildId: string,
-): Promise<ActiveServerInfo | null> {
-  const cacheKey = `guild:details:${guildId}`;
-
-  const cached = await getCache<ActiveServerInfo>(cacheKey);
-  if (cached) return cached;
-
-  try {
-    const details = await getGuildDetails(guildId);
-
-    console.log(`getGuildDetailsWithCache(${guildId}) details`, details);
-
-    if (!cached && details) {
-      await setCache(cacheKey, details, 300);
-    }
-
-    return details;
-  } catch (error) {
-    console.warn(`❌ getGuildDetailsWithCache(${guildId}) 發生錯誤：`, error);
-    return null;
-  }
-}
 
 export async function getGuildDetails(
   guildId: string,
