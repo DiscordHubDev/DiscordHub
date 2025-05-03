@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/update_server_stats",
-      "schedule": "5 * * * *"
+      "schedule": "10 0 * * *" 
     },
     {
       "path": "/api/check_servers",
