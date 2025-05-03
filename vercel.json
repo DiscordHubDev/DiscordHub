@@ -1,12 +1,16 @@
 {
   "crons": [
     {
-      "path": "/api/update-bot-servers",
+      "path": "/api/update_bot_servers",
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/update-server-stats",
-      "schedule": "0 0 * * *"
+      "path": "/api/update_server_stats",
+      "schedule": "5 * * * *"
+    },
+    {
+      "path": "/api/check_servers",
+      "schedule": "0 */6 * * *"
     }
   ]
 }
