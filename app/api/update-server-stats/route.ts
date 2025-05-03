@@ -44,18 +44,21 @@ export async function GET(request: NextRequest) {
 
     if (!data) continue;
 
+    const updateData = {
+      ...(data.name != null && { name: data.name }),
+      ...(data.icon != null && {
+        icon: `https://cdn.discordapp.com/icons/${guildId}/${data.icon}.png`,
+      }),
+      ...(data.banner != null && {
+        banner: `https://cdn.discordapp.com/banners/${guildId}/${data.banner}.png`,
+      }),
+      members: data.approximate_member_count,
+      online: data.approximate_presence_count,
+    };
+
     await prisma.server.update({
       where: { id: guildId },
-      data: {
-        icon: data.icon
-          ? `https://cdn.discordapp.com/icons/${guildId}/${data.icon}.png`
-          : '',
-        banner: data.banner
-          ? `https://cdn.discordapp.com/banners/${guildId}/${data.banner}.png`
-          : '',
-        members: data.approximate_member_count,
-        online: data.approximate_presence_count,
-      },
+      data: updateData,
     });
 
     await sleep(3000);
