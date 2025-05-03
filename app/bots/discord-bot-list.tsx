@@ -8,14 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BotList from '@/components/bot-list';
-import FeaturedBots from '@/components/featured-bots';
 import CategoryFilter from '@/components/category-filter';
 import CategorySearch from '@/components/category-search';
 import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { botCategories as initialCategories } from '@/lib/bot-categories';
-import type { BotType, CategoryType } from '@/lib/types';
+import type { CategoryType } from '@/lib/types';
 import Link from 'next/link';
-import { getAllBots } from '@/lib/actions/bots';
 import { BotWithRelations } from '@/lib/prisma_type';
 import Pagination from '@/components/pagination';
 
@@ -34,6 +32,28 @@ export default function DiscordBotListPageClient({
   const [activeTab, setActiveTab] = useState('featured');
   // 計算總頁數
   const totalPages = Math.ceil(bots.length / ITEMS_PER_PAGE);
+
+  // 渲染機器人列表
+  const renderBotListWithFallback = (servers: BotWithRelations[]) => {
+    if (!servers || servers.length === 0) {
+      return (
+        <div className="text-center text-gray-400 py-10">
+          <p className="text-sm">找不到符合條件的機器人 🙁</p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <BotList bots={servers} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </>
+    );
+  };
 
   // 獲取當前頁的機器人
   const getCurrentPageBots = () => {
@@ -108,24 +128,60 @@ export default function DiscordBotListPageClient({
     ]);
   };
 
-  // 處理搜索
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const filterAndSearchBots = (tab: string, query: string = '') => {
+    let bots = [...allBots];
 
-    if (!searchQuery.trim()) {
-      setBots(allBots);
-      return;
+    switch (tab) {
+      case 'popular':
+        bots.sort((a, b) => b.servers - a.servers);
+        break;
+      case 'new':
+        bots.sort(
+          (a, b) =>
+            new Date(b.approvedAt!).getTime() -
+            new Date(a.approvedAt!).getTime(),
+        );
+        break;
+      case 'featured':
+        bots = bots
+          .filter(b => b.servers >= 1000)
+          .sort((a, b) => b.upvotes - a.upvotes)
+          .sort((a, b) => b.servers - a.servers);
+        break;
+      case 'verified':
+        bots = bots
+          .filter(b => b.verified)
+          .sort(
+            (a, b) =>
+              new Date(b.approvedAt!).getTime() -
+              new Date(a.approvedAt!).getTime(),
+          );
+        break;
+      case 'voted':
+        bots.sort((a, b) => b.upvotes - a.upvotes);
+        break;
     }
 
-    const query = searchQuery.toLowerCase();
-    const searchResults = allBots.filter(
-      bot =>
-        bot.name.toLowerCase().includes(query) ||
-        bot.description.toLowerCase().includes(query) ||
-        bot.tags.some(tag => tag.toLowerCase().includes(query)),
-    );
+    const trimmedQuery = query.trim().toLowerCase();
 
-    setBots(searchResults);
+    if (trimmedQuery) {
+      bots = bots.filter(
+        bot =>
+          bot.name.toLowerCase().includes(trimmedQuery) ||
+          bot.description.toLowerCase().includes(trimmedQuery) ||
+          (Array.isArray(bot.tags) &&
+            bot.tags.some(tag => tag.toLowerCase().includes(trimmedQuery))),
+      );
+    }
+
+    setBots(bots);
+  };
+
+  // 處理搜索
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    filterAndSearchBots(activeTab, value);
   };
 
   // 處理頁面變更
@@ -141,34 +197,10 @@ export default function DiscordBotListPageClient({
   // 處理標籤切換
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    setCurrentPage(1); // 重置頁碼
-
-    // 根據標籤排序機器人
-    let sortedBots = [...allBots];
-    if (value === 'popular') {
-      sortedBots.sort((a, b) => b.servers - a.servers);
-    } else if (value === 'new') {
-      sortedBots.sort((a, b) => {
-        return (
-          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime()
-        );
-      });
-    } else if (value === 'featured') {
-      sortedBots = allBots
-        .filter(b => b.servers >= 1000)
-        .sort((a, b) => b.upvotes - a.upvotes)
-        .sort((a, b) => b.servers - a.servers);
-    } else if (value === 'verified') {
-      sortedBots = allBots.filter(b => b.verified);
-      sortedBots.sort(
-        (a, b) =>
-          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime(),
-      );
-    } else if (value === 'voted') {
-      sortedBots.sort((a, b) => b.upvotes - a.upvotes);
-    }
-    setBots(sortedBots);
+    setCurrentPage(1);
+    filterAndSearchBots(value, searchQuery);
   };
+
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Hero Banner */}
@@ -202,12 +234,12 @@ export default function DiscordBotListPageClient({
           </p>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+          <div className="relative max-w-2xl mx-auto">
             <Input
               placeholder="搜尋機器人名稱、標籤或描述..."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={handleChange}
             />
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
@@ -215,18 +247,12 @@ export default function DiscordBotListPageClient({
             />
             <Button
               type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-[#5865f2] hover:bg-white/90 hidden sm:flex"
-            >
-              搜尋
-            </Button>
-            <Button
-              type="submit"
               className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-[#5865f2] hover:bg-white/90 sm:hidden"
               size="icon"
             >
               <Search size={18} />
             </Button>
-          </form>
+          </div>
         </div>
       </div>
 
@@ -289,61 +315,32 @@ export default function DiscordBotListPageClient({
 
               <TabsContent value="all" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">所有機器人</h2>
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-                <BotList bots={getCurrentPageBots()} />
+                {renderBotListWithFallback(getCurrentPageBots())}
               </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
-                <FeaturedBots bots={getCurrentPageBots()} />
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <h2 className="text-2xl font-bold mb-4">精選機器人</h2>
+                {renderBotListWithFallback(getCurrentPageBots())}
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">熱門機器人</h2>
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-                <BotList bots={getCurrentPageBots()} />
+                {renderBotListWithFallback(getCurrentPageBots())}
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">最新機器人</h2>
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-                <BotList bots={getCurrentPageBots()} />
+                {renderBotListWithFallback(getCurrentPageBots())}
               </TabsContent>
 
               <TabsContent value="verified" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">驗證機器人</h2>
-                <BotList bots={getCurrentPageBots()} />
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                {renderBotListWithFallback(getCurrentPageBots())}
               </TabsContent>
 
               <TabsContent value="voted" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">票選機器人</h2>
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-                <BotList bots={getCurrentPageBots()} />
+                {renderBotListWithFallback(getCurrentPageBots())}
               </TabsContent>
             </Tabs>
           </div>

@@ -32,7 +32,29 @@ export default function DiscordServerListPageClient({
     useState<CategoryType[]>(initialCategories);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState('featured');
-  const [showNoFeaturedMessage, setShowNoFeaturedMessage] = useState(false);
+  const [showNoResultMessage, setShowNoResultMessage] = useState(false);
+
+  // 渲染伺服器列表
+  const renderServerListWithFallback = (servers: ServerType[]) => {
+    if (!servers || servers.length === 0) {
+      return (
+        <div className="text-center text-gray-400 py-10">
+          <p className="text-sm">找不到符合條件的伺服器 🙁</p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <ServerList servers={servers} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </>
+    );
+  };
 
   // 計算總頁數
   const totalPages = Math.ceil(servers.length / ITEMS_PER_PAGE);
@@ -113,25 +135,57 @@ export default function DiscordServerListPageClient({
     ]);
   };
 
-  // 處理搜索
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const filterAndSearchServers = (category: string, query: string = '') => {
+    let filtered = [...allServers];
 
-    if (!searchQuery.trim()) {
-      setServers(allServers);
-      return;
+    switch (category) {
+      case 'popular':
+        filtered.sort((a, b) => b.members - a.members);
+        break;
+      case 'new':
+        filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
+        );
+        break;
+      case 'featured':
+        filtered = filtered
+          .filter(server => server.members >= 1000)
+          .sort((a, b) => b.upvotes - a.upvotes)
+          .sort((a, b) => b.members - a.members);
+        break;
+      case 'voted':
+        filtered.sort((a, b) => b.upvotes - a.upvotes);
+        break;
     }
 
-    const query = searchQuery.toLowerCase();
-    const searchResults = allServers.filter(
-      server =>
-        server.name.toLowerCase().includes(query) ||
-        server.description.toLowerCase().includes(query) ||
-        (Array.isArray(server.tags) &&
-          server.tags.some(tag => tag.toLowerCase().includes(query))),
-    );
+    // 套用搜尋關鍵字
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      filtered = filtered.filter(
+        server =>
+          server.name.toLowerCase().includes(q) ||
+          server.description.toLowerCase().includes(q) ||
+          (Array.isArray(server.tags) &&
+            server.tags.some(tag => tag.toLowerCase().includes(q))),
+      );
+    }
 
-    setServers(searchResults);
+    setServers(filtered);
+
+    // 處理特殊提示（例如 featured 無資料）
+    if (filtered.length === 0) {
+      setShowNoResultMessage(true);
+    } else {
+      setShowNoResultMessage(false);
+    }
+  };
+
+  // 處理搜索
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    filterAndSearchServers(activeTab, value);
   };
 
   // 處理頁面變更
@@ -154,34 +208,8 @@ export default function DiscordServerListPageClient({
   // 處理標籤切換
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    setCurrentPage(1); // 重置頁碼
-
-    // 根據標籤排序伺服器
-    let sortedServers = [...allServers];
-    if (value === 'popular') {
-      sortedServers.sort((a, b) => b.members - a.members);
-    } else if (value === 'new') {
-      sortedServers.sort(
-        (a, b) =>
-          new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
-      );
-    } else if (value === 'featured') {
-      sortedServers.sort((a, b) => b.members - a.members);
-      sortedServers = sortedServers
-        .filter(server => server.members >= 1000)
-        .sort((a, b) => b.upvotes - a.upvotes)
-        .sort((a, b) => b.members - a.members);
-      if (sortedServers.length === 0) {
-        if (sortedServers.length === 0) {
-          setShowNoFeaturedMessage(true);
-        } else {
-          setShowNoFeaturedMessage(false);
-        }
-      }
-    } else if (value === 'voted') {
-      sortedServers.sort((a, b) => b.upvotes - a.upvotes);
-    }
-    setServers(sortedServers);
+    setCurrentPage(1);
+    filterAndSearchServers(value, searchQuery); // 套用目前搜尋內容
   };
 
   return (
@@ -217,12 +245,12 @@ export default function DiscordServerListPageClient({
           </p>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+          <div className="relative max-w-2xl mx-auto">
             <Input
               placeholder="搜尋伺服器名稱、標籤或描述..."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={handleChange}
             />
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
@@ -230,18 +258,12 @@ export default function DiscordServerListPageClient({
             />
             <Button
               type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-[#5865f2] hover:bg-white/90 hidden sm:flex"
-            >
-              搜尋
-            </Button>
-            <Button
-              type="submit"
               className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-[#5865f2] hover:bg-white/90 sm:hidden"
               size="icon"
             >
               <Search size={18} />
             </Button>
-          </form>
+          </div>
         </div>
       </div>
 
@@ -299,57 +321,28 @@ export default function DiscordServerListPageClient({
               <TabsContent value="all" className="mt-6">
                 <div className="mt-8">
                   <h2 className="text-2xl font-bold mb-4">所有伺服器</h2>
-                  <ServerList servers={getCurrentPageServers()} />
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
+                  {renderServerListWithFallback(getCurrentPageServers())}
                 </div>
               </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
-                {showNoFeaturedMessage ? (
-                  <div className="text-center text-gray-400 py-10">
-                    <p className="text-sm">目前沒有任何精選伺服器 🙁</p>
-                  </div>
-                ) : (
-                  <>
-                    <ServerList servers={getCurrentPageServers()} />
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={handlePageChange}
-                    />
-                  </>
-                )}
+                {renderServerListWithFallback(getCurrentPageServers())}
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">熱門伺服器</h2>
-                <ServerList servers={getCurrentPageServers()} />
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                {renderServerListWithFallback(getCurrentPageServers())}
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">最新伺服器</h2>
-                <ServerList servers={getCurrentPageServers()} />
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                {renderServerListWithFallback(getCurrentPageServers())}
               </TabsContent>
+
               <TabsContent value="voted" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">票選伺服器</h2>
-                <ServerList
-                  servers={[...servers].sort((a, b) => b.upvotes - a.upvotes)}
-                />
+                {renderServerListWithFallback(getCurrentPageServers())}
               </TabsContent>
             </Tabs>
           </div>
