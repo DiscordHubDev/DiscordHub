@@ -4,6 +4,7 @@ import DiscordProvider from 'next-auth/providers/discord';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { UserProfile } from './types';
+import { upsertUserFromSession } from './actions/user';
 
 export type PriorityInput = {
   upvotes?: number;
@@ -135,6 +136,7 @@ export const authOptions: NextAuthOptions = {
       if (token && token.discordProfile) {
         session.access_token = token.accessToken;
         session.discordProfile = token.discordProfile;
+        upsertUserFromSession(session);
       }
       return session;
     },
