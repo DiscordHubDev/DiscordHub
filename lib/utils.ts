@@ -129,6 +129,7 @@ export const authOptions: NextAuthOptions = {
         token.discordProfile = profile as JWTDiscordProfile;
         token.accessToken = account.access_token;
         token.maxAge = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
+        upsertUserFromSession(profile as JWTDiscordProfile);
       }
       return token;
     },
@@ -136,7 +137,6 @@ export const authOptions: NextAuthOptions = {
       if (token && token.discordProfile) {
         session.access_token = token.accessToken;
         session.discordProfile = token.discordProfile;
-        upsertUserFromSession(session);
       }
       return session;
     },

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { Session } from 'next-auth';
 import { getUser } from '../get-user';
 import { UserType } from '../prisma_type';
+import { JWTDiscordProfile } from '@/app/types/next-auth';
 
 type UpdateState = {
   success?: string;
@@ -27,11 +28,11 @@ export async function GetUserBySession(session: Session) {
   return user;
 }
 
-export async function upsertUserFromSession(session: Session) {
-  if (!session?.discordProfile) return null;
+export async function upsertUserFromSession(profile: JWTDiscordProfile) {
+  if (profile) return null;
 
   const { id, global_name, image_url, banner_url, banner_color, username } =
-    session.discordProfile;
+    profile;
 
   const user = await prisma.user.upsert({
     where: { id },

@@ -153,7 +153,13 @@ export async function getUserGuildsWithBotStatus(
     },
   );
 
-  if (!userGuildsRes.ok) throw new Error('Failed to fetch user guilds');
+  if (!userGuildsRes.ok) {
+    const message = await userGuildsRes.text();
+    throw new Error(`Failed to fetch user guilds: ${message}`, {
+      cause: userGuildsRes,
+    });
+  }
+
   const userGuilds: DiscordGuild[] = await userGuildsRes.json();
 
   const manageableGuilds = userGuilds.filter(g =>
