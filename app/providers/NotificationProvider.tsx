@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 
 export function NotificationListener({
   onNotify,
@@ -10,6 +10,12 @@ export function NotificationListener({
   onNotify: (data: any) => void;
 }) {
   const { data: session } = useSession();
+
+  if (session?.error === 'RefreshAccessTokenError') {
+    signIn('discord');
+    return;
+  }
+
   const userId = session?.discordProfile?.id;
 
   useEffect(() => {

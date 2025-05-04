@@ -4,7 +4,7 @@ import { toggleFavorite } from '@/lib/actions/favorite';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Heart } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 
 export function FavoriteButton({
   id,
@@ -16,6 +16,12 @@ export function FavoriteButton({
   isFavorited: boolean;
 }) {
   const { data: session } = useSession();
+
+  if (session?.error === 'RefreshAccessTokenError') {
+    signIn('discord');
+    return;
+  }
+
   const userId = session?.discordProfile?.id;
 
   const [favorited, setFavorited] = useState(initialFavorited);

@@ -22,7 +22,7 @@ import {
 import { checkVoteCooldown } from '@/lib/actions/check-vote-cooldown';
 import { useRouter } from 'next/navigation';
 import { GetUserBySession } from '@/lib/actions/user';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { getServerByGuildId } from '@/lib/actions/servers';
 import { toast } from 'react-toastify';
 import { getBot } from '@/lib/actions/bots';
@@ -129,7 +129,10 @@ export default function VoteButton({
   const router = useRouter();
   const { data: session } = useSession();
 
-  if (!session) return;
+  if (!session || session?.error === 'RefreshAccessTokenError') {
+    signIn('discord');
+    return;
+  }
 
   useEffect(() => {
     const fetchCooldown = async () => {

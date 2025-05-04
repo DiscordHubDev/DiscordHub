@@ -21,6 +21,7 @@ function transformNotification(n: any) {
 export function useInbox() {
   const { data: session } = useSession();
   const userId = session?.discordProfile?.id;
+
   const [mails, setMails] = useState<any[]>([]);
 
   const markAsRead = async (mailId: string) => {

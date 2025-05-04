@@ -16,6 +16,7 @@ declare module 'next-auth/jwt' {
     maxAge?: number;
     accessToken?: string;
     discordProfile?: JWTDiscordProfile;
+    error?: string;
   }
 }
 
@@ -23,6 +24,7 @@ declare module 'next-auth' {
   interface Session {
     access_token?: string;
     discordProfile?: JWTDiscordProfile;
+    error?: string;
   }
 
   interface Profile {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -39,8 +39,9 @@ import { FaCheck } from 'react-icons/fa6';
 export default function UserProfile({ id }: { id?: string }) {
   const { data: session } = useSession();
 
-  if (!session) {
-    redirect('/api/auth/signin/discord?callbackUrl=/profile');
+  if (!session || session?.error === 'RefreshAccessTokenError') {
+    signIn('discord');
+    return;
   }
 
   const [viewedUser, setViewedUser] = useState<UserType>();

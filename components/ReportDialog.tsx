@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Upload } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { submitReport } from '@/lib/actions/report';
@@ -36,6 +36,12 @@ export function ReportDialog({
   const [contentError, setContentError] = useState('');
 
   const { data: session } = useSession();
+
+  if (session?.error === 'RefreshAccessTokenError') {
+    signIn('discord');
+    return;
+  }
+
   const userId = session?.discordProfile?.id;
 
   const handleSubmit = async () => {

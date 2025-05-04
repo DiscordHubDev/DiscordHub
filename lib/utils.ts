@@ -86,6 +86,51 @@ export async function fetchUserInfo(id: string): Promise<UserProfile> {
   return data;
 }
 
+async function refreshAccessToken(token: any) {
+  try {
+    const url = 'https://discord.com/api/oauth2/token';
+
+    const params = new URLSearchParams({
+      client_id: process.env.DISCORD_CLIENT_ID!,
+      client_secret: process.env.DISCORD_CLIENT_SECRET!,
+      grant_type: 'refresh_token',
+      refresh_token: token.refreshToken,
+    });
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const refreshedTokens = await response.json();
+
+    if (
+      !response.ok ||
+      !refreshedTokens.access_token ||
+      !refreshedTokens.refresh_token
+    ) {
+      console.error('Failed to refresh token', refreshedTokens);
+      throw new Error('Refresh token failed');
+    }
+
+    return {
+      ...token,
+      accessToken: refreshedTokens.access_token,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+      refreshToken: refreshedTokens.refresh_token,
+    };
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+    return {
+      ...token,
+      error: 'RefreshAccessTokenError',
+    };
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     DiscordProvider<NewDiscordProfile>({
@@ -125,18 +170,41 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     jwt: async ({ token, account, profile }) => {
+      const now = Date.now();
+
       if (profile && account?.provider === 'discord') {
-        token.discordProfile = profile as JWTDiscordProfile;
+        const discordProfile = profile as JWTDiscordProfile;
+
+        token.discordProfile = discordProfile;
         token.accessToken = account.access_token;
-        token.maxAge = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
-        upsertUserFromSession(profile as JWTDiscordProfile);
+        token.refreshToken = account.refresh_token;
+
+        if (typeof account.expires_in === 'number') {
+          token.accessTokenExpires = now + account.expires_in * 1000;
+        } else {
+          token.accessTokenExpires = now + 3600 * 1000; // 預設 1 小時
+        }
+
+        upsertUserFromSession(discordProfile);
+        return token;
       }
-      return token;
+
+      if (
+        typeof token.accessTokenExpires === 'number' &&
+        now < token.accessTokenExpires
+      ) {
+        return token;
+      }
+
+      return await refreshAccessToken(token);
     },
     async session({ session, token }) {
       if (token && token.discordProfile) {
         session.access_token = token.accessToken;
         session.discordProfile = token.discordProfile;
+        if (token.error) {
+          session.error = token.error; // 這是重點
+        }
       }
       return session;
     },

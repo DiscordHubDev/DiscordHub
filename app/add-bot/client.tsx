@@ -16,7 +16,7 @@ import { getBot } from '@/lib/actions/bots';
 
 const AddBotPageClient = () => {
   const { data: session } = useSession();
-  if (!session?.access_token) {
+  if (!session?.access_token || session?.error === 'RefreshAccessTokenError') {
     signIn('discord');
     return;
   }
