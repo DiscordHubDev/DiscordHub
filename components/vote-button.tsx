@@ -52,12 +52,12 @@ async function sendDataToWebServerOrDiscord(
             },
             title: '❤️ | 感謝投票!',
             url: 'https://dchubs.org',
-            description: `感謝您的支持與投票！您的每一票都是讓${bot ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再次投票一次，讓更多人發現我們的${bot ? '機器人' : '伺服器'}吧！✨`,
+            description: `感謝您的支持與投票！您的每一票都是讓${bot ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org) 投票一次，讓更多人發現我們的${bot ? '機器人' : '伺服器'}吧！✨`,
             color: getRandomEmbedColor(),
             footer: {
-              text: 'Powered by DawnGS Vote System',
+              text: 'Powered by DcHubs Vote System',
               icon_url:
-                'https://example.com/logo.pnghttps://images-ext-1.discordapp.net/external/UPq4fK1TpfNlL5xKNkZwqO02wPJoX-yd9IKkk5UnyP8/%3Fsize%3D512%26format%3Dwebp/https/cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?format=webp',
+                'https://images-ext-1.discordapp.net/external/UPq4fK1TpfNlL5xKNkZwqO02wPJoX-yd9IKkk5UnyP8/%3Fsize%3D512%26format%3Dwebp/https/cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?format=webp',
             },
           },
         ],
