@@ -202,10 +202,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { toggleSidebar, openMobile, setOpenMobile } = useSidebar();
 
   useEffect(() => {
-    if (isMobile && openMobile) {
+    if (isMobile) {
       setOpenMobile(false); // 如果是手機，且 sidebar 有打開，就關掉
     }
-  }, [isMobile, openMobile, setOpenMobile]);
+  }, [isMobile, setOpenMobile]);
 
   useEffect(() => {
     refreshUnreadCount();
