@@ -308,13 +308,17 @@ export default function VoteButton({
         ) : hasVoted ? (
           <div className="flex items-center">
             <Clock size={16} className="mr-1.5" />
-            <span className="hidden sm:inline">{formatCooldown(cooldown)}</span>
-            <span className="sm:hidden">{Math.floor(cooldown / 3600)}小時</span>
+            <span className="hidden sm:inline">
+              {formatCooldown?.(cooldown ?? 0)}
+            </span>
+            <span className="sm:hidden">
+              {Math.floor((cooldown ?? 0) / 3600)}小時
+            </span>
           </div>
         ) : (
           <div className="flex items-center">
             <ArrowUp size={16} className="mr-1.5" />
-            <span>投票 ({votes.toLocaleString()})</span>
+            <span>投票 ({(votes ?? 0).toLocaleString()})</span>
           </div>
         )}
       </Button>

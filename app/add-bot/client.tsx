@@ -21,7 +21,11 @@ const AddBotPageClient = () => {
     return;
   }
 
-  const handleCreate = async (data: BotFormData, screenshots: Screenshot[]) => {
+  const handleCreate = async (
+    data: BotFormData,
+    screenshots: Screenshot[],
+    banner?: string,
+  ) => {
     const client_id = new URL(data.botInvite).searchParams.get('client_id');
     if (!client_id) {
       throw new Error('Invite link 無效，找不到 client_id');
@@ -80,7 +84,7 @@ const AddBotPageClient = () => {
       users: 0,
       upvotes: 0,
       icon: icon,
-      banner: info.banner_url ?? null,
+      banner: banner ?? info.banner_url ?? null,
       featured: false,
       createdAt: new Date(),
       prefix: data.botPrefix,

@@ -114,7 +114,6 @@ async function refreshAccessToken(token: any) {
       );
 
       if (refreshedTokens.error === 'invalid_grant') {
-        token.discordProfile = null;
         return {
           ...token,
           accessToken: null,
@@ -134,7 +133,6 @@ async function refreshAccessToken(token: any) {
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
     };
   } catch (error) {
-    token.discordProfile = null;
     console.error('Exception while refreshing access token:', error);
     return {
       ...token,

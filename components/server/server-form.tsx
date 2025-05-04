@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Upload } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { Servercategories } from '@/lib/categories';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -65,6 +65,8 @@ export default function ServerFormPage({
     [],
   );
 
+  const [bannerPreviews, setBannerPreviews] = useState<Screenshot[]>([]);
+
   useEffect(() => {
     if (edit_server?.screenshots && Array.isArray(edit_server.screenshots)) {
       const previews = edit_server.screenshots.map(url => {
@@ -80,7 +82,15 @@ export default function ServerFormPage({
       });
       setScreenshotPreviews(previews);
     }
-  }, [edit_server?.screenshots]);
+
+    if (edit_server?.banner) {
+      const bannerPreview = {
+        url: edit_server.banner,
+        public_id: 'banner',
+      };
+      setBannerPreviews([bannerPreview]);
+    }
+  }, [edit_server?.screenshots, edit_server?.banner]);
 
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,6 +143,8 @@ export default function ServerFormPage({
 
   const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
+    screenshots: Screenshot[],
+    setPreviews: React.Dispatch<React.SetStateAction<Screenshot[]>>,
   ) => {
     const files = event.target.files;
     if (!files) return;
@@ -171,7 +183,7 @@ export default function ServerFormPage({
       validFiles.push(file);
     }
 
-    const fileArray = validFiles.slice(0, 5 - screenshotPreviews.length);
+    const fileArray = validFiles.slice(0, 5 - screenshots.length);
     if (fileArray.length === 0) return;
 
     setUploading(true);
@@ -209,10 +221,7 @@ export default function ServerFormPage({
         const imageUrl = data.secure_url;
         const publicId = data.public_id;
 
-        setScreenshotPreviews(prev => [
-          ...prev,
-          { url: imageUrl, public_id: publicId },
-        ]);
+        setPreviews(prev => [...prev, { url: imageUrl, public_id: publicId }]);
       } catch (error) {
         toast.error('未知錯誤');
         console.error('Unexpected error:', error);
@@ -220,12 +229,16 @@ export default function ServerFormPage({
     }
 
     setUploading(false);
+    event.target.value = '';
   };
 
-  const removeScreenshot = async (index: number) => {
-    const toDelete = screenshotPreviews[index];
-    setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));
-
+  const removeScreenshot = async (
+    index: number,
+    screenshots: Screenshot[],
+    setPreviews: React.Dispatch<React.SetStateAction<Screenshot[]>>,
+  ) => {
+    const toDelete = screenshots[index];
+    setPreviews(prev => prev.filter((_, i) => i !== index));
     try {
       await deleteCloudinaryImage(toDelete.public_id);
     } catch (err) {
@@ -245,8 +258,10 @@ export default function ServerFormPage({
 
     try {
       let avatar: string = '';
-      let banner: string | null = null;
+      let banner: string | null = null; // user banner
       let global_name: string = '未知使用者';
+
+      let server_banner = bannerPreviews[0]?.url ?? null;
 
       const isActiveServer = (s: any): s is ActiveServerInfo =>
         s &&
@@ -285,7 +300,7 @@ export default function ServerFormPage({
         id: activeServer.id,
         name: data.serverName,
         icon: activeServer.icon,
-        banner: activeServer.banner,
+        banner: server_banner,
         description: data.shortDescription,
         longDescription: data.longDescription,
         inviteUrl: data.inviteLink,
@@ -601,6 +616,66 @@ export default function ServerFormPage({
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">圖片上傳</h2>
 
+                <div className="space-y-10 mt-4">
+                  <FormLabel htmlFor="server-banner">伺服器橫幅</FormLabel>
+                  <div className="flex flex-col gap-3">
+                    <ScreenshotGrid
+                      screenshotPreviews={bannerPreviews.map(p => p.url)}
+                      removeScreenshot={i =>
+                        removeScreenshot(i, bannerPreviews, setBannerPreviews)
+                      }
+                    />
+                    {bannerPreviews.length <= 1 && (
+                      <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
+                        <Input
+                          id="server-banner"
+                          type="file"
+                          accept="image/*"
+                          disabled={bannerPreviews.length === 1}
+                          className="hidden"
+                          onChange={e =>
+                            handleScreenshotUpload(
+                              e,
+                              bannerPreviews,
+                              setBannerPreviews,
+                            )
+                          }
+                        />
+                        <FormLabel
+                          htmlFor="server-banner"
+                          className={`cursor-pointer flex flex-col items-center ${
+                            bannerPreviews.length === 1
+                              ? 'text-red-500 cursor-not-allowed'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          {uploading ? (
+                            <div className="flex flex-col items-center">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+                              <span className="mt-2 text-sm">上傳中...</span>
+                            </div>
+                          ) : bannerPreviews.length === 1 ? (
+                            <>
+                              <X size={24} />
+                              <span className="mt-2 text-sm">
+                                已達到上傳上限
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={24} />
+                              <span className="mt-2 text-sm">上傳橫幅</span>
+                            </>
+                          )}
+                        </FormLabel>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-400">
+                      上傳您伺服器的自訂橫幅 (如不設置將以伺服器橫幅代替)
+                    </p>
+                  </div>
+                </div>
+
                 {/* 伺服器截圖 */}
                 <div className="space-y-10 mt-4">
                   <Label htmlFor="server-screenshots">
@@ -609,24 +684,56 @@ export default function ServerFormPage({
                   <div className="flex flex-col gap-3">
                     <ScreenshotGrid
                       screenshotPreviews={screenshotPreviews.map(p => p.url)}
-                      removeScreenshot={removeScreenshot}
+                      removeScreenshot={i =>
+                        removeScreenshot(
+                          i,
+                          screenshotPreviews,
+                          setScreenshotPreviews,
+                        )
+                      }
                     />
-                    {screenshotPreviews.length < 5 && (
+                    {screenshotPreviews.length <= 5 && (
                       <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
                         <Input
-                          id="bot-screenshots"
+                          id="server-screenshots"
                           type="file"
                           accept="image/*"
                           multiple
                           className="hidden"
-                          onChange={handleScreenshotUpload}
+                          onChange={e =>
+                            handleScreenshotUpload(
+                              e,
+                              screenshotPreviews,
+                              setScreenshotPreviews,
+                            )
+                          }
                         />
                         <FormLabel
-                          htmlFor="bot-screenshots"
-                          className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white"
+                          htmlFor="server-screenshots"
+                          className={`cursor-pointer flex flex-col items-center ${
+                            screenshotPreviews.length === 5
+                              ? 'text-red-500 cursor-not-allowed'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
                         >
-                          <Upload size={24} />
-                          <span className="mt-2 text-sm">上傳截圖</span>
+                          {uploading ? (
+                            <div className="flex flex-col items-center">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+                              <span className="mt-2 text-sm">上傳中...</span>
+                            </div>
+                          ) : screenshotPreviews.length === 5 ? (
+                            <>
+                              <X size={24} />
+                              <span className="mt-2 text-sm">
+                                已達到上傳上限
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload size={24} />
+                              <span className="mt-2 text-sm">上傳截圖</span>
+                            </>
+                          )}
                         </FormLabel>
                       </div>
                     )}

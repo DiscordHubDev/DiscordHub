@@ -19,11 +19,12 @@ export async function transformToBotUpdateData(
   isAdmin: boolean,
   is_verified: boolean,
   info: UserProfile,
+  banner?: string,
 ): Promise<BotUpdateInput> {
   return {
     name: info.username,
     isAdmin,
-    banner: info.banner_url ?? null,
+    banner: banner ?? info.banner_url ?? null,
     icon: info.avatar_url ?? null,
     prefix: formData.botPrefix,
     description: formData.botDescription,
@@ -88,6 +89,7 @@ export async function updateBot(
   id: string,
   formData: BotFormData,
   screenshots: Screenshot[],
+  banner?: string,
 ) {
   const res = await fetch(
     `https://discord.com/api/v10/applications/${id.trim()}/rpc`,
@@ -114,6 +116,7 @@ export async function updateBot(
       isAdmin,
       rpcData.is_verified,
       info,
+      banner,
     )),
     screenshots: screenshots.map(s => s.url),
   };

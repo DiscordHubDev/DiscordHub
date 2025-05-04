@@ -31,7 +31,9 @@ export async function getCloudinarySignature() {
 
 export async function deleteCloudinaryImage(publicId: string) {
   try {
-    const result = await cloudinary.uploader.destroy(publicId);
+    const result = await cloudinary.uploader.destroy(publicId, {
+      invalidate: true,
+    });
     return result;
   } catch (error) {
     console.error('刪除 Cloudinary 圖片失敗：', error);

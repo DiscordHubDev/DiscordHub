@@ -17,7 +17,7 @@ import {
 } from '@/lib/actions/image';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Upload, Info } from 'lucide-react';
+import { Upload, Info, X } from 'lucide-react';
 import { botFormSchema } from '@/schemas/add-bot-schema';
 import { botCategories } from '@/lib/bot-categories';
 import { z } from 'zod';
@@ -50,7 +50,11 @@ type FormData = z.infer<typeof botFormSchema>;
 type BotFormProps = {
   mode?: 'create' | 'edit';
   defaultValues?: Partial<FormData>;
-  onSubmit: (data: FormData, screenshots: Screenshot[]) => Promise<void>;
+  onSubmit: (
+    data: FormData,
+    screenshots: Screenshot[],
+    banner?: string,
+  ) => Promise<void>;
 };
 
 const BotForm: React.FC<BotFormProps> = ({
@@ -61,6 +65,8 @@ const BotForm: React.FC<BotFormProps> = ({
   const [screenshotPreviews, setScreenshotPreviews] = useState<Screenshot[]>(
     [],
   );
+
+  const [bannerPreviews, setBannerPreviews] = useState<Screenshot[]>([]);
 
   useEffect(() => {
     if (
@@ -141,6 +147,8 @@ const BotForm: React.FC<BotFormProps> = ({
 
   const handleScreenshotUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
+    screenshots: Screenshot[],
+    setPreviews: React.Dispatch<React.SetStateAction<Screenshot[]>>,
   ) => {
     const files = event.target.files;
     if (!files) return;
@@ -179,7 +187,7 @@ const BotForm: React.FC<BotFormProps> = ({
       validFiles.push(file);
     }
 
-    const fileArray = validFiles.slice(0, 5 - screenshotPreviews.length);
+    const fileArray = validFiles.slice(0, 5 - screenshots.length);
     if (fileArray.length === 0) return;
 
     setUploading(true);
@@ -217,10 +225,7 @@ const BotForm: React.FC<BotFormProps> = ({
         const imageUrl = data.secure_url;
         const publicId = data.public_id;
 
-        setScreenshotPreviews(prev => [
-          ...prev,
-          { url: imageUrl, public_id: publicId },
-        ]);
+        setPreviews(prev => [...prev, { url: imageUrl, public_id: publicId }]);
       } catch (error) {
         toast.error('未知錯誤');
         console.error('Unexpected error:', error);
@@ -228,12 +233,16 @@ const BotForm: React.FC<BotFormProps> = ({
     }
 
     setUploading(false);
+    event.target.value = '';
   };
 
-  const removeScreenshot = async (index: number) => {
-    const toDelete = screenshotPreviews[index];
-    setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));
-
+  const removeScreenshot = async (
+    index: number,
+    screenshots: Screenshot[],
+    setPreviews: React.Dispatch<React.SetStateAction<Screenshot[]>>,
+  ) => {
+    const toDelete = screenshots[index];
+    setPreviews(prev => prev.filter((_, i) => i !== index));
     try {
       await deleteCloudinaryImage(toDelete.public_id);
     } catch (err) {
@@ -252,7 +261,12 @@ const BotForm: React.FC<BotFormProps> = ({
     try {
       setLoading(true);
 
-      await onSubmit(data, screenshotPreviews);
+      await onSubmit(
+        data,
+        screenshotPreviews,
+        bannerPreviews[0] ? bannerPreviews[0].url : undefined,
+      );
+
       setLoading(false);
       if (mode === 'create') reset();
 
@@ -565,6 +579,66 @@ const BotForm: React.FC<BotFormProps> = ({
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold">圖片上傳</h2>
 
+                  <div className="space-y-10 mt-4">
+                    <FormLabel htmlFor="bot-banner">機器人橫幅</FormLabel>
+                    <div className="flex flex-col gap-3">
+                      <ScreenshotGrid
+                        screenshotPreviews={bannerPreviews.map(p => p.url)}
+                        removeScreenshot={i =>
+                          removeScreenshot(i, bannerPreviews, setBannerPreviews)
+                        }
+                      />
+                      {bannerPreviews.length <= 1 && (
+                        <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
+                          <Input
+                            id="bot-banner"
+                            type="file"
+                            accept="image/*"
+                            disabled={bannerPreviews.length === 1}
+                            className="hidden"
+                            onChange={e =>
+                              handleScreenshotUpload(
+                                e,
+                                bannerPreviews,
+                                setBannerPreviews,
+                              )
+                            }
+                          />
+                          <FormLabel
+                            htmlFor="bot-banner"
+                            className={`cursor-pointer flex flex-col items-center ${
+                              bannerPreviews.length === 1
+                                ? 'text-red-500 cursor-not-allowed'
+                                : 'text-gray-400 hover:text-white'
+                            }`}
+                          >
+                            {uploading ? (
+                              <div className="flex flex-col items-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+                                <span className="mt-2 text-sm">上傳中...</span>
+                              </div>
+                            ) : bannerPreviews.length === 1 ? (
+                              <>
+                                <X size={24} />
+                                <span className="mt-2 text-sm">
+                                  已達到上傳上限
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={24} />
+                                <span className="mt-2 text-sm">上傳橫幅</span>
+                              </>
+                            )}
+                          </FormLabel>
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-400">
+                        上傳您機器人的自訂橫幅 (如不設置將以機器人橫幅代替)
+                      </p>
+                    </div>
+                  </div>
+
                   {/* 機器人截圖 */}
                   <div className="space-y-10 mt-4">
                     <FormLabel htmlFor="bot-screenshots">
@@ -573,9 +647,15 @@ const BotForm: React.FC<BotFormProps> = ({
                     <div className="flex flex-col gap-3">
                       <ScreenshotGrid
                         screenshotPreviews={screenshotPreviews.map(p => p.url)}
-                        removeScreenshot={removeScreenshot}
+                        removeScreenshot={i =>
+                          removeScreenshot(
+                            i,
+                            screenshotPreviews,
+                            setScreenshotPreviews,
+                          )
+                        }
                       />
-                      {screenshotPreviews.length < 5 && (
+                      {screenshotPreviews.length <= 5 && (
                         <div className="h-32 bg-[#36393f] rounded border border-dashed border-[#4f545c] flex items-center justify-center">
                           <Input
                             id="bot-screenshots"
@@ -583,14 +663,40 @@ const BotForm: React.FC<BotFormProps> = ({
                             accept="image/*"
                             multiple
                             className="hidden"
-                            onChange={handleScreenshotUpload}
+                            onChange={e =>
+                              handleScreenshotUpload(
+                                e,
+                                screenshotPreviews,
+                                setScreenshotPreviews,
+                              )
+                            }
                           />
                           <FormLabel
                             htmlFor="bot-screenshots"
-                            className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-white"
+                            className={`cursor-pointer flex flex-col items-center ${
+                              screenshotPreviews.length === 5
+                                ? 'text-red-500 cursor-not-allowed'
+                                : 'text-gray-400 hover:text-white'
+                            }`}
                           >
-                            <Upload size={24} />
-                            <span className="mt-2 text-sm">上傳截圖</span>
+                            {uploading ? (
+                              <div className="flex flex-col items-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+                                <span className="mt-2 text-sm">上傳中...</span>
+                              </div>
+                            ) : screenshotPreviews.length === 5 ? (
+                              <>
+                                <X size={24} />
+                                <span className="mt-2 text-sm">
+                                  已達到上傳上限
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={24} />
+                                <span className="mt-2 text-sm">上傳截圖</span>
+                              </>
+                            )}
                           </FormLabel>
                         </div>
                       )}
