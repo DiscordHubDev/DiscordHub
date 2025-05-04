@@ -107,23 +107,33 @@ async function refreshAccessToken(token: any) {
 
     const refreshedTokens = await response.json();
 
-    if (
-      !response.ok ||
-      !refreshedTokens.access_token ||
-      !refreshedTokens.refresh_token
-    ) {
-      console.error('Failed to refresh token', refreshedTokens);
-      throw new Error('Refresh token failed');
+    if (!response.ok) {
+      console.error(
+        'Failed to refresh token: Discord responded with error',
+        refreshedTokens,
+      );
+
+      if (refreshedTokens.error === 'invalid_grant') {
+        return {
+          ...token,
+          accessToken: null,
+          refreshToken: null,
+          accessTokenExpires: 0,
+          error: 'RefreshAccessTokenError',
+        };
+      }
+
+      throw new Error('Unexpected error from Discord while refreshing token');
     }
 
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
+      refreshToken: refreshedTokens.refresh_token, // 更新為新 refresh token
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      refreshToken: refreshedTokens.refresh_token,
     };
   } catch (error) {
-    console.error('Error refreshing access token:', error);
+    console.error('Exception while refreshing access token:', error);
     return {
       ...token,
       error: 'RefreshAccessTokenError',

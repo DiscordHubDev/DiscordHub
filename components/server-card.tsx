@@ -58,7 +58,15 @@ export default function ServerCard({ server }: ServerCardProps) {
                   <div className="flex items-center">
                     <Button
                       size="sm"
-                      className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                      className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
+                      onClick={e => {
+                        window.open(
+                          server.inviteUrl!,
+                          '_blank',
+                          'noopener,noreferrer',
+                        );
+                        e.preventDefault();
+                      }}
                     >
                       加入伺服器
                     </Button>
@@ -114,7 +122,15 @@ export default function ServerCard({ server }: ServerCardProps) {
                 <div className="mt-4 md:hidden">
                   <Button
                     size="sm"
-                    className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                    className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
+                    onClick={e => {
+                      window.open(
+                        server.inviteUrl!,
+                        '_blank',
+                        'noopener,noreferrer',
+                      );
+                      e.preventDefault();
+                    }}
                   >
                     加入伺服器
                   </Button>
