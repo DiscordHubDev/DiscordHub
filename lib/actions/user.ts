@@ -29,7 +29,7 @@ export async function GetUserBySession(session: Session) {
 }
 
 export async function upsertUserFromSession(profile: JWTDiscordProfile) {
-  if (profile) return null;
+  if (!profile) return null;
 
   const { id, global_name, image_url, banner_url, banner_color, username } =
     profile;
