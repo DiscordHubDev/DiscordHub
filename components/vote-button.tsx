@@ -130,7 +130,6 @@ export default function VoteButton({
   const { data: session } = useSession();
 
   if (!session || session?.error === 'RefreshAccessTokenError') {
-    signIn('discord');
     return;
   }
 

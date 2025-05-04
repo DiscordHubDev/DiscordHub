@@ -102,7 +102,7 @@ export default async function ServerDetailPage({
     notFound();
   }
 
-  const isFavorited = !!server.favoritedBy?.length;
+  const isFavorited = userId ? !!server.favoritedBy?.length : false;
 
   return (
     <ServerDetailClientPage

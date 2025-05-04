@@ -12,7 +12,6 @@ export function NotificationListener({
   const { data: session } = useSession();
 
   if (session?.error === 'RefreshAccessTokenError') {
-    signIn('discord');
     return;
   }
 

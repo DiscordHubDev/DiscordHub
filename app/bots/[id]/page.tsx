@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { getAllBots, getBot } from '@/lib/actions/bots';
 import { Metadata } from 'next';
 import BotDetailClient from './client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/utils';
 
 const allBots = await getAllBots();
 
@@ -82,13 +84,15 @@ export default async function BotDetailPage({
 }) {
   const { id } = await params;
 
+  const session = await getServerSession(authOptions);
+
   const bot = await getBot(id);
 
   if (!bot) {
     notFound();
   }
 
-  const isFavorited = !!bot.favoritedBy?.length;
+  const isFavorited = session ? !!bot.favoritedBy?.length : false;
 
   return (
     <>

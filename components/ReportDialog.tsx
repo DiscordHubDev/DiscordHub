@@ -38,7 +38,6 @@ export function ReportDialog({
   const { data: session } = useSession();
 
   if (session?.error === 'RefreshAccessTokenError') {
-    signIn('discord');
     return;
   }
 
@@ -50,7 +49,7 @@ export function ReportDialog({
     setContentError('');
 
     if (!userId) {
-      toast.error('請先登入再檢舉');
+      toast.error('請先登入才能檢舉！');
       return;
     }
 
