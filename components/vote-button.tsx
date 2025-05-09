@@ -129,7 +129,7 @@ export default function VoteButton({
   const router = useRouter();
   const { data: session } = useSession();
 
-  if (!session || session?.error === 'RefreshAccessTokenError') {
+  if (!session) {
     return;
   }
 
