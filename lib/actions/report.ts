@@ -9,7 +9,7 @@ import {
 } from '@/lib/prisma_type';
 import { UploadedFile } from '@/lib/types';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/utils';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 type Params = {
   reportId: string;

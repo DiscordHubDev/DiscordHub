@@ -92,6 +92,7 @@ export async function updateServer(
     console.log(
       `✅ 已更新伺服器 ${data.name}，並同步 ${connectOrCreateAdmins?.length ?? 0} 位管理員`,
     );
+
     return updatedServer;
   } catch (error) {
     console.error('❌ 更新伺服器失敗:', error);

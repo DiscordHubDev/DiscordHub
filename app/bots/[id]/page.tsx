@@ -3,7 +3,7 @@ import { getAllBots, getBot } from '@/lib/actions/bots';
 import { Metadata } from 'next';
 import BotDetailClient from './client';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/utils';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 const allBots = await getAllBots();
 

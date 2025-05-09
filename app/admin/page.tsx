@@ -3,7 +3,7 @@ import BotApplications from '@/components/admin/bot-applications';
 import BotServerManagement from '@/components/admin/bot-server-management';
 import ReportInbox from '@/components/admin/report-inbox';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/utils';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { getPendingBots } from '@/lib/actions/bots';
 import { getAllBots } from '@/lib/actions/bots';
 import { getReports } from '@/lib/actions/report';

@@ -5,7 +5,7 @@ import {
 } from '@/lib/actions/servers';
 import { notFound } from 'next/navigation';
 import ServerDetailClientPage from './client';
-import { authOptions } from '@/lib/utils';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { getServerSession } from 'next-auth';
 import { Metadata } from 'next';
 

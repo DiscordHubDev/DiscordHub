@@ -52,7 +52,7 @@ async function sendDataToWebServerOrDiscord(
             },
             title: '❤️ | 感謝投票!',
             url: 'https://dchubs.org',
-            description: `感謝您的支持與投票！您的每一票都是讓${bot ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/servers/${target.id}) 投票一次，讓更多人發現我們的${bot ? '機器人' : '伺服器'}吧！✨`,
+            description: `感謝您的支持與投票！您的每一票都是讓${bot ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${bot ? 'bots' : 'servers'}/${target.id}) 投票一次，讓更多人發現我們的${bot ? '機器人' : '伺服器'}吧！✨`,
             color: getRandomEmbedColor(),
             footer: {
               text: 'Powered by DcHubs Vote System',
