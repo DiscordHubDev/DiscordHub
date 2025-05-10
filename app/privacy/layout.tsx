@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       '了解 DiscordHubs 如何透過隱私權政策與使用條款，保障您的資料與權益，並提供安全可靠的 Discord 中文伺服器與機器人服務。',
     icons: {
-      icon: '/favicon.ico',
+      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
     },
     keywords: keywords.join('，'),
     authors: [

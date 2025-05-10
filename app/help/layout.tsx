@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       'DiscordHubs 是專為中文用戶打造的 Discord 伺服器與機器人平台，讓你輕鬆探索熱門社群和喜愛的機器人、管理已發布的內容，並靈活運用各項功能擴展影響力。',
     icons: {
-      icon: '/favicon.ico',
+      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
     },
     keywords: keywords.join('，'),
     authors: [

@@ -30,6 +30,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useState } from 'react';
+import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
 
 type BotDetailProps = {
   allBots: BotWithRelations[];
@@ -82,7 +83,9 @@ export default function BotDetailClient({
                   src={bot.icon || undefined}
                   alt={bot.name}
                 />
-                <AvatarFallback>{bot.name?.[0]}</AvatarFallback>
+                <AvatarFallback suppressHydrationWarning>
+                  <AvatarFallbackClient name={bot.name} />
+                </AvatarFallback>
               </Avatar>
             </div>
             <div className="flex flex-col">

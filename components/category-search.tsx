@@ -84,9 +84,9 @@ export default function CategorySearch({
         <Button
           size="icon"
           onClick={handleAddCustomCategory}
-          className="bg-[#5865f2] hover:bg-[#4752c4]"
+          className="bg-[#5865f2] hover:bg-[#4752c4] "
         >
-          <Plus size={16} />
+          <Plus className="text-gray-300" size={16} />
         </Button>
       </div>
 

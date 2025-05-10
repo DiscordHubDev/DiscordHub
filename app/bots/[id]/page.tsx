@@ -3,7 +3,7 @@ import { getAllBots, getBot } from '@/lib/actions/bots';
 import { Metadata } from 'next';
 import BotDetailClient from './client';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 
 const allBots = await getAllBots();
 
@@ -48,7 +48,7 @@ export async function generateMetadata({
     title: metaTitle,
     description: metaDescription,
     icons: {
-      icon: '/favicon.ico',
+      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
     },
     alternates: {
       canonical: canonicalUrl,

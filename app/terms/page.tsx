@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   title: `服務條款 | Discord伺服器列表 - DiscordHubs`,
   description: `DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的服務使用條款和內容`,
   icons: {
-    icon: '/favicon.ico',
+    icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
   },
   // 關鍵詞
   keywords: keywords.join('，'),

@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       'DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此新增你的伺服器，讓你的伺服器得到宣傳和管理，快速建立專屬的社群空間。',
     icons: {
-      icon: '/favicon.ico',
+      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
     },
     keywords: keywords.join('，'),
     authors: [

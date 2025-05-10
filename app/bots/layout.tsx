@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       '歡迎來到 DiscordHubs，這裡網羅熱門 Discord 中文機器人，包含免費管理工具、優質音樂機器人與實用遊戲機器人，依標籤與分類輕鬆探索。同時提供完整伺服器導覽，協助您發現、宣傳並加入各類精彩社群。',
     icons: {
-      icon: '/favicon.ico',
+      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
     },
     keywords: keywords.join('，'),
     authors: [

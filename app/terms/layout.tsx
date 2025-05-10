@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       'DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的服務使用條款和內容',
     icons: {
-      icon: '/favicon.ico',
+      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
     },
     keywords: keywords.join('，'),
     authors: [

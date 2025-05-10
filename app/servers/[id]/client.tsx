@@ -15,6 +15,7 @@ import { useSession } from 'next-auth/react';
 import { ReportDialog } from '@/components/ReportDialog';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useState } from 'react';
+import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
 
 type ServerDetailPageProps = {
   allServers: ServerType[];
@@ -67,8 +68,11 @@ export default function ServerDetailClientPage({
                   alt={server.name}
                   className="object-cover w-full h-full"
                 />
-                <AvatarFallback className="bg-[#36393f] text-white text-sm">
-                  {server.name?.[0] || '伺'}
+                <AvatarFallback
+                  className="bg-[#36393f] text-white text-sm"
+                  suppressHydrationWarning
+                >
+                  <AvatarFallbackClient name={server.name} />
                 </AvatarFallback>
               </Avatar>
             </div>

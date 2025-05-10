@@ -5,7 +5,7 @@ import {
 } from '@/lib/actions/servers';
 import { notFound } from 'next/navigation';
 import ServerDetailClientPage from './client';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { getServerSession } from 'next-auth';
 import { Metadata } from 'next';
 
@@ -65,7 +65,7 @@ export async function generateMetadata({
     title: metaTitle,
     description: metaDescription,
     icons: {
-      icon: '/favicon.ico',
+      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
     },
     alternates: {
       canonical: canonicalUrl,

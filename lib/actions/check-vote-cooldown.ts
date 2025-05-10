@@ -3,7 +3,7 @@
 import { getServerSession } from 'next-auth';
 import { prisma } from '../prisma';
 import { VoteType } from '@prisma/client';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 
 export async function checkVoteCooldown(itemId: string, itemType: VoteType) {
   const session = await getServerSession(authOptions);

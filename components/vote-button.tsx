@@ -316,7 +316,7 @@ export default function VoteButton({
             </span>
           </div>
         ) : (
-          <div className="flex items-center">
+          <div className="flex items-center text-gray-300">
             <ArrowUp size={16} className="mr-1.5" />
             <span>投票 ({(votes ?? 0).toLocaleString()})</span>
           </div>

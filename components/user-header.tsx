@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { SOCIAL_PLATFORMS } from '@/lib/socialPlatforms';
 import { UserType } from '@/lib/get-user';
+import { AvatarFallbackClient } from './AvatarFallbackClient';
 
 interface UserHeaderProps {
   user: UserType;
@@ -50,8 +51,11 @@ export default function UserHeader({ user }: UserHeaderProps) {
               alt={user.username}
               className="object-cover w-full h-full"
             />
-            <AvatarFallback className="text-3xl bg-[#5865f2]">
-              {user.username.charAt(0).toUpperCase()}
+            <AvatarFallback
+              className="text-3xl bg-[#5865f2]"
+              suppressHydrationWarning
+            >
+              <AvatarFallbackClient name={user.username} defaultChar="?" />
             </AvatarFallback>
           </Avatar>
 
