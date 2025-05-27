@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: '隱私條款 | Discord伺服器列表 - DiscordHubs',
       description:
         '了解 DiscordHubs 如何透過隱私權政策與使用條款，保障您的資料與權益，並提供安全可靠的 Discord 中文伺服器與機器人服務。',
-      url: 'https://dchubs.org',
+      url: `${base}/privacy`,
       siteName: 'DiscordHubs',
       images: [
         {
@@ -62,5 +62,45 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function PrivacyLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Discord伺服器列表',
+    description: 'DiscordHubs平台的隱私權政策與使用條款說明',
+    url: `${baseUrl}/privacy`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '隱私條款',
+          item: `${baseUrl}/privacy`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: baseUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+      {children}
+    </>
+  );
 }
