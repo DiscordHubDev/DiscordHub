@@ -34,21 +34,18 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
   },
-  // 關鍵詞
   keywords: keywords.join('，'),
-  // 作者的信息
   authors: [
     {
       name: 'DiscordHubs 團隊',
       url: 'https://dchubs.org',
     },
   ],
-  // 社交媒體分享優化
   metadataBase: resolveMetadataBase(),
   openGraph: {
     title: `新增伺服器 | DiscordHubs`,
     description: `在 DiscordHubs 上架你的 Discord 中文伺服器，提升曝光度、吸引更多成員，打造專屬高互動社群。`,
-    url: 'https://dchubs.org',
+    url: 'https://dchubs.org/add-server',
     siteName: 'DiscordHubs',
     images: [
       {
@@ -79,10 +76,54 @@ export default async function HomePage() {
     session.discordProfile?.id!,
   );
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Discord伺服器列表',
+    description: '在DiscordHubs平台新增你的Discord伺服器',
+    url: `${baseUrl}/add-server`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '伺服器列表',
+          item: `${baseUrl}/servers`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: '新增伺服器',
+          item: `${baseUrl}/add-server`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: baseUrl,
+    },
+  };
+
   return (
-    <ServerClient
-      activeServers={activeServers}
-      inactiveServers={inactiveServers}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+      <ServerClient
+        activeServers={activeServers}
+        inactiveServers={inactiveServers}
+      />
+    </>
   );
 }

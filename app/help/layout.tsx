@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: '使用教學 | Discord伺服器列表 - DiscordHubs',
       description:
         'DiscordHubs 是專為中文用戶打造的 Discord 伺服器與機器人平台，讓你輕鬆探索熱門社群和喜愛的機器人、管理已發布的內容，並靈活運用各項功能擴展影響力。',
-      url: 'https://dchubs.org',
+      url: `${base}/help`,
       siteName: 'DiscordHubs',
       images: [
         {
@@ -62,5 +62,45 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function HelpLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Discord伺服器列表',
+    description: 'DiscordHubs平台使用教學與說明',
+    url: `${baseUrl}/help`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '使用教學',
+          item: `${baseUrl}/help`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: baseUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+      {children}
+    </>
+  );
 }

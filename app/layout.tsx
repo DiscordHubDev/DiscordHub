@@ -77,6 +77,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(authOptions);
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Discord伺服器列表平',
+    url: 'https://dchubs.org',
+  };
+
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body
@@ -85,6 +93,10 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+        />
         <SidebarProvider>
           <ThemeProvider
             attribute="class"

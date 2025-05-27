@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: '服務條款 | Discord伺服器列表 - DiscordHubs',
       description:
         'DiscordHubs是最佳的 Discord 中文伺服器和機器人列表平台，你可以在此了解 DiscordHubs 平台的服務使用條款和內容',
-      url: base,
+      url: `${base}/terms`,
       siteName: 'DiscordHubs',
       images: [
         {
@@ -61,5 +61,45 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function TermsLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Discord伺服器列表',
+    description: 'DiscordHubs平台的服務使用條款說明',
+    url: `${baseUrl}/terms`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '服務條款',
+          item: `${baseUrl}/terms`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: baseUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+      {children}
+    </>
+  );
 }

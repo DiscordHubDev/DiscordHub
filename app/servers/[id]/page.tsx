@@ -104,11 +104,56 @@ export default async function ServerDetailPage({
 
   const isFavorited = userId ? !!server.favoritedBy?.length : false;
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: `${server.name} - ${server.tags.slice(0, 2).join(' / ')}`,
+    description: server.description,
+    url: `https://dchubs.org/servers/${server.id}`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: 'https://dchubs.org',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '伺服器列表',
+          item: 'https://dchubs.org/servers',
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: server.name,
+          item: `https://dchubs.org/servers/${server.id}`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: 'https://dchubs.org',
+    },
+    image: server.icon || 'https://dchubs.org/dchub.png',
+    mainEntityOfPage: true,
+  };
+
   return (
-    <ServerDetailClientPage
-      server={server}
-      allServers={allServers}
-      isFavorited={isFavorited}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+
+      <ServerDetailClientPage
+        server={server}
+        allServers={allServers}
+        isFavorited={isFavorited}
+      />
+    </>
   );
 }

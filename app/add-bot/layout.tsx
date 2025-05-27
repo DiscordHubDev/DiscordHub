@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: '新增機器人 | Discord機器人列表 - DiscordHubs',
       description:
         '在 DiscordHubs 新增你的機器人，獲得更多曝光與管理功能，輕鬆打造專屬機器人頁面，讓更多用戶發現並使用你的機器人。',
-      url: base,
+      url: `${base}/add-bot`,
       siteName: 'DiscordHubs',
       images: [
         {
@@ -59,5 +59,51 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AddBotLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Discord伺服器列表',
+    description: '在DiscordHubs平台新增你的Discord機器人',
+    url: `${baseUrl}/add-bot`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '機器人列表',
+          item: `${baseUrl}/bots`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: '新增機器人',
+          item: `${baseUrl}/add-bot`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: baseUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+      {children}
+    </>
+  );
 }

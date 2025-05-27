@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: '新增伺服器 | DiscordHubs',
       description:
         '在 DiscordHubs 上架你的 Discord 中文伺服器，提升曝光度、吸引更多成員，打造專屬高互動社群。',
-      url: base,
+      url: `${base}/add-server`,
       siteName: 'DiscordHubs',
       images: [
         {
@@ -59,5 +59,51 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AddServerLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Discord伺服器列表',
+    description: '在DiscordHubs平台新增你的Discord伺服器',
+    url: `${baseUrl}/add-server`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '伺服器列表',
+          item: `${baseUrl}/servers`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: '新增伺服器',
+          item: `${baseUrl}/add-server`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: baseUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+      {children}
+    </>
+  );
 }

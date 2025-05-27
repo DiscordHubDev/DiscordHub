@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: '熱門機器人推薦 | 精選 Discord 中文機器人 - DiscordHubs',
       description:
         'DiscordHubs 是最佳的 Discord 中文伺服器與機器人列表平台，協助您探索與宣傳伺服器，加入喜愛的機器人來為伺服器增添功能與活躍成員。',
-      url: 'https://dchubs.org',
+      url: `${base}/bots`,
       siteName: 'DiscordHubs',
       images: [
         {
@@ -58,5 +58,45 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function BotsLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Discord伺服器列表',
+    description: '探索DiscordHubs平台精選的熱門Discord中文機器人',
+    url: `${baseUrl}/bots`,
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: '首頁',
+          item: baseUrl,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: '機器人列表',
+          item: `${baseUrl}/bots`,
+        },
+      ],
+    },
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DiscordHubs',
+      url: baseUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
+      />
+      {children}
+    </>
+  );
 }
