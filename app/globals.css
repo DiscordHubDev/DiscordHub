@@ -142,6 +142,10 @@
   background-color: var(--discord-color);
   color: white;
   border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  will-change: transform;
+  z-index: 1;
 }
 
 .discord:hover {

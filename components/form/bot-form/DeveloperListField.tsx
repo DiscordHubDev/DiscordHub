@@ -27,13 +27,14 @@ export const DeveloperListField = () => {
 
   const [inputValue, setInputValue] = useState('');
 
-  const devs = useWatch({ name: 'developers' });
-
   const handleAddDeveloper = () => {
+    console.log('clicked, inputValue =', inputValue);
     const trimmed = inputValue.trim();
     if (trimmed) {
       append({ name: trimmed });
       setInputValue('');
+    } else {
+      console.warn('Developer name is empty, not appending');
     }
   };
 
@@ -97,7 +98,14 @@ export const DeveloperListField = () => {
           }}
           className="bg-[#36393f] border-[#1e1f22] text-white flex-1"
         />
-        <Button type="button" className="discord" onClick={handleAddDeveloper}>
+        <Button
+          type="button"
+          onClick={() => {
+            console.log('clicked');
+            handleAddDeveloper();
+          }}
+          className="discord"
+        >
           新增
         </Button>
       </div>

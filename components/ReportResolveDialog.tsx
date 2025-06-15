@@ -36,6 +36,19 @@ export function ResolveDialog({ report, status, onClose }: Props) {
 
   const isResolved = status === 'resolved';
 
+  const content =
+    '我們審查了您於 ' +
+    report.reportedAt.toLocaleDateString() +
+    ' 提出的檢舉。\n\n' +
+    '檢舉標題為：' +
+    report.subject +
+    '\n' +
+    '檢舉內容為：' +
+    report.content +
+    '\n\n' +
+    '審查結果：' +
+    getReviewResultMessage(isResolved);
+
   const handleSubmit = async () => {
     setLoading(true);
     await resolveReport({
@@ -49,14 +62,7 @@ export function ResolveDialog({ report, status, onClose }: Props) {
     await sendNotification({
       subject: '您的檢舉已處理完畢',
       teaser: '我們審查了您的檢舉...',
-      content: `
-                我們審查了您於 ${report.reportedAt.toDateString()} 提出的檢舉。
-                
-                檢舉標題為：${report.subject}
-                檢舉內容為：${report.content}
-                
-                審查結果：${getReviewResultMessage(isResolved)}
-                `.trim(),
+      content: content,
       priority: isResolved ? 'success' : 'warning',
       userIds: [report.reportedBy.id],
     });
