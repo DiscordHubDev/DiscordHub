@@ -65,7 +65,7 @@ export default function MobileCategoryFilter({
         </Button>
       </div>
 
-      {/* 自定義分類輸入 */}
+      {/* 自定義分類輸入
       <div className="flex gap-2 mb-4">
         <Input
           placeholder="新增自定義分類（等待更新）"
@@ -86,7 +86,7 @@ export default function MobileCategoryFilter({
         >
           <Plus size={16} />
         </Button>
-      </div>
+      </div> */}
 
       <div className="flex flex-wrap gap-2">
         {displayCategories.map(category => (

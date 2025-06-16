@@ -28,6 +28,7 @@ import { Screenshot } from '@/lib/types';
 import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { toast } from 'react-toastify';
+import { usePersistedFormField } from '@/hooks/use-field';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {
@@ -67,6 +68,9 @@ const BotForm: React.FC<BotFormProps> = ({
   );
 
   const [bannerPreviews, setBannerPreviews] = useState<Screenshot[]>([]);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (
@@ -113,9 +117,12 @@ const BotForm: React.FC<BotFormProps> = ({
   const [error] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const { handleSubmit, control, formState, watch, reset } = form;
+  const { handleSubmit, control, formState, watch, reset, setValue } = form;
 
   const longDescription = watch('botLongDescription');
+
+  usePersistedFormField('longdesc', 'botLongDescription', form);
+  usePersistedFormField('desc', 'botDescription', form);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
@@ -272,47 +279,49 @@ const BotForm: React.FC<BotFormProps> = ({
 
       const botId = extractBotIdFromInviteLink(data.botInvite);
       const avatarUrl = await getBotAvatarUrl(botId);
-      if (mode !== 'edit') {
-        const embed = {
-          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
-          description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
-          color: 0x4285f4,
-          footer: {
-            text: '由 DiscordHubs 系統發送',
-            icon_url:
-              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-          },
-          thumbnail: {
-            url: avatarUrl || '',
-          },
-        };
+      // if (mode !== 'edit') {
+      //   const embed = {
+      //     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
+      //     description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
+      //     color: 0x4285f4,
+      //     footer: {
+      //       text: '由 DiscordHubs 系統發送',
+      //       icon_url:
+      //         'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+      //     },
+      //     thumbnail: {
+      //       url: avatarUrl || '',
+      //     },
+      //   };
 
-        const webhookData = {
-          content: '<@&1361412309209317468>',
-          embeds: [embed],
-          username: 'DcHubs機器人通知',
-          avatar_url:
-            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-        };
+      //   const webhookData = {
+      //     content: '<@&1361412309209317468>',
+      //     embeds: [embed],
+      //     username: 'DcHubs機器人通知',
+      //     avatar_url:
+      //       'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+      //   };
 
-        try {
-          const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(webhookData),
-          });
+      //   try {
+      //     const response = await fetch(webhookUrl, {
+      //       method: 'POST',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //       body: JSON.stringify(webhookData),
+      //     });
 
-          if (!response.ok) {
-            console.error('Webhook 發送失敗:', response.statusText);
-          } else {
-          }
-        } catch (webhookError) {
-          console.error('發送 Webhook 時出錯:', webhookError);
-        }
-      }
+      //     if (!response.ok) {
+      //       console.error('Webhook 發送失敗:', response.statusText);
+      //     } else {
+      //     }
+      //   } catch (webhookError) {
+      //     console.error('發送 Webhook 時出錯:', webhookError);
+      //   }
+      // }
       setSuccess(true);
+      localStorage.removeItem('desc');
+      localStorage.removeItem('longdesc');
       if (mode === 'edit') {
         toast.success('編輯成功');
       }
@@ -766,7 +775,7 @@ const BotForm: React.FC<BotFormProps> = ({
               </div>
             </form>
           </Form>
-          {success && (
+          {mounted && success && (
             <div className="mt-4 text-green-500 text-sm border border-green-500 bg-green-100/10 rounded p-3">
               {mode === 'create'
                 ? '✅ 機器人已成功提交，請等待審核人員審核，審核結果將會在網站的收件匣和官方群組的通知中出現。'

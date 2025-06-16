@@ -7,25 +7,25 @@ import { Search, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { CategoryType } from '@/lib/types';
+import CategoryFilter from './category-filter';
 
 interface CategorySearchProps {
   categories: CategoryType[];
   onCategoryChange?: (selectedCategories: string[]) => void;
-  onCustomCategoryAdd?: (categoryName: string) => void;
 }
 
 export default function CategorySearch({
   categories,
   onCategoryChange,
-  onCustomCategoryAdd,
 }: CategorySearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredCategories, setFilteredCategories] =
     useState<CategoryType[]>(categories);
-  const [customCategory, setCustomCategory] = useState('');
 
   // 過濾分類
   useEffect(() => {
+    console.log('searchTerm', searchTerm);
+    console.log('searchTerm.trim())', !searchTerm.trim());
     if (!searchTerm.trim()) {
       setFilteredCategories(categories);
       return;
@@ -37,24 +37,7 @@ export default function CategorySearch({
     setFilteredCategories(filtered);
   }, [searchTerm, categories]);
 
-  // 添加自定義分類
-  const handleAddCustomCategory = () => {
-    if (!customCategory.trim()) return;
-
-    if (onCustomCategoryAdd) {
-      onCustomCategoryAdd(customCategory.trim());
-    }
-
-    setCustomCategory('');
-  };
-
-  // 處理按鍵事件
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddCustomCategory();
-    }
-  };
+  console.log('filteredCategories', filteredCategories);
 
   return (
     <div className="space-y-4">
@@ -72,7 +55,7 @@ export default function CategorySearch({
         />
       </div>
 
-      {/* 添加自定義分類 */}
+      {/* 添加自定義分類
       <div className="flex gap-2">
         <Input
           placeholder="新增自定義分類（等待更新）"
@@ -88,10 +71,18 @@ export default function CategorySearch({
         >
           <Plus className="text-gray-300" size={16} />
         </Button>
-      </div>
+      </div> */}
 
       {/* 顯示過濾後的分類 */}
-      {filteredCategories.length === 0 && (
+      {filteredCategories.length !== 0 ? (
+        <div className="mt-4">
+          <CategoryFilter
+            key={filteredCategories.map(c => c.id).join(',')}
+            categories={filteredCategories}
+            onCategoryChange={onCategoryChange}
+          />
+        </div>
+      ) : (
         <p className="text-gray-400 text-sm">沒有找到相符的分類</p>
       )}
     </div>

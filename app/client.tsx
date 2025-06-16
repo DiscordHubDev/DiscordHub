@@ -357,14 +357,6 @@ export default function DiscordServerListPageClient({
                 <CategorySearch
                   categories={categories}
                   onCategoryChange={handleCategoryChange}
-                  onCustomCategoryAdd={handleAddCustomCategory}
-                />
-              </div>
-
-              <div className="mt-4">
-                <CategoryFilter
-                  categories={categories}
-                  onCategoryChange={handleCategoryChange}
                 />
               </div>
             </div>
