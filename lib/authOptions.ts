@@ -76,7 +76,7 @@ export const authOptions: NextAuthOptions = {
         session.access_token = token.accessToken;
         session.discordProfile = token.discordProfile;
         if (token.error) {
-          session.error = token.error; // 這是重點
+          session.error = token.error;
           session.user = undefined;
         }
       }
