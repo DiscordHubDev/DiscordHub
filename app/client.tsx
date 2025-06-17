@@ -26,7 +26,12 @@ type DiscordServerListProps = {
 export default function DiscordServerListPageClient({
   servers: allServers,
 }: DiscordServerListProps) {
-  const [servers, setServers] = useState<ServerType[]>(allServers);
+  const [servers, setServers] = useState<ServerType[]>(
+    allServers
+      .filter(server => server.members >= 1000)
+      .sort((a, b) => b.upvotes - a.upvotes)
+      .sort((a, b) => b.members - a.members),
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
@@ -281,17 +286,11 @@ export default function DiscordServerListPageClient({
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs
-              defaultValue="all"
+              defaultValue="featured"
               className="mb-8"
               onValueChange={handleTabChange}
             >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
-                <TabsTrigger
-                  value="all"
-                  className="data-[state=active]:bg-[#36393f]"
-                >
-                  所有伺服器
-                </TabsTrigger>
                 <TabsTrigger
                   value="featured"
                   className="data-[state=active]:bg-[#36393f]"
@@ -317,13 +316,6 @@ export default function DiscordServerListPageClient({
                   票選伺服器
                 </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="all" className="mt-6">
-                <div className="mt-8">
-                  <h2 className="text-2xl font-bold mb-4">所有伺服器</h2>
-                  {renderServerListWithFallback(getCurrentPageServers())}
-                </div>
-              </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
@@ -399,7 +391,7 @@ export default function DiscordServerListPageClient({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+                <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
                   新增伺服器
                 </Button>
               </Link>
@@ -420,7 +412,7 @@ export default function DiscordServerListPageClient({
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
                 新增伺服器
               </Button>
             </Link>

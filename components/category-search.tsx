@@ -37,8 +37,6 @@ export default function CategorySearch({
     setFilteredCategories(filtered);
   }, [searchTerm, categories]);
 
-  console.log('filteredCategories', filteredCategories);
-
   return (
     <div className="space-y-4">
       {/* 搜尋現有分類 */}

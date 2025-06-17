@@ -23,7 +23,12 @@ export default function DiscordBotListPageClient({
 }: {
   allBots: BotWithRelations[];
 }) {
-  const [bots, setBots] = useState<BotWithRelations[]>(allBots);
+  const [bots, setBots] = useState<BotWithRelations[]>(
+    allBots
+      .filter(b => b.servers >= 1000)
+      .sort((a, b) => b.upvotes - a.upvotes)
+      .sort((a, b) => b.servers - a.servers),
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
@@ -269,17 +274,11 @@ export default function DiscordBotListPageClient({
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs
-              defaultValue="all"
+              defaultValue="featured"
               className="mb-8"
               onValueChange={handleTabChange}
             >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
-                <TabsTrigger
-                  value="all"
-                  className="data-[state=active]:bg-[#36393f]"
-                >
-                  所有機器人
-                </TabsTrigger>
                 <TabsTrigger
                   value="featured"
                   className="data-[state=active]:bg-[#36393f]"
@@ -311,11 +310,6 @@ export default function DiscordBotListPageClient({
                   票選機器人
                 </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="all" className="mt-6">
-                <h2 className="text-2xl font-bold mb-4">所有機器人</h2>
-                {renderBotListWithFallback(getCurrentPageBots())}
-              </TabsContent>
 
               <TabsContent value="featured" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">精選機器人</h2>
@@ -385,7 +379,7 @@ export default function DiscordBotListPageClient({
                 機器人嗎？立即加入我們的平台，讓更多人發現您的創作！
               </p>
               <Link href="/add-bot">
-                <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+                <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
                   新增機器人
                 </Button>
               </Link>
@@ -402,7 +396,7 @@ export default function DiscordBotListPageClient({
               機器人嗎？立即加入我們的平台，讓更多人發現您的創作！
             </p>
             <Link href="/add-bot">
-              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4]">
+              <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
                 新增機器人
               </Button>
             </Link>
