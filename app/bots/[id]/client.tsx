@@ -205,11 +205,16 @@ export default function BotDetailClient({
                           className="group"
                         >
                           <div className="flex items-center p-4 space-x-4 transition duration-200 rounded-lg hover:bg-white/10 transform group-hover:-translate-y-1">
-                            <img
-                              src={dev.avatar}
-                              alt={`${dev.username} avatar`}
-                              className="w-10 h-10 rounded-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                            />
+                            <Avatar className="w-10 h-10 transition-transform duration-300 ease-in-out group-hover:scale-105">
+                              <AvatarImage
+                                src={dev.avatar}
+                                alt={`${dev.username} avatar`}
+                                className="object-cover"
+                              />
+                              <AvatarFallback className="bg-[#5865f2]">
+                                {dev.username?.charAt(0).toUpperCase() || '?'}
+                              </AvatarFallback>
+                            </Avatar>
                             <p className="font-medium whitespace-nowrap transition-colors duration-200">
                               {dev.username.length > 10
                                 ? `${dev.username.slice(0, 10)}...`

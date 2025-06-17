@@ -102,7 +102,8 @@ export default async function ServerDetailPage({
     notFound();
   }
 
-  const isFavorited = userId ? !!server.favoritedBy?.length : false;
+  const favoritedIds = new Set(server.favoritedBy.map(user => user.id));
+  const isFavorited = userId ? favoritedIds.has(userId) : false;
 
   const jsonLd = {
     '@context': 'https://schema.org',

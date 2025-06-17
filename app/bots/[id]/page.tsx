@@ -85,6 +85,7 @@ export default async function BotDetailPage({
   const { id } = await params;
 
   const session = await getServerSession(authOptions);
+  const userId = session?.discordProfile?.id;
 
   const bot = await getBot(id);
 
@@ -92,7 +93,8 @@ export default async function BotDetailPage({
     notFound();
   }
 
-  const isFavorited = session ? !!bot.favoritedBy?.length : false;
+  const favoritedIds = new Set(bot.favoritedBy?.map(user => user.id) ?? []);
+  const isFavorited = userId ? favoritedIds.has(userId) : false;
 
   return (
     <>
