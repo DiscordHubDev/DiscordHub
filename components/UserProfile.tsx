@@ -204,7 +204,7 @@ export default function UserProfile({ id }: { id?: string }) {
                               e.preventDefault();
                               router.push(`/profile/servers/${server.id}/edit`);
                             }}
-                            className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2]"
+                            className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
                           >
                             管理伺服器
                           </Button>
@@ -328,7 +328,7 @@ export default function UserProfile({ id }: { id?: string }) {
                               e.preventDefault();
                               router.push(`/profile/bots/${bot.id}/edit`);
                             }}
-                            className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2]"
+                            className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
                           >
                             管理機器人
                           </Button>

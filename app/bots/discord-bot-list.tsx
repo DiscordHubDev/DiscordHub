@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BotList from '@/components/bot-list';
-import CategoryFilter from '@/components/category-filter';
 import CategorySearch from '@/components/category-search';
 import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { botCategories as initialCategories } from '@/lib/bot-categories';

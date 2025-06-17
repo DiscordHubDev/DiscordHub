@@ -1,6 +1,7 @@
 // app/bots/[id]/edit/page.tsx
 import { getBotForEdit } from '@/lib/actions/bots';
 import BotEditClient from './client';
+import { checkBotPermission } from '@/lib/actions/check-permission';
 
 export default async function BotEditPage({
   params,
@@ -8,6 +9,9 @@ export default async function BotEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  await checkBotPermission(id);
+
   const bot = await getBotForEdit(id);
 
   if (!bot) return <div className="text-white p-4">找不到機器人</div>;
