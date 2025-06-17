@@ -35,6 +35,7 @@ import { toast } from 'react-toastify';
 import { updateBotServerCount } from '@/lib/actions/bots';
 import MarkdownRenderer from '../MarkdownRenderer';
 import Link from 'next/link';
+import { useError } from '@/context/ErrorContext';
 
 const webhookUrl =
   'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
@@ -51,7 +52,7 @@ export default function BotApplications({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { showError } = useError();
 
   const openRejectDialog = (app: BotWithRelations) => {
     setSelectedApp(app);
@@ -85,13 +86,13 @@ export default function BotApplications({
       if (server_count !== undefined) {
         await updateBotServerCount(botId, server_count);
       } else {
-        toast.error('伺服器回傳錯誤');
+        showError('伺服器回傳錯誤');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
-        toast.error(`發生錯誤：${err.message}`);
+        showError(`發生錯誤：${err.message}`);
       } else {
-        toast.error('發生未知錯誤');
+        showError('發生未知錯誤');
       }
     }
   };

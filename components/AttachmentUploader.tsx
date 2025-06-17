@@ -9,6 +9,7 @@ import {
 } from '@/lib/actions/image';
 import ScreenshotGrid from './form/bot-form/ScreenshotGrid';
 import { Upload } from 'lucide-react';
+import { useError } from '@/context/ErrorContext';
 
 type Props = {
   value: UploadedFile[];
@@ -20,6 +21,8 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null); // ✅ ref
   const remaining = max - value.length;
+
+  const { showError } = useError();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -67,7 +70,7 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
         onChange([...value, uploaded]);
       }
     } catch (err: any) {
-      toast.error('上傳失敗：' + err.message);
+      showError('上傳失敗：' + err.message);
     }
 
     setUploading(false);

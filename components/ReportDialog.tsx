@@ -16,6 +16,7 @@ import { toast } from 'react-toastify';
 import { submitReport } from '@/lib/actions/report';
 import { AttachmentUploader } from './AttachmentUploader';
 import { UploadedFile } from '@/lib/types';
+import { useError } from '@/context/ErrorContext';
 
 export function ReportDialog({
   itemId,
@@ -37,6 +38,8 @@ export function ReportDialog({
 
   const { data: session } = useSession();
 
+  const { showError } = useError();
+
   if (session?.error === 'RefreshAccessTokenError') {
     return;
   }
@@ -49,7 +52,7 @@ export function ReportDialog({
     setContentError('');
 
     if (!userId) {
-      toast.error('請先登入才能檢舉！');
+      showError('請先登入才能檢舉！');
       return;
     }
 
@@ -83,7 +86,7 @@ export function ReportDialog({
       setContent('');
       setAttachments([]);
     } catch (err: any) {
-      toast.error('提交失敗：' + err.message);
+      showError('提交失敗：' + err.message);
     }
   };
 

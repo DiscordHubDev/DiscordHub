@@ -6,11 +6,14 @@ import { useActionState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { useError } from '@/context/ErrorContext';
 
 export default function UserSettingsForm({ user }: { user: any }) {
   const initialState = { success: undefined, error: undefined };
   const [state, formAction] = useActionState(updateUserSettings, initialState);
   const router = useRouter();
+
+  const { showError } = useError();
 
   useEffect(() => {
     if (state.success) {
@@ -24,12 +27,7 @@ export default function UserSettingsForm({ user }: { user: any }) {
     }
 
     if (state.error) {
-      toast.error(state.error, {
-        style: {
-          background: '#1e1f22',
-          color: '#fff',
-        },
-      });
+      showError(state.error);
     }
   }, [state.success, state.error]);
 

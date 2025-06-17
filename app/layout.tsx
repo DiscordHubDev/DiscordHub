@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import SessionProvider from './providers/SessionProvider';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import { ErrorProvider } from '@/context/ErrorContext';
 
 import ClientLayout from './client_layout';
 
@@ -99,18 +100,20 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
-        <SidebarProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <SessionProvider session={session}>
-              <ClientLayout>{children}</ClientLayout>
-            </SessionProvider>
-          </ThemeProvider>
-        </SidebarProvider>
+        <ErrorProvider>
+          <SidebarProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <SessionProvider session={session}>
+                <ClientLayout>{children}</ClientLayout>
+              </SessionProvider>
+            </ThemeProvider>
+          </SidebarProvider>
+        </ErrorProvider>
       </body>
     </html>
   );

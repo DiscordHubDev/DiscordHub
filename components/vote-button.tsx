@@ -27,6 +27,7 @@ import { getServerByGuildId } from '@/lib/actions/servers';
 import { toast } from 'react-toastify';
 import { getBot } from '@/lib/actions/bots';
 import { getRandomEmbedColor } from '@/lib/utils';
+import { useError } from '@/context/ErrorContext';
 
 async function sendDataToWebServerOrDiscord(
   type: string,
@@ -128,6 +129,7 @@ export default function VoteButton({
 
   const router = useRouter();
   const { data: session } = useSession();
+  const { showError } = useError();
 
   if (!session) {
     return;
@@ -240,7 +242,7 @@ export default function VoteButton({
       }
 
       if (vote.error === 'NOT_LOGGED_IN') {
-        toast.error('請先登入！');
+        showError('請先登入！');
       }
 
       setIsVoting(false);

@@ -13,6 +13,7 @@ import {
   hasAdministratorPermission,
 } from '@/lib/utils';
 import { getBot } from '@/lib/actions/bots';
+import { useError } from '@/context/ErrorContext';
 
 const AddBotPageClient = () => {
   const { data: session } = useSession();
@@ -26,6 +27,8 @@ const AddBotPageClient = () => {
     screenshots: Screenshot[],
     banner?: string,
   ) => {
+    const { showError } = useError();
+
     const client_id = new URL(data.botInvite).searchParams.get('client_id');
     if (!client_id) {
       throw new Error('Invite link 無效，找不到 client_id');
@@ -34,18 +37,15 @@ const AddBotPageClient = () => {
     const bot = await getBot(client_id);
 
     if (bot) {
-      toast.error('此 Bot 已存在');
+      showError('此 Bot 已存在');
       return;
     }
 
-    const res = await fetch(
-      `https://discord.com/api/v10/applications/${client_id.trim()}/rpc`,
-      {
-        headers: {
-          'User-Agent': 'DiscordHubs/1.0',
-        },
-      },
-    );
+    const res = await fetch('/api/proxy/rpc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id }),
+    });
 
     if (!res.ok) {
       throw new Error(
@@ -104,12 +104,12 @@ const AddBotPageClient = () => {
     const result = await submitBot(botData);
 
     if (!result.success) {
-      toast.error(`❌ 新增失敗：${result.message}`);
+      showError(`❌ 新增失敗：${result.message}`);
       return;
     }
 
     toast.success(
-      '✅ 機器人已成功提交，請等待審核人員審核，審核結果將會在網站的收件匣和官方群組的通知中出現。',
+      '機器人已成功提交，請等待審核人員審核，審核結果將會在網站的收件匣和官方群組的通知中出現。',
     );
 
     await sendNotification({

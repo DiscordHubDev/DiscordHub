@@ -29,6 +29,7 @@ import ScreenshotGrid from '@/components/form/bot-form/ScreenshotGrid';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { toast } from 'react-toastify';
 import { usePersistedFormField } from '@/hooks/use-field';
+import { useError } from '@/context/ErrorContext';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {
@@ -117,7 +118,9 @@ const BotForm: React.FC<BotFormProps> = ({
   const [error] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const { handleSubmit, control, formState, watch, reset, setValue } = form;
+  const { handleSubmit, control, formState, watch, reset } = form;
+
+  const { showError } = useError();
 
   const longDescription = watch('botLongDescription');
 
@@ -234,7 +237,7 @@ const BotForm: React.FC<BotFormProps> = ({
 
         setPreviews(prev => [...prev, { url: imageUrl, public_id: publicId }]);
       } catch (error) {
-        toast.error('未知錯誤');
+        showError('未知錯誤');
         console.error('Unexpected error:', error);
       }
     }
@@ -332,52 +335,6 @@ const BotForm: React.FC<BotFormProps> = ({
       setLoading(false);
     }
   };
-
-  // const handleTestWebhook = async () => {
-  //   const data = getValues();
-  //   const botId = extractBotIdFromInviteLink(data.botInvite);
-  //   const avatarUrl = await getBotAvatarUrl(botId);
-
-  //   const embed = {
-  //     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
-  //     description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
-  //     color: 0x4285f4,
-  //     footer: {
-  //       text: '由 DiscordHubs 系統發送',
-  //       icon_url:
-  //         'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-  //     },
-  //     thumbnail: {
-  //       url: avatarUrl || '',
-  //     },
-  //   };
-
-  //   const webhookData = {
-  //     content: '<@&1361412309209317468>',
-  //     embeds: [embed],
-  //     username: 'DcHubs機器人通知',
-  //     avatar_url:
-  //       'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-  //   };
-
-  //   try {
-  //     const response = await fetch(webhookUrl, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(webhookData),
-  //     });
-
-  //     if (!response.ok) {
-  //       console.error('Webhook 發送失敗:', response.statusText);
-  //     } else {
-  //
-  //     }
-  //   } catch (webhookError) {
-  //     console.error('發送 Webhook 時出錯:', webhookError);
-  //   }
-  // };
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">

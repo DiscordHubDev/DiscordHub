@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Heart } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { useError } from '@/context/ErrorContext';
 
 export function FavoriteButton({
   id,
@@ -20,6 +21,8 @@ export function FavoriteButton({
   if (session?.error === 'RefreshAccessTokenError') {
     return;
   }
+
+  const { showError } = useError();
 
   const userId = session?.discordProfile?.id;
 
@@ -39,7 +42,7 @@ export function FavoriteButton({
       await toggleFavorite({ userId, target, id });
     } catch (err) {
       setFavorited(prev => !prev);
-      toast.error('收藏操作失敗');
+      showError('收藏操作失敗');
     } finally {
       setLoading(false);
     }
