@@ -81,22 +81,24 @@ export default async function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Discord伺服器列表平',
+    name: 'Discord伺服器列表',
     url: 'https://dchubs.org',
   };
 
   return (
     <html lang="en" suppressHydrationWarning={true}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={cn(
           'h-screen w-full font-sans antialiased bg-[#1e1f22] text-white',
           fontSans.variable,
         )}
       >
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
-        />
         <SidebarProvider>
           <ThemeProvider
             attribute="class"
