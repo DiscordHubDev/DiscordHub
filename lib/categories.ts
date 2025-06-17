@@ -57,7 +57,7 @@ export const Servercategories: CategoryType[] = [
   },
   {
     id: '10',
-    name: '創業',
+    name: '標籤群',
     color: 'bg-orange-600',
     selected: false,
   },
