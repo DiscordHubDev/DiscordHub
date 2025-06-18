@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ServerList from '@/components/server-list';
-import CategoryFilter from '@/components/category-filter';
 import CategorySearch from '@/components/category-search';
 import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { Servercategories as initialCategories } from '@/lib/categories';
@@ -27,10 +26,7 @@ export default function DiscordServerListPageClient({
   servers: allServers,
 }: DiscordServerListProps) {
   const [servers, setServers] = useState<ServerType[]>(
-    allServers
-      .filter(server => server.members >= 1000)
-      .sort((a, b) => b.upvotes - a.upvotes)
-      .sort((a, b) => b.members - a.members),
+    allServers.sort((a, b) => b.members - a.members),
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
@@ -286,22 +282,22 @@ export default function DiscordServerListPageClient({
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs
-              defaultValue="featured"
+              defaultValue="popular"
               className="mb-8"
               onValueChange={handleTabChange}
             >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
                 <TabsTrigger
-                  value="featured"
-                  className="data-[state=active]:bg-[#36393f]"
-                >
-                  精選伺服器
-                </TabsTrigger>
-                <TabsTrigger
                   value="popular"
                   className="data-[state=active]:bg-[#36393f]"
                 >
                   熱門伺服器
+                </TabsTrigger>
+                <TabsTrigger
+                  value="featured"
+                  className="data-[state=active]:bg-[#36393f]"
+                >
+                  精選伺服器
                 </TabsTrigger>
                 <TabsTrigger
                   value="new"

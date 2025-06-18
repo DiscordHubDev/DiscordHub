@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { BotWithRelations } from '@/lib/prisma_type';
 import Pagination from '@/components/pagination';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 export default function DiscordBotListPageClient({
   allBots,
@@ -24,10 +24,7 @@ export default function DiscordBotListPageClient({
   allBots: BotWithRelations[];
 }) {
   const [bots, setBots] = useState<BotWithRelations[]>(
-    allBots
-      .filter(b => b.servers >= 1000)
-      .sort((a, b) => b.upvotes - a.upvotes)
-      .sort((a, b) => b.servers - a.servers),
+    allBots.sort((a, b) => b.servers - a.servers),
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
@@ -274,22 +271,22 @@ export default function DiscordBotListPageClient({
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs
-              defaultValue="featured"
+              defaultValue="popular"
               className="mb-8"
               onValueChange={handleTabChange}
             >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
                 <TabsTrigger
-                  value="featured"
-                  className="data-[state=active]:bg-[#36393f]"
-                >
-                  精選機器人
-                </TabsTrigger>
-                <TabsTrigger
                   value="popular"
                   className="data-[state=active]:bg-[#36393f]"
                 >
                   熱門機器人
+                </TabsTrigger>
+                <TabsTrigger
+                  value="featured"
+                  className="data-[state=active]:bg-[#36393f]"
+                >
+                  精選機器人
                 </TabsTrigger>
                 <TabsTrigger
                   value="new"
