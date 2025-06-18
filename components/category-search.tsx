@@ -24,8 +24,6 @@ export default function CategorySearch({
 
   // 過濾分類
   useEffect(() => {
-    console.log('searchTerm', searchTerm);
-    console.log('searchTerm.trim())', !searchTerm.trim());
     if (!searchTerm.trim()) {
       setFilteredCategories(categories);
       return;

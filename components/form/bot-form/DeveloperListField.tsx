@@ -28,7 +28,6 @@ export const DeveloperListField = () => {
   const [inputValue, setInputValue] = useState('');
 
   const handleAddDeveloper = () => {
-    console.log('clicked, inputValue =', inputValue);
     const trimmed = inputValue.trim();
     if (trimmed) {
       append({ name: trimmed });
@@ -101,7 +100,6 @@ export const DeveloperListField = () => {
         <Button
           type="button"
           onClick={() => {
-            console.log('clicked');
             handleAddDeveloper();
           }}
           className="discord"

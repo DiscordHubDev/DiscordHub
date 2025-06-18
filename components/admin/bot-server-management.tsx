@@ -59,11 +59,9 @@ export default function BotServerManagement({
     if (!itemToDelete) return;
 
     if (itemToDelete.type === 'bot') {
-      console.log('bot');
       setBots(bots.filter(bot => bot.id !== itemToDelete.id));
       await deleteBot(itemToDelete.id);
     } else {
-      console.log('server');
       setServers(servers.filter(server => server.id !== itemToDelete.id));
       await deleteServerByGuildId(itemToDelete.id);
     }
