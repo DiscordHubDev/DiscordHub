@@ -241,17 +241,35 @@ export default function ServerDetailClientPage({
           <div className="lg:col-span-1">
             <div className="bg-[#2b2d31] rounded-lg p-5 mb-6">
               <h3 className="text-lg font-semibold mb-4">伺服器資訊</h3>
-              <div className="space-y-4">
+              <div className="space-y-2">
+                <span className="text-gray-400 w-20">擁有者:</span>
                 {server.owner && (
-                  <div className="flex items-center">
-                    <span className="text-gray-400 w-24">擁有者:</span>
-                    <span className="text-gray-300">
-                      {server.owner.username}
-                    </span>
+                  <div className="flex items-center space-x-4 p-4 transition duration-200 rounded-lg hover:bg-white/10 transform group-hover:-translate-y-1">
+                    <Link
+                      href={`/users/${server.owner.id}`}
+                      className="group flex items-center space-x-4"
+                    >
+                      <Avatar className="w-10 h-10 transition-transform duration-300 ease-in-out group-hover:scale-105">
+                        <AvatarImage
+                          src={server.owner.avatar}
+                          alt={`${server.owner.username} avatar`}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-[#5865f2]">
+                          {server.owner.username?.charAt(0).toUpperCase() ||
+                            '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="font-medium whitespace-nowrap transition-colors duration-200 text-gray-300">
+                        {server.owner.username.length > 10
+                          ? `${server.owner.username.slice(0, 10)}...`
+                          : server.owner.username}
+                      </p>
+                    </Link>
                   </div>
                 )}
                 <div className="flex items-center">
-                  <span className="text-gray-400 w-24">創建於:</span>
+                  <span className="text-gray-400 w-24">發布於:</span>
                   <span className="text-gray-300">
                     {new Date(server.createdAt).toLocaleDateString('zh-TW')}
                   </span>
