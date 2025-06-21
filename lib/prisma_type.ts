@@ -5,6 +5,7 @@ import {
   ReportStatus,
   User,
   VoteType,
+  Bot,
 } from '@prisma/client';
 import { UploadedFile } from './types';
 
@@ -17,6 +18,40 @@ export type UserType = Prisma.UserGetPayload<{
     ownedServers: true;
     developedBots: true;
     adminIn: true;
+  };
+}>;
+
+export type BotType = Prisma.BotGetPayload<{
+  include: {
+    developers: {
+      select: {
+        id: true;
+        username: true;
+        avatar: true;
+        banner: true;
+        banner_color: true;
+        bio: true;
+        joinedAt: true;
+        social: true;
+      };
+    };
+    commands: {
+      select: {
+        id: true;
+        name: true;
+        description: true;
+        usage: true;
+        category: true;
+      };
+    };
+    favoritedBy: {
+      select: {
+        id: true;
+      };
+    };
+  };
+  orderBy: {
+    upvotes: 'desc';
   };
 }>;
 

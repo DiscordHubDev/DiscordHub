@@ -72,10 +72,19 @@ const config = {
           '0%, 100%': { opacity: '0.4' },
           '50%': { opacity: '1' },
         },
+        pulseGlow: {
+          '0%, 100%': {
+            boxShadow: '0 0 12px rgba(250, 204, 21, 0.6)',
+          },
+          '50%': {
+            boxShadow: '0 0 20px rgba(250, 204, 21, 0.9)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        pulseGlow: 'pulseGlow 3s ease-in-out infinite',
         breath: 'breath 2s ease-in-out infinite',
       },
     },

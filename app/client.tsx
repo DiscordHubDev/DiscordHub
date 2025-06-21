@@ -32,8 +32,12 @@ export default function DiscordServerListPageClient({
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState('featured');
+  const [activeTab, setActiveTab] = useState('popular');
   const [showNoResultMessage, setShowNoResultMessage] = useState(false);
+
+  useEffect(() => {
+    filterAndSearchServers('popular', searchQuery);
+  }, []);
 
   // 渲染伺服器列表
   const renderServerListWithFallback = (servers: ServerType[]) => {
@@ -141,7 +145,10 @@ export default function DiscordServerListPageClient({
 
     switch (category) {
       case 'popular':
-        filtered.sort((a, b) => b.members - a.members);
+        filtered.sort((a, b) => {
+          if (a.pin !== b.pin) return a.pin ? -1 : 1;
+          return b.members - a.members;
+        });
         break;
       case 'new':
         filtered.sort(
@@ -282,8 +289,8 @@ export default function DiscordServerListPageClient({
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs
-              defaultValue="popular"
               className="mb-8"
+              value={activeTab}
               onValueChange={handleTabChange}
             >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">

@@ -89,6 +89,9 @@ model Server {
 
   favoritedBy User[] @relation("UserFavoriteServers")
 
+  pin Boolean @default(false)
+  pinExpiry  DateTime? 
+
   Review Review[]
 }
 
@@ -128,6 +131,9 @@ model Bot {
 
   commands BotCommand[] // One-to-many relation
   Review   Review[]
+
+  pin Boolean @default(false)
+  pinExpiry  DateTime? 
 
   isAdmin       Boolean  @default(false)
 }

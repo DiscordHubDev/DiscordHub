@@ -1,18 +1,58 @@
 import { notFound } from 'next/navigation';
-import { getAllBots, getBot } from '@/lib/actions/bots';
+import { getAllBots, getBot, getUserVotesForBots } from '@/lib/actions/bots';
 import { Metadata } from 'next';
 import BotDetailClient from './client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import { unstable_cache } from 'next/cache';
 
-const allBots = await getAllBots();
+export const getCachedAllBots = unstable_cache(
+  async () => {
+    return await getAllBots();
+  },
+  ['bots-all-approved'], // 快取鍵
+  {
+    revalidate: 300, // 5 分鐘後重新驗證
+    tags: ['bots', 'all-bots'], // 標籤，用於有選擇性地清除快取
+  },
+);
+
+// 快取單個 bot 資料，快取 10 分鐘
+export const getCachedBot = unstable_cache(
+  async (id: string) => {
+    return await getBot(id);
+  },
+  ['bot-detail'], // 快取鍵前綴
+  {
+    revalidate: 600, // 10 分鐘後重新驗證
+    tags: ['bots', 'bot-detail'], // 標籤
+  },
+);
+
+// 快取用戶投票資料（較短的快取時間，因為更新頻繁）
+export const getCachedUserVotes = unstable_cache(
+  async (userId: string, botIds: string[]) => {
+    return await getUserVotesForBots(userId, botIds);
+  },
+  ['user-votes'], // 快取鍵前綴
+  {
+    revalidate: 60, // 1 分鐘後重新驗證
+    tags: ['votes', 'user-votes'],
+  },
+);
 
 export const revalidate = 60;
 
 export async function generateStaticParams() {
-  return allBots.map(bot => ({
-    id: bot.id,
-  }));
+  try {
+    const allBots = await getCachedAllBots();
+    return allBots.map(bot => ({
+      id: bot.id,
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -83,18 +123,22 @@ export default async function BotDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
   const session = await getServerSession(authOptions);
   const userId = session?.discordProfile?.id;
 
-  const bot = await getBot(id);
+  // 使用快取函數並行執行查詢
+  const [bot, allBots] = await Promise.all([
+    getCachedBot(id),
+    getCachedAllBots(), // 考慮是否真的需要所有 bots，或者可以只獲取相關的幾個
+  ]);
 
   if (!bot) {
     notFound();
   }
 
-  const favoritedIds = new Set(bot.favoritedBy?.map(user => user.id) ?? []);
-  const isFavorited = userId ? favoritedIds.has(userId) : false;
+  const isFavorited = userId
+    ? bot.favoritedBy?.some(user => user.id === userId)
+    : false;
 
   return (
     <>

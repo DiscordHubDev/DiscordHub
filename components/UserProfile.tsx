@@ -35,6 +35,7 @@ import {
   TooltipTrigger,
 } from './ui/tooltip';
 import { FaCheck } from 'react-icons/fa6';
+import PinButton from './pin-button';
 
 export default function UserProfile({ id }: { id?: string }) {
   const { data: session } = useSession();
@@ -149,12 +150,11 @@ export default function UserProfile({ id }: { id?: string }) {
             {managedServers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {managedServers.map(server => (
-                  <Link
-                    href={`/servers/${server.id}`}
+                  <Card
                     key={server.id}
-                    className="block"
+                    className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200"
                   >
-                    <Card className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200">
+                    <Link href={`/servers/${server.id}`} className="block">
                       <CardHeader className="pb-2">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
@@ -195,23 +195,32 @@ export default function UserProfile({ id }: { id?: string }) {
                           )}
                         </div>
                       </CardContent>
-                      {isOwner && (
-                        <CardFooter>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={e => {
-                              e.preventDefault();
-                              router.push(`/profile/servers/${server.id}/edit`);
-                            }}
-                            className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
-                          >
-                            管理伺服器
-                          </Button>
-                        </CardFooter>
-                      )}
-                    </Card>
-                  </Link>
+                    </Link>
+
+                    {isOwner && (
+                      <CardFooter>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            router.push(`/profile/servers/${server.id}/edit`);
+                          }}
+                          className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
+                        >
+                          管理伺服器
+                        </Button>
+                        {/* <PinButton
+                          variant="outline"
+                          size="sm"
+                          id={server.id}
+                          type="server"
+                          className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
+                        /> */}
+                      </CardFooter>
+                    )}
+                  </Card>
                 ))}
               </div>
             ) : (
@@ -249,78 +258,87 @@ export default function UserProfile({ id }: { id?: string }) {
 
             {viewedUser.developedBots.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {viewedUser.developedBots.map(bot => (
-                  <Link href={`/bots/${bot.id}`} key={bot.id} className="block">
-                    <Card className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200">
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
-                            <img
-                              src={
-                                bot.icon ||
-                                '/placeholder.svg?height=40&width=40'
-                              }
-                              alt={bot.name}
-                              className="w-full h-full object-cover"
-                            />
+                {viewedUser.developedBots
+                  .filter(bot => bot.status !== 'rejected')
+                  .map(bot => (
+                    <Card
+                      className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200"
+                      key={bot.id}
+                    >
+                      <Link href={`/bots/${bot.id}`} className="block">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
+                              <img
+                                src={
+                                  bot.icon ||
+                                  '/placeholder.svg?height=40&width=40'
+                                }
+                                alt={bot.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-white">
+                                {bot.name}
+                              </CardTitle>
+                              {bot.verified && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Badge className="discord text-white text-sm px-3 rounded-full gap-1 inline-flex items-center cursor-default hover:bg-[#5865F2] hover:text-white">
+                                        <FaCheck className="w-3.5 h-3.5" />
+                                        驗證
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      已驗證的 Discord 機器人
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <CardTitle className="text-white">
-                              {bot.name}
-                            </CardTitle>
-                            {bot.verified && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Badge className="discord text-white text-sm px-3 rounded-full gap-1 inline-flex items-center cursor-default hover:bg-[#5865F2] hover:text-white">
-                                      <FaCheck className="w-3.5 h-3.5" />
-                                      驗證
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    已驗證的 Discord 機器人
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <p className="text-gray-300 text-sm line-clamp-2">
-                          {bot.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {bot.tags.slice(0, 3).map(tag => (
-                            <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="bg-[#36393f] text-gray-300 text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-400 mt-2">
-                          <Users size={14} className="mr-1" />
-                          <span>{bot.servers.toLocaleString()} 伺服器</span>
-                        </div>
-                        {bot.status === 'pending' && (
-                          <div className="flex items-center text-sm text-yellow-500 mt-2">
-                            <Clock size={14} className="mr-1" />
-                            <span>機器人仍在審核中</span>
-                          </div>
-                        )}
+                        </CardHeader>
 
-                        {bot.status === 'approved' && (
-                          <div className="flex items-center text-sm text-green-500 mt-2">
-                            <CheckCircle size={14} className="mr-1" />
-                            <span>機器人已通過審核</span>
+                        <CardContent className="pb-2">
+                          <p className="text-gray-300 text-sm line-clamp-2">
+                            {bot.description}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {bot.tags.slice(0, 3).map(tag => (
+                              <Badge
+                                key={tag}
+                                variant="secondary"
+                                className="bg-[#36393f] text-gray-300 text-xs"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
                           </div>
-                        )}
-                      </CardContent>
+                          <div className="flex items-center text-sm text-gray-400 mt-2">
+                            <Users size={14} className="mr-1" />
+                            <span>{bot.servers.toLocaleString()} 伺服器</span>
+                          </div>
+
+                          {bot.status === 'pending' && (
+                            <div className="flex items-center text-sm text-yellow-500 mt-2">
+                              <Clock size={14} className="mr-1" />
+                              <span>機器人仍在審核中</span>
+                            </div>
+                          )}
+
+                          {bot.status === 'approved' && (
+                            <div className="flex items-center text-sm text-green-500 mt-2">
+                              <CheckCircle size={14} className="mr-1" />
+                              <span>機器人已通過審核</span>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Link>
+
                       {isOwner && (
-                        <CardFooter>
+                        <CardFooter className="flex flex-col space-y-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -332,11 +350,18 @@ export default function UserProfile({ id }: { id?: string }) {
                           >
                             管理機器人
                           </Button>
+
+                          {/* <PinButton
+                            variant="outline"
+                            size="sm"
+                            id={bot.id}
+                            type="bot"
+                            className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
+                          /> */}
                         </CardFooter>
                       )}
                     </Card>
-                  </Link>
-                ))}
+                  ))}
               </div>
             ) : (
               <div className="bg-[#2b2d31] rounded-lg p-8 text-center">

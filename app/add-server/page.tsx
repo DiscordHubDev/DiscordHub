@@ -3,7 +3,6 @@ import ServerClient from '@/components/server/server-home';
 import { authOptions } from '@/lib/authOptions';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { addServerAdmin, getServerByGuildId } from '@/lib/actions/servers';
 import { Metadata } from 'next';
 
 const keywords = [

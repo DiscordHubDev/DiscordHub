@@ -141,33 +141,103 @@ export async function updateBot(
   ]);
 }
 
+export async function getUserVotesForBots(userId: string, botIds: string[]) {
+  const votes = await prisma.vote.findMany({
+    where: {
+      userId: userId,
+      itemId: {
+        in: botIds,
+      },
+      itemType: 'bot',
+    },
+    select: {
+      itemId: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return new Map(votes.map(vote => [vote.itemId, vote]));
+}
+
 export async function getAllBots() {
-  const bots = await prisma.bot.findMany({
+  return await prisma.bot.findMany({
     where: {
       status: 'approved',
     },
     include: {
-      developers: true,
-      commands: true,
+      developers: {
+        select: {
+          id: true,
+          username: true,
+          avatar: true,
+          banner: true,
+          banner_color: true,
+          bio: true,
+          joinedAt: true,
+          social: true,
+        },
+      },
+      commands: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          usage: true,
+          category: true,
+        },
+      },
+      favoritedBy: {
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: {
+      upvotes: 'desc',
     },
   });
-
-  return bots;
 }
 
 export async function getBot(id: string) {
-  const bot = await prisma.bot.findFirst({
+  return await prisma.bot.findFirst({
     where: {
-      id,
+      id: id,
       status: 'approved',
     },
     include: {
-      developers: true,
-      commands: true,
-      favoritedBy: true,
+      developers: {
+        select: {
+          id: true,
+          username: true,
+          avatar: true,
+          banner: true,
+          banner_color: true,
+          bio: true,
+          joinedAt: true,
+          social: true,
+        },
+      },
+      commands: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          usage: true,
+          category: true,
+        },
+      },
+      favoritedBy: {
+        select: {
+          id: true,
+          username: true,
+          avatar: true,
+        },
+      },
     },
   });
-  return bot;
 }
 
 export async function getBotForEdit(id: string) {

@@ -8,14 +8,15 @@ import { prisma } from './prisma';
 
 // ==================== 常數定義 ====================
 const LIMITS = {
-  CONCURRENT_REQUESTS: 50,
-  DETAILED_REQUESTS: 25,
-  MAX_RETRIES: 3,
-  BASE_DELAY: 100,
-  TIMEOUT: 8000,
-  BATCH_DELAY: 10,
-  CACHE_TTL: 600,
+  CONCURRENT_REQUESTS: 80, // 增加並發數
+  DETAILED_REQUESTS: 40, // 增加詳細請求並發數
+  MAX_RETRIES: 2, // 減少重試次數
+  BASE_DELAY: 50, // 減少基礎延遲
+  TIMEOUT: 5000, // 減少超時時間
+  BATCH_DELAY: 5, // 減少批次延遲
+  CACHE_TTL: 1800, // 增加快取時間到30分鐘
   IMAGE_SIZE: 512,
+  PREFETCH_THRESHOLD: 10, // 預取閾值
 } as const;
 
 const ENDPOINTS = {
@@ -97,20 +98,87 @@ type ServerAdminPair = {
   userId: string;
 };
 
+// ==================== 智能預取管理器 ====================
+class PrefetchManager {
+  private static readonly activeRequests = new Map<string, Promise<any>>();
+  private static readonly prefetchQueue = new Set<string>();
+
+  static async smartPrefetch(
+    guildIds: string[],
+    userId: string,
+  ): Promise<void> {
+    const unprefetched = guildIds.filter(id => {
+      const cacheKey = `guild:details:${id}:v2`;
+      return !this.activeRequests.has(cacheKey) && !this.prefetchQueue.has(id);
+    });
+
+    if (unprefetched.length === 0) return;
+
+    // 異步預取，不阻塞主流程
+    setTimeout(() => {
+      this.executePrefetch(unprefetched.slice(0, LIMITS.PREFETCH_THRESHOLD));
+    }, 0);
+  }
+
+  private static async executePrefetch(guildIds: string[]): Promise<void> {
+    const promises = guildIds.map(async guildId => {
+      this.prefetchQueue.add(guildId);
+      try {
+        await getGuildDetails(guildId);
+      } catch (error) {
+        console.warn(`Prefetch failed for ${guildId}:`, error);
+      } finally {
+        this.prefetchQueue.delete(guildId);
+      }
+    });
+
+    await Promise.allSettled(promises);
+  }
+
+  static getActiveRequest(key: string): Promise<any> | null {
+    return this.activeRequests.get(key) || null;
+  }
+
+  static setActiveRequest(key: string, promise: Promise<any>): void {
+    this.activeRequests.set(key, promise);
+    promise.finally(() => this.activeRequests.delete(key));
+  }
+}
+
 // ==================== 批次快取管理器優化 ====================
 class CacheManager {
   private static readonly pendingGets = new Map<string, Promise<any>>();
   private static readonly pendingSets = new Map<string, CacheEntry>();
   private static batchTimeout: NodeJS.Timeout | null = null;
+  private static readonly maxBatchSize = 100; // 限制批次大小
 
   static async batchGet(keys: string[]): Promise<Map<string, any>> {
     if (keys.length === 0) return new Map();
 
     const results = new Map<string, any>();
-    const uniqueKeys = [...new Set(keys)]; // 去重
+    const uniqueKeys = [...new Set(keys)];
 
-    // 批次並行處理，避免重複請求
-    const promises = uniqueKeys.map(async key => {
+    // 分批處理大量請求
+    const batches = this.createBatches(uniqueKeys, this.maxBatchSize);
+
+    await Promise.all(batches.map(batch => this.processBatch(batch, results)));
+
+    return results;
+  }
+
+  private static createBatches<T>(items: T[], batchSize: number): T[][] {
+    const batches: T[][] = [];
+    for (let i = 0; i < items.length; i += batchSize) {
+      batches.push(items.slice(i, i + batchSize));
+    }
+    return batches;
+  }
+
+  private static async processBatch(
+    keys: string[],
+    results: Map<string, any>,
+  ): Promise<void> {
+    const promises = keys.map(async key => {
       if (this.pendingGets.has(key)) {
         return this.pendingGets.get(key);
       }
@@ -129,7 +197,6 @@ class CacheManager {
     });
 
     await Promise.allSettled(promises);
-    return results;
   }
 
   private static async getCacheValue(key: string): Promise<any> {
@@ -151,9 +218,7 @@ class CacheManager {
   }
 
   private static scheduleBatchFlush(): void {
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout);
-    }
+    if (this.batchTimeout) return; // 避免重複調度
 
     this.batchTimeout = setTimeout(() => {
       this.flushSets();
@@ -167,6 +232,15 @@ class CacheManager {
 
     if (entries.length === 0) return;
 
+    // 分批處理大量寫入
+    const batches = this.createBatches(entries, 50);
+
+    await Promise.all(batches.map(batch => this.flushBatch(batch)));
+  }
+
+  private static async flushBatch(
+    entries: Array<[string, CacheEntry]>,
+  ): Promise<void> {
     const promises = entries.map(([key, { data, ttl }]) =>
       setCache(key, data, ttl).catch(error =>
         console.warn(
@@ -188,10 +262,11 @@ class CacheManager {
 class ConnectionPool {
   private static readonly config = {
     keepAlive: true,
-    maxSockets: 50,
+    maxSockets: 100, // 增加最大連線數
     timeout: LIMITS.TIMEOUT,
-    keepAliveMsecs: 1000,
-    maxFreeSockets: 10,
+    keepAliveMsecs: 500, // 減少 keep-alive 時間
+    maxFreeSockets: 20, // 增加空閒連線池
+    scheduling: 'fifo', // 使用 FIFO 調度
   };
 
   private static readonly agents = {
@@ -242,9 +317,18 @@ class Utils {
   static isNetworkError(error: unknown): boolean {
     if (!(error instanceof Error)) return false;
 
-    const networkErrorNames = ['AbortError', 'TypeError', 'TimeoutError'];
+    const networkErrorNames = [
+      'AbortError',
+      'TypeError',
+      'TimeoutError',
+      'ECONNRESET',
+      'ETIMEDOUT',
+    ];
     return (
-      networkErrorNames.includes(error.name) || error.message.includes('fetch')
+      networkErrorNames.includes(error.name) ||
+      error.message.includes('fetch') ||
+      error.message.includes('timeout') ||
+      error.message.includes('network')
     );
   }
 
@@ -275,16 +359,41 @@ class Utils {
   static sortByMemberCount<T extends { memberCount: number }>(items: T[]): T[] {
     return items.sort((a, b) => b.memberCount - a.memberCount);
   }
+
+  // 新增：快速過濾和映射
+  static fastFilter<T>(items: T[], predicate: (item: T) => boolean): T[] {
+    const result: T[] = [];
+    for (let i = 0; i < items.length; i++) {
+      if (predicate(items[i])) {
+        result.push(items[i]);
+      }
+    }
+    return result;
+  }
 }
 
 // ==================== 智慧重試機制優化 ====================
 class RetryManager {
+  private static readonly circuitBreaker = new Map<
+    string,
+    {
+      failures: number;
+      lastFailure: number;
+      isOpen: boolean;
+    }
+  >();
+
   static async smartFetchWithRetry(
     url: string,
     options: RequestInit,
     retryCount = 0,
     type: 'user' | 'bot' = 'bot',
   ): Promise<Response> {
+    // 檢查熔斷器
+    if (this.isCircuitOpen(url)) {
+      throw new Error(`Circuit breaker open for ${url}`);
+    }
+
     const enhancedOptions = {
       ...options,
       agent:
@@ -296,6 +405,10 @@ class RetryManager {
 
     try {
       const response = await fetch(url, enhancedOptions);
+
+      // 成功則重置熔斷器
+      this.resetCircuitBreaker(url);
+
       return await this.handleResponse(
         response,
         url,
@@ -304,8 +417,44 @@ class RetryManager {
         type,
       );
     } catch (error) {
+      this.recordFailure(url);
       return await this.handleError(error, url, options, retryCount, type);
     }
+  }
+
+  private static isCircuitOpen(url: string): boolean {
+    const state = this.circuitBreaker.get(url);
+    if (!state) return false;
+
+    const now = Date.now();
+    // 30秒後重試
+    if (state.isOpen && now - state.lastFailure > 30000) {
+      state.isOpen = false;
+      state.failures = 0;
+    }
+
+    return state.isOpen;
+  }
+
+  private static recordFailure(url: string): void {
+    const state = this.circuitBreaker.get(url) || {
+      failures: 0,
+      lastFailure: 0,
+      isOpen: false,
+    };
+    state.failures++;
+    state.lastFailure = Date.now();
+
+    // 連續失敗5次則開啟熔斷器
+    if (state.failures >= 5) {
+      state.isOpen = true;
+    }
+
+    this.circuitBreaker.set(url, state);
+  }
+
+  private static resetCircuitBreaker(url: string): void {
+    this.circuitBreaker.delete(url);
   }
 
   private static async handleResponse(
@@ -356,7 +505,7 @@ class RetryManager {
 
     const retryAfter = response.headers.get('retry-after');
     const delay = retryAfter
-      ? parseInt(retryAfter) * 1000
+      ? Math.min(parseInt(retryAfter) * 1000, 5000) // 最大等待5秒
       : this.calculateDelay(retryCount);
 
     console.log(
@@ -401,12 +550,17 @@ class RetryManager {
   }
 
   private static calculateDelay(retryCount: number): number {
-    return LIMITS.BASE_DELAY * Math.pow(2, retryCount);
+    // 使用 jitter 避免驚群效應
+    const baseDelay = LIMITS.BASE_DELAY * Math.pow(1.5, retryCount);
+    const jitter = Math.random() * 0.3 * baseDelay;
+    return Math.min(baseDelay + jitter, 2000); // 最大延遲2秒
   }
 }
 
 // ==================== HTTP 請求工具 ====================
 class HttpClient {
+  private static readonly requestCache = new Map<string, Promise<any>>();
+
   static createHeaders(
     token: string,
     type: 'bot' | 'bearer',
@@ -420,6 +574,24 @@ class HttpClient {
   }
 
   static async fetchUserGuilds(accessToken: string): Promise<DiscordGuild[]> {
+    const cacheKey = `user_guilds:${accessToken.slice(-10)}`;
+
+    if (this.requestCache.has(cacheKey)) {
+      return this.requestCache.get(cacheKey);
+    }
+
+    const promise = this.performUserGuildsFetch(accessToken);
+    this.requestCache.set(cacheKey, promise);
+
+    // 清理快取
+    setTimeout(() => this.requestCache.delete(cacheKey), 30000);
+
+    return promise;
+  }
+
+  private static async performUserGuildsFetch(
+    accessToken: string,
+  ): Promise<DiscordGuild[]> {
     const response = await RetryManager.smartFetchWithRetry(
       ENDPOINTS.DISCORD_GUILDS,
       { headers: this.createHeaders(accessToken, 'bearer') },
@@ -440,6 +612,22 @@ class HttpClient {
   }
 
   static async fetchBotGuilds(): Promise<DiscordGuild[]> {
+    const cacheKey = 'bot_guilds';
+
+    if (this.requestCache.has(cacheKey)) {
+      return this.requestCache.get(cacheKey);
+    }
+
+    const promise = this.performBotGuildsFetch();
+    this.requestCache.set(cacheKey, promise);
+
+    // 清理快取
+    setTimeout(() => this.requestCache.delete(cacheKey), 60000);
+
+    return promise;
+  }
+
+  private static async performBotGuildsFetch(): Promise<DiscordGuild[]> {
     const response = await RetryManager.smartFetchWithRetry(
       ENDPOINTS.DISCORD_GUILDS,
       { headers: this.createHeaders(BOT_TOKEN, 'bot') },
@@ -480,43 +668,55 @@ export async function getGuildDetails(
 ): Promise<ActiveServerInfo | null> {
   const cacheKey = `guild:details:${guildId}:v2`;
 
+  // 檢查是否有正在進行的請求
+  const activeRequest = PrefetchManager.getActiveRequest(cacheKey);
+  if (activeRequest) {
+    try {
+      return await activeRequest;
+    } catch (error) {
+      console.warn(`Active request failed for ${guildId}:`, error);
+    }
+  }
+
   // 檢查快取
   const cached = await getCache(cacheKey);
   if (cached && Utils.isValidActiveServerInfo(cached)) {
     return cached;
   }
 
-  try {
-    console.time(`⚡ guild-details-${guildId}`);
+  const promise = (async () => {
+    try {
+      const data = await HttpClient.fetchGuildDetails(guildId);
+      if (!data) return null;
 
-    const data = await HttpClient.fetchGuildDetails(guildId);
-    if (!data) return null;
+      const guildInfo: ActiveServerInfo = {
+        id: data.id,
+        name: data.name,
+        icon: Utils.getDiscordImageUrl('icon', data.id, data.icon),
+        banner: Utils.getDiscordImageUrl('banner', data.id, data.banner),
+        owner: data.owner_id,
+        memberCount: data.approximate_member_count ?? 0,
+        OnlineMemberCount: data.approximate_presence_count ?? 0,
+        admins: [],
+        isInServer: true,
+        isPublished: false,
+      };
 
-    const guildInfo: ActiveServerInfo = {
-      id: data.id,
-      name: data.name,
-      icon: Utils.getDiscordImageUrl('icon', data.id, data.icon),
-      banner: Utils.getDiscordImageUrl('banner', data.id, data.banner),
-      owner: data.owner_id,
-      memberCount: data.approximate_member_count ?? 0,
-      OnlineMemberCount: data.approximate_presence_count ?? 0,
-      admins: [],
-      isInServer: true,
-      isPublished: false,
-    };
+      // 異步快取
+      CacheManager.batchSet(cacheKey, guildInfo, LIMITS.CACHE_TTL);
 
-    // 異步快取
-    CacheManager.batchSet(cacheKey, guildInfo, LIMITS.CACHE_TTL);
+      return guildInfo;
+    } catch (error: unknown) {
+      console.error(
+        `💥 Error fetching guild details for ${guildId}:`,
+        Utils.getErrorMessage(error),
+      );
+      return null;
+    }
+  })();
 
-    console.timeEnd(`⚡ guild-details-${guildId}`);
-    return guildInfo;
-  } catch (error: unknown) {
-    console.error(
-      `💥 Error fetching guild details for ${guildId}:`,
-      Utils.getErrorMessage(error),
-    );
-    return null;
-  }
+  PrefetchManager.setActiveRequest(cacheKey, promise);
+  return promise;
 }
 
 export async function getUserGuildsWithBotStatus(
@@ -526,8 +726,6 @@ export async function getUserGuildsWithBotStatus(
   activeServers: MinimalServerInfo[];
   inactiveServers: MinimalServerInfo[];
 }> {
-  console.time('🚀 getUserGuildsWithBotStatus');
-
   try {
     // 並行執行初始請求
     const [userCheck, userGuilds, botGuilds] = await Promise.all([
@@ -548,15 +746,22 @@ export async function getUserGuildsWithBotStatus(
       `📊 Processing ${userGuilds.length} user guilds, ${botGuilds.length} bot guilds`,
     );
 
-    // 過濾和索引建立
-    const manageableGuilds = userGuilds.filter(guild =>
+    // 使用快速過濾優化
+    const manageableGuilds = Utils.fastFilter(userGuilds, guild =>
       Utils.hasManageGuildPermission(guild.permissions),
     );
+
     const botGuildIdSet = new Set(botGuilds.map(guild => guild.id));
     const guildIds = manageableGuilds.map(guild => guild.id);
 
     // 並行獲取發布狀態
     const publishedGuildSet = await getPublishedServerMap(guildIds);
+
+    // 啟動智能預取
+    const activeGuildIds = guildIds.filter(id => botGuildIdSet.has(id));
+    if (activeGuildIds.length > 0) {
+      PrefetchManager.smartPrefetch(activeGuildIds, userId);
+    }
 
     // 處理結果
     const results = await processGuilds(
@@ -566,7 +771,6 @@ export async function getUserGuildsWithBotStatus(
       userId,
     );
 
-    console.timeEnd('🚀 getUserGuildsWithBotStatus');
     console.log(
       `✅ Processed: ${results.activeServers.length} active, ${results.inactiveServers.length} inactive servers`,
     );
@@ -577,7 +781,6 @@ export async function getUserGuildsWithBotStatus(
       '💥 Critical error in getUserGuildsWithBotStatus:',
       Utils.getErrorMessage(error),
     );
-    console.timeEnd('🚀 getUserGuildsWithBotStatus');
     throw error;
   }
 }
@@ -596,7 +799,9 @@ async function processGuilds(
   const inactiveServers: MinimalServerInfo[] = [];
   const serverAdminPairs: ServerAdminPair[] = [];
 
-  console.time('⚡ guild-processing');
+  // 預先分配數組容量以提高性能
+  activeServers.length = 0;
+  inactiveServers.length = 0;
 
   await Promise.all(
     guilds.map(guild =>
@@ -631,16 +836,17 @@ async function processGuilds(
     ),
   );
 
-  console.timeEnd('⚡ guild-processing');
-
   // 異步處理管理員插入
   if (serverAdminPairs.length > 0) {
-    bulkInsertServerAdmins(serverAdminPairs).catch((error: unknown) =>
-      console.error(
-        '💥 Background admin insert failed:',
-        Utils.getErrorMessage(error),
-      ),
-    );
+    // 不等待，完全異步處理
+    setImmediate(() => {
+      bulkInsertServerAdmins(serverAdminPairs).catch((error: unknown) =>
+        console.error(
+          '💥 Background admin insert failed:',
+          Utils.getErrorMessage(error),
+        ),
+      );
+    });
   }
 
   return {
@@ -654,10 +860,8 @@ export async function getBatchGuildDetails(
 ): Promise<Map<string, ActiveServerInfo>> {
   if (guildIds.length === 0) return new Map();
 
-  console.time(`⚡ batch-guild-details-${guildIds.length}`);
-
   const results = new Map<string, ActiveServerInfo>();
-  const uniqueIds = [...new Set(guildIds)]; // 去重
+  const uniqueIds = [...new Set(guildIds)];
   const cacheKeys = uniqueIds.map(id => `guild:details:${id}:v2`);
 
   // 批次檢查快取
@@ -678,7 +882,6 @@ export async function getBatchGuildDetails(
   );
 
   if (uncachedIds.length === 0) {
-    console.timeEnd(`⚡ batch-guild-details-${guildIds.length}`);
     return results;
   }
 
@@ -701,12 +904,16 @@ export async function getBatchGuildDetails(
     ),
   );
 
-  console.timeEnd(`⚡ batch-guild-details-${guildIds.length}`);
   return results;
 }
 
 // ==================== 導出 ====================
-export { CacheManager, ConnectionPool, RetryManager as smartFetchWithRetry };
+export {
+  CacheManager,
+  ConnectionPool,
+  RetryManager as smartFetchWithRetry,
+  PrefetchManager,
+};
 
 // 清理資源的函式
 export function cleanup(): void {

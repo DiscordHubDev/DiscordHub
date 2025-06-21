@@ -22,15 +22,14 @@ import {
 import { checkVoteCooldown } from '@/lib/actions/check-vote-cooldown';
 import { useRouter } from 'next/navigation';
 import { GetUserBySession } from '@/lib/actions/user';
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { getServerByGuildId } from '@/lib/actions/servers';
-import { toast } from 'react-toastify';
 import { getBot } from '@/lib/actions/bots';
-import { getRandomEmbedColor } from '@/lib/utils';
 import { useError } from '@/context/ErrorContext';
+import { useCooldownController } from '@/hooks/use-cooldown';
 
 async function sendDataToWebServerOrDiscord(
-  type: string,
+  type: 'bot' | 'server',
   user: UserType,
   server?: ServerType,
   bot?: BotWithFavorites,
@@ -39,59 +38,40 @@ async function sendDataToWebServerOrDiscord(
 
   if (!target?.VoteNotificationURL) return;
 
-  const url = target.VoteNotificationURL;
-  const isDiscordWebhook = url.startsWith('https://discord.com/api/webhooks/');
-
-  const payload = isDiscordWebhook
-    ? {
-        content: `<@${user.id}>`,
-        embeds: [
-          {
-            author: {
-              name: user.username,
-              icon_url: user.avatar,
-            },
-            title: '❤️ | 感謝投票!',
-            url: 'https://dchubs.org',
-            description: `感謝您的支持與投票！您的每一票都是讓${bot ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${bot ? 'bots' : 'servers'}/${target.id}) 投票一次，讓更多人發現我們的${bot ? '機器人' : '伺服器'}吧！✨`,
-            color: getRandomEmbedColor(),
-            footer: {
-              text: 'Powered by DcHubs Vote System',
-              icon_url:
-                'https://images-ext-1.discordapp.net/external/UPq4fK1TpfNlL5xKNkZwqO02wPJoX-yd9IKkk5UnyP8/%3Fsize%3D512%26format%3Dwebp/https/cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?format=webp',
-            },
-          },
-        ],
-      }
-    : {
-        userId: user.id,
-        username: user.username,
-        userAvatar: user.avatar,
-        votedAt: new Date().toISOString(),
-        itemId: target.id,
-        itemType: type,
-        itemName: target.name,
-      };
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+  const payload = {
+    type,
+    user: {
+      id: user.id,
+      username: user.username,
+      avatar: user.avatar,
+    },
+    target: {
+      id: target.id,
+      name: target.name,
+      VoteNotificationURL: target.VoteNotificationURL,
+      secret: target.secret,
+    },
   };
 
-  if (!isDiscordWebhook && target.secret) {
-    headers['x-api-secret'] = target.secret;
-  }
+  try {
+    const res = await fetch('/api/vote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload),
-  });
+    if (!res.ok) {
+      console.error('Vote forwarding failed');
+      return null;
+    }
 
-  if (!res.ok) {
+    return await res.json().catch(() => null);
+  } catch (err) {
+    console.error('Failed to send vote', err);
     return null;
   }
-
-  return res.status === 204 ? null : await res.json().catch(() => null);
 }
 
 interface VoteButtonProps {
@@ -123,9 +103,7 @@ export default function VoteButton({
   const [hasVoted, setHasVoted] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
-  const [cooldownInterval, setCooldownInterval] =
-    useState<NodeJS.Timeout | null>(null);
+  const { remaining, start } = useCooldownController();
 
   const router = useRouter();
   const { data: session } = useSession();
@@ -136,35 +114,46 @@ export default function VoteButton({
   }
 
   useEffect(() => {
+    if (remaining === 0) {
+      setHasVoted(false);
+    }
+  }, [remaining]);
+
+  useEffect(() => {
     const fetchCooldown = async () => {
+      // 先檢查 localStorage 是否有緩存的冷卻時間
+      const cacheKey = `vote_cooldown_${id}_${type}`;
+      const cachedData = localStorage.getItem(cacheKey);
+
+      if (cachedData) {
+        const { endTime } = JSON.parse(cachedData);
+        const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+
+        if (remaining > 0) {
+          setHasVoted(true);
+          start(remaining);
+          return; // 不需要查詢資料庫
+        } else {
+          // 冷卻時間已過，清除緩存
+          localStorage.removeItem(cacheKey);
+        }
+      }
+
+      // 只有在沒有有效緩存時才查詢資料庫
       const result = await checkVoteCooldown(id, type as VoteType);
+
       if (result.cooldown > 0) {
         setHasVoted(true);
-        setCooldown(result.cooldown);
+        start(result.cooldown);
 
-        const interval = setInterval(() => {
-          setCooldown(prev => {
-            if (prev <= 1) {
-              clearInterval(interval);
-              setHasVoted(false);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-
-        setCooldownInterval(interval);
+        // 緩存結束時間
+        const endTime = Date.now() + result.cooldown * 1000;
+        localStorage.setItem(cacheKey, JSON.stringify({ endTime }));
       }
     };
 
     fetchCooldown();
-
-    return () => {
-      if (cooldownInterval) {
-        clearInterval(cooldownInterval);
-      }
-    };
-  }, [id, type]);
+  }, [id, type, start]);
 
   // 發送 Discord Webhook
   const sendWebhook = async (
@@ -208,7 +197,6 @@ export default function VoteButton({
     }
   };
 
-  // 處理投票
   const handleVote = async () => {
     if (hasVoted) return;
 
@@ -218,6 +206,12 @@ export default function VoteButton({
     const updatedVotes = vote.upvotes ?? 0;
 
     const user = await GetUserBySession(session);
+
+    if (!user) {
+      showError('請先登入！');
+      setIsVoting(false);
+      return;
+    }
 
     let server: ServerType | undefined;
     let bot: BotWithFavorites | undefined;
@@ -229,16 +223,15 @@ export default function VoteButton({
       bot = result ?? undefined;
     }
 
-    if (!user) throw new Error('User not found.');
-
+    // 處理錯誤情況
     if (!vote.success) {
       if (vote.error === 'COOLDOWN') {
         const remainingSec = vote.remaining
           ? Math.ceil(vote.remaining / 1000)
           : 0;
 
-        setCooldown(remainingSec);
         setHasVoted(true);
+        start(remainingSec); // ✅ 啟動倒數
       }
 
       if (vote.error === 'NOT_LOGGED_IN') {
@@ -249,33 +242,20 @@ export default function VoteButton({
       return;
     }
 
+    // ✅ 投票成功
     setVotes(updatedVotes);
     onVote(updatedVotes);
-    setCooldown(43200);
     setHasVoted(true);
     setShowDialog(true);
     setIsVoting(false);
 
-    if (!user) return;
+    start(43200); // ✅ 啟動 12 小時倒數（43200 秒）
 
     await sendDataToWebServerOrDiscord(type, user, server, bot);
 
     router.refresh();
 
     await sendWebhook(user, server, bot);
-
-    // 啟動倒數
-    const interval = setInterval(() => {
-      setCooldown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setHasVoted(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    setCooldownInterval(interval);
   };
 
   // 格式化冷卻時間
@@ -311,10 +291,10 @@ export default function VoteButton({
           <div className="flex items-center">
             <Clock size={16} className="mr-1.5" />
             <span className="hidden sm:inline">
-              {formatCooldown?.(cooldown ?? 0)}
+              {formatCooldown?.(remaining ?? 0)}
             </span>
             <span className="sm:hidden">
-              {Math.floor((cooldown ?? 0) / 3600)}小時
+              {Math.floor((remaining ?? 0) / 3600)}小時
             </span>
           </div>
         ) : (
@@ -338,10 +318,10 @@ export default function VoteButton({
           <div className="py-4">
             <div className="flex justify-between text-sm mb-2">
               <span>投票冷卻時間</span>
-              <span>{formatCooldown(cooldown)}</span>
+              <span>{formatCooldown(remaining)}</span>
             </div>
             <Progress
-              value={((43200 - cooldown) / 43200) * 100}
+              value={((43200 - remaining) / 43200) * 100}
               className="h-2 bg-[#36393f]"
             />
             <p className="text-gray-400 text-sm mt-2">

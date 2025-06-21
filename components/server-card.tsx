@@ -1,10 +1,11 @@
-import { Users, ArrowUp, Clock } from 'lucide-react';
+import { Users, ArrowUp, Clock, Pin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
 import { ServerType } from '@/lib/prisma_type';
+import clsx from 'clsx';
 
 interface ServerCardProps {
   server: ServerType;
@@ -13,7 +14,17 @@ interface ServerCardProps {
 export default function ServerCard({ server }: ServerCardProps) {
   return (
     <Link href={`/servers/${server.id}`} className="block">
-      <div className="bg-[#2b2d31] rounded-lg overflow-hidden border border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200">
+      <div
+        className={clsx(
+          'rounded-lg overflow-hidden transition-all duration-300',
+          'bg-[#2b2d31]',
+          {
+            'border border-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.6)] animate-[pulseGlow_3s_ease-in-out_infinite] hover:shadow-[0_0_20px_rgba(250,204,21,0.9)]':
+              server.pin,
+            'border border-[#1e1f22] hover:border-[#5865f2]': !server.pin,
+          },
+        )}
+      >
         <div className="flex flex-col md:flex-row">
           {/* Server Banner (mobile) */}
           {server.banner && (
@@ -48,13 +59,40 @@ export default function ServerCard({ server }: ServerCardProps) {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <h3 className="text-lg font-bold">{server.name}</h3>
+
+                <div className="flex flex-col">
+                  <h3 className="text-lg font-bold flex items-center">
+                    {server.name}
+                    {server.pin && (
+                      <Pin size={16} className="ml-2 text-yellow-400" />
+                    )}
+                  </h3>
+
+                  {/* 新增合作徽章 */}
+                  {server.pin && (
+                    <span className="mt-1 inline-flex items-center px-3 py-0.5 text-sm font-medium rounded-full bg-yellow-400 text-black hover:bg-yellow-300 transition-colors">
+                      🤝 合作伺服器
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="flex-grow">
                 {/* Server Name and Join Button (desktop) */}
                 <div className="hidden md:flex md:flex-row md:items-center justify-between mb-2">
-                  <h3 className="text-xl font-bold">{server.name}</h3>
+                  <div className="flex flex-row space-x-3">
+                    <h3 className="text-xl font-bold flex items-center">
+                      {server.name}
+                      {server.pin && (
+                        <Pin size={18} className="ml-2 text-yellow-400" />
+                      )}
+                    </h3>
+                    {server.pin && (
+                      <span className="inline-flex items-center px-3 py-0.5 text-sm font-medium rounded-full bg-yellow-400 text-black hover:bg-yellow-300 transition-colors">
+                        🤝 合作伺服器
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center">
                     <Button
                       size="sm"
