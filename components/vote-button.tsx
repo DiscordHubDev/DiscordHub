@@ -14,6 +14,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Vote } from '@/lib/actions/vote';
 import {
+  BotType,
   BotWithFavorites,
   ServerType,
   UserType,
@@ -32,7 +33,7 @@ async function sendDataToWebServerOrDiscord(
   type: 'bot' | 'server',
   user: UserType,
   server?: ServerType,
-  bot?: BotWithFavorites,
+  bot?: BotType,
 ) {
   const target = server ?? bot;
 
@@ -54,7 +55,7 @@ async function sendDataToWebServerOrDiscord(
   };
 
   try {
-    const res = await fetch('/api/vote', {
+    const res = await fetch('/api/proxy/vote_api', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -159,7 +160,7 @@ export default function VoteButton({
   const sendWebhook = async (
     user: UserType,
     server?: ServerType,
-    bot?: BotWithFavorites,
+    bot?: BotType,
   ) => {
     const target = (server ?? bot)!;
     const webhookUrl =
@@ -214,7 +215,7 @@ export default function VoteButton({
     }
 
     let server: ServerType | undefined;
-    let bot: BotWithFavorites | undefined;
+    let bot: BotType | undefined;
 
     if (type === 'server') {
       server = await getServerByGuildId(id);

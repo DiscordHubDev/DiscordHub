@@ -1,33 +1,13 @@
-import {
-  getAllServers,
-  getServerByGuildId,
-  getServerWithFavoritedByGuildId,
-} from '@/lib/actions/servers';
 import { notFound } from 'next/navigation';
 import ServerDetailClientPage from './client';
 import { authOptions } from '@/lib/authOptions';
 import { getServerSession } from 'next-auth';
 import { Metadata } from 'next';
-import { unstable_cache } from 'next/cache';
-
-const getCachedAllServers = unstable_cache(
-  async () => getAllServers(),
-  ['servers', 'all'],
-  { revalidate: 60 },
-);
-
-const getCachedServerByGuildId = unstable_cache(
-  async (id: string) => getServerByGuildId(id),
-  ['servers', 'by-guild-id'],
-  { revalidate: 60 },
-);
-
-const getCachedServerWithFavorited = unstable_cache(
-  async (userId: string | undefined, id: string) =>
-    getServerWithFavoritedByGuildId(userId, id),
-  ['servers', 'with-favorited'],
-  { revalidate: 60 },
-);
+import {
+  getCachedAllServers,
+  getCachedServerByGuildId,
+  getCachedServerWithFavorited,
+} from '@/lib/utils';
 
 export const revalidate = 60;
 

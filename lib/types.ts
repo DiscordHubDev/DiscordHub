@@ -33,31 +33,6 @@ export type Screenshot = {
   public_id: string;
 };
 
-export interface BotType {
-  id: string;
-  name: string;
-  description: string;
-  tags: string[];
-  servers: number;
-  users: number;
-  upvotes: number;
-  icon?: string;
-  banner?: string;
-  featured: boolean;
-  createdAt: string;
-  prefix?: string;
-  developers?: string[];
-  website?: string;
-  inviteUrl?: string;
-  supportServer?: string;
-  verified: boolean;
-  discord_verified: boolean;
-  longDescription?: string;
-  commands?: BotCommand[];
-  features?: string[];
-  screenshots?: string[];
-}
-
 interface BotCommand {
   name: string;
   description: string;

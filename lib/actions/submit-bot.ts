@@ -4,7 +4,6 @@ import { BotWithRelations, BotWithRelationsInput } from '@/lib/prisma_type';
 import { getDevelopersByIds } from '../get-developers';
 import { prisma } from '@/lib/prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { toast } from 'react-toastify';
 
 const insertBot = async (data: BotWithRelations) => {
   const { commands, developers, ...bot } = data;

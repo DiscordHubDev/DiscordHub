@@ -1,45 +1,10 @@
 import { notFound } from 'next/navigation';
-import { getAllBots, getBot, getUserVotesForBots } from '@/lib/actions/bots';
+import { getBot } from '@/lib/actions/bots';
 import { Metadata } from 'next';
 import BotDetailClient from './client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { unstable_cache } from 'next/cache';
-
-export const getCachedAllBots = unstable_cache(
-  async () => {
-    return await getAllBots();
-  },
-  ['bots-all-approved'], // 快取鍵
-  {
-    revalidate: 300, // 5 分鐘後重新驗證
-    tags: ['bots', 'all-bots'], // 標籤，用於有選擇性地清除快取
-  },
-);
-
-// 快取單個 bot 資料，快取 10 分鐘
-export const getCachedBot = unstable_cache(
-  async (id: string) => {
-    return await getBot(id);
-  },
-  ['bot-detail'], // 快取鍵前綴
-  {
-    revalidate: 600, // 10 分鐘後重新驗證
-    tags: ['bots', 'bot-detail'], // 標籤
-  },
-);
-
-// 快取用戶投票資料（較短的快取時間，因為更新頻繁）
-export const getCachedUserVotes = unstable_cache(
-  async (userId: string, botIds: string[]) => {
-    return await getUserVotesForBots(userId, botIds);
-  },
-  ['user-votes'], // 快取鍵前綴
-  {
-    revalidate: 60, // 1 分鐘後重新驗證
-    tags: ['votes', 'user-votes'],
-  },
-);
+import { getCachedAllBots, getCachedBot } from '@/lib/utils';
 
 export const revalidate = 60;
 

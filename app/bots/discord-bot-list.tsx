@@ -13,7 +13,7 @@ import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { botCategories as initialCategories } from '@/lib/bot-categories';
 import type { CategoryType } from '@/lib/types';
 import Link from 'next/link';
-import { BotWithRelations } from '@/lib/prisma_type';
+import { BotType } from '@/lib/prisma_type';
 import Pagination from '@/components/pagination';
 
 const ITEMS_PER_PAGE = 10;
@@ -21,9 +21,9 @@ const ITEMS_PER_PAGE = 10;
 export default function DiscordBotListPageClient({
   allBots,
 }: {
-  allBots: BotWithRelations[];
+  allBots: BotType[];
 }) {
-  const [bots, setBots] = useState<BotWithRelations[]>(
+  const [bots, setBots] = useState<BotType[]>(
     allBots.sort((a, b) => b.servers - a.servers),
   );
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,7 +35,7 @@ export default function DiscordBotListPageClient({
   const totalPages = Math.ceil(bots.length / ITEMS_PER_PAGE);
 
   // 渲染機器人列表
-  const renderBotListWithFallback = (servers: BotWithRelations[]) => {
+  const renderBotListWithFallback = (servers: BotType[]) => {
     if (!servers || servers.length === 0) {
       return (
         <div className="text-center text-gray-400 py-10">

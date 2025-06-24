@@ -29,17 +29,17 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BotWithRelations, ServerType } from '@/lib/prisma_type';
+import { BotType, ServerType } from '@/lib/prisma_type';
 import { deleteServerByGuildId } from '@/lib/actions/servers';
 import { deleteBot } from '@/lib/actions/bots';
 
 type BotServerManagementProps = {
-  bots: BotWithRelations[];
+  bots: BotType[];
   servers: ServerType[];
 };
 
 type ManagedItem =
-  | (BotWithRelations & { type: 'bot' })
+  | (BotType & { type: 'bot' })
   | (ServerType & { type: 'servers' });
 
 export default function BotServerManagement({

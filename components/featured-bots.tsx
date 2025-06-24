@@ -1,9 +1,8 @@
-import type { BotType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
-import { BotWithRelations } from '@/lib/prisma_type';
+import { BotType } from '@/lib/prisma_type';
 import {
   Tooltip,
   TooltipContent,
@@ -13,7 +12,7 @@ import {
 import { FaCheck } from 'react-icons/fa6';
 
 interface FeaturedBotsProps {
-  bots: BotWithRelations[];
+  bots: BotType[];
 }
 
 export default function FeaturedBots({ bots }: FeaturedBotsProps) {

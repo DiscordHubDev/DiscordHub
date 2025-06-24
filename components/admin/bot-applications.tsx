@@ -27,7 +27,7 @@ import {
   Link2,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { BotWithRelations } from '@/lib/prisma_type';
+import { BotType } from '@/lib/prisma_type';
 import { updateBotStatus } from '@/lib/actions/update-bot-status';
 import { sendNotification } from '@/lib/actions/sendNotification';
 import RejectBotDialog from '@/components/RejectBotDialog';
@@ -41,20 +41,20 @@ const webhookUrl =
   'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
 
 type BotApplicationsProps = {
-  applications: BotWithRelations[];
+  applications: BotType[];
 };
 
 export default function BotApplications({
   applications: initialData,
 }: BotApplicationsProps) {
   const [applications, setApplications] = useState(initialData);
-  const [selectedApp, setSelectedApp] = useState<BotWithRelations | null>(null);
+  const [selectedApp, setSelectedApp] = useState<BotType | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRejectDialogOpen, setRejectDialogOpen] = useState(false);
   const { showError } = useError();
 
-  const openRejectDialog = (app: BotWithRelations) => {
+  const openRejectDialog = (app: BotType) => {
     setSelectedApp(app);
     setRejectDialogOpen(true);
   };
@@ -184,7 +184,7 @@ export default function BotApplications({
     setIsDialogOpen(false);
   };
 
-  const viewDetails = (app: BotWithRelations) => {
+  const viewDetails = (app: BotType) => {
     setSelectedApp(app);
     setIsDialogOpen(true);
   };

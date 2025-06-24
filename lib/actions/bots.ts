@@ -275,6 +275,7 @@ export async function getPendingBots() {
     include: {
       developers: true,
       commands: true,
+      favoritedBy: true,
     },
     orderBy: {
       upvotes: 'desc',

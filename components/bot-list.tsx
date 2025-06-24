@@ -1,9 +1,8 @@
-import type { BotType } from '@/lib/types';
 import BotCard from './bot-card';
-import { BotWithRelations } from '@/lib/prisma_type';
+import { BotType } from '@/lib/prisma_type';
 
 interface BotListProps {
-  bots: BotWithRelations[];
+  bots: BotType[];
 }
 
 export default function BotList({ bots }: BotListProps) {

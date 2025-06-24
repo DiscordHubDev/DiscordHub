@@ -5,7 +5,7 @@ import { FaCheck } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
-import { BotWithRelations } from '@/lib/prisma_type';
+import { BotType } from '@/lib/prisma_type';
 import {
   Tooltip,
   TooltipContent,
@@ -14,7 +14,7 @@ import {
 } from './ui/tooltip';
 
 interface BotCardProps {
-  bot: BotWithRelations;
+  bot: BotType;
 }
 
 export default function BotCard({ bot }: BotCardProps) {

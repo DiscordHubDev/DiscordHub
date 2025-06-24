@@ -1,10 +1,76 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { UserProfile } from './types';
+import { unstable_cache } from 'next/cache';
+import { getAllBots, getBot, getUserVotesForBots } from './actions/bots';
+import {
+  getAllServers,
+  getServerByGuildId,
+  getServerWithFavoritedByGuildId,
+} from './actions/servers';
+
 export type PriorityInput = {
   upvotes?: number;
   servers?: number;
 };
+
+// server cache
+
+export const getCachedAllServers = unstable_cache(
+  async () => getAllServers(),
+  ['servers', 'all'],
+  { revalidate: 60 },
+);
+
+export const getCachedServerByGuildId = unstable_cache(
+  async (id: string) => getServerByGuildId(id),
+  ['servers', 'by-guild-id'],
+  { revalidate: 60 },
+);
+
+export const getCachedServerWithFavorited = unstable_cache(
+  async (userId: string | undefined, id: string) =>
+    getServerWithFavoritedByGuildId(userId, id),
+  ['servers', 'with-favorited'],
+  { revalidate: 60 },
+);
+
+// bot cache
+
+export const getCachedAllBots = unstable_cache(
+  async () => {
+    return await getAllBots();
+  },
+  ['bots-all-approved'], // 快取鍵
+  {
+    revalidate: 300, // 5 分鐘後重新驗證
+    tags: ['bots', 'all-bots'], // 標籤，用於有選擇性地清除快取
+  },
+);
+
+// 快取單個 bot 資料，快取 10 分鐘
+export const getCachedBot = unstable_cache(
+  async (id: string) => {
+    return await getBot(id);
+  },
+  ['bot-detail'], // 快取鍵前綴
+  {
+    revalidate: 600, // 10 分鐘後重新驗證
+    tags: ['bots', 'bot-detail'], // 標籤
+  },
+);
+
+// 快取用戶投票資料（較短的快取時間，因為更新頻繁）
+export const getCachedUserVotes = unstable_cache(
+  async (userId: string, botIds: string[]) => {
+    return await getUserVotesForBots(userId, botIds);
+  },
+  ['user-votes'], // 快取鍵前綴
+  {
+    revalidate: 60, // 1 分鐘後重新驗證
+    tags: ['votes', 'user-votes'],
+  },
+);
 
 export function hasAdministratorPermission(permissions: string): boolean {
   const ADMINISTRATOR = 0x00000008; // 管理員權限
