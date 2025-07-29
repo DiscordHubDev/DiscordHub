@@ -37,7 +37,7 @@ export default function AttachmentPreview({
       {isImage && (
         <div className="w-full overflow-hidden rounded-md border border-[#202225]">
           <img
-            src={attachment.url || '/placeholder.svg'}
+            src={attachment.url || '/placeholder.png'}
             alt={attachment.original_filename}
             className="w-full h-auto object-contain max-h-[300px]"
           />

@@ -161,7 +161,7 @@ export default function UserProfile({ id }: { id?: string }) {
                             <img
                               src={
                                 server.icon ||
-                                '/placeholder.svg?height=40&width=40'
+                                '/placeholder.png?height=40&width=40'
                               }
                               alt={server.name}
                               className="w-full h-full object-cover"
@@ -272,7 +272,7 @@ export default function UserProfile({ id }: { id?: string }) {
                               <img
                                 src={
                                   bot.icon ||
-                                  '/placeholder.svg?height=40&width=40'
+                                  '/placeholder.png?height=40&width=40'
                                 }
                                 alt={bot.name}
                                 className="w-full h-full object-cover"
@@ -338,7 +338,7 @@ export default function UserProfile({ id }: { id?: string }) {
                       </Link>
 
                       {isOwner && (
-                        <CardFooter className="flex flex-col space-y-2">
+                        <CardFooter>
                           <Button
                             variant="outline"
                             size="sm"
@@ -401,7 +401,7 @@ export default function UserProfile({ id }: { id?: string }) {
                                 <img
                                   src={
                                     server.icon ||
-                                    '/placeholder.svg?height=40&width=40'
+                                    '/placeholder.png?height=40&width=40'
                                   }
                                   alt={server.name}
                                   className="w-full h-full object-cover"
@@ -451,7 +451,7 @@ export default function UserProfile({ id }: { id?: string }) {
                                 <img
                                   src={
                                     bot.icon ||
-                                    '/placeholder.svg?height=40&width=40'
+                                    '/placeholder.png?height=40&width=40'
                                   }
                                   alt={bot.name}
                                   className="w-full h-full object-cover"

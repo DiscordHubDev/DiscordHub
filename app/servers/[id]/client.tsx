@@ -46,7 +46,7 @@ export default function ServerDetailClientPage({
           <div className="relative h-48 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
             {' '}
             <img
-              src={server.banner || '/placeholder.svg?height=300&width=1200'}
+              src={server.banner || '/placeholder.png?height=300&width=1200'}
               alt={`${server.name} banner`}
               className="w-full h-full object-cover"
             />
@@ -224,7 +224,7 @@ export default function ServerDetailClientPage({
                           className="rounded-lg overflow-hidden bg-[#36393f]"
                         >
                           <img
-                            src={screenshot || '/placeholder.svg'}
+                            src={screenshot || '/placeholder.png'}
                             alt={`${server.name} screenshot ${index + 1}`}
                             className="w-full h-auto"
                           />
@@ -338,7 +338,7 @@ export default function ServerDetailClientPage({
                         <img
                           src={
                             relatedServer.icon ||
-                            '/placeholder.svg?height=40&width=40'
+                            '/placeholder.png?height=40&width=40'
                           }
                           alt={relatedServer.name}
                           className="w-full h-full object-cover"

@@ -1,8 +1,7 @@
 'use client';
 
 import type React from 'react';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,86 +20,94 @@ const ITEMS_PER_PAGE = 10;
 
 type DiscordServerListProps = {
   servers: ServerType[];
+  initialLoading?: boolean;
+};
+
+// 數據處理函數
+const sortServersByCategory = (
+  servers: ServerType[],
+  category: string,
+): ServerType[] => {
+  const serversCopy = [...servers];
+
+  switch (category) {
+    case 'popular':
+      return serversCopy.sort((a, b) => {
+        if (a.pin !== b.pin) return a.pin ? -1 : 1;
+        return b.members - a.members;
+      });
+    case 'new':
+      return serversCopy.sort(
+        (a, b) =>
+          new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
+      );
+    case 'featured':
+      return serversCopy
+        .filter(server => server.members >= 1000)
+        .sort((a, b) => b.upvotes - a.upvotes)
+        .sort((a, b) => b.members - a.members);
+    case 'voted':
+      return serversCopy.sort((a, b) => b.upvotes - a.upvotes);
+    default:
+      return serversCopy;
+  }
+};
+
+const filterServersBySearch = (
+  servers: ServerType[],
+  query: string,
+): ServerType[] => {
+  if (!query.trim()) return servers;
+
+  const q = query.toLowerCase();
+  return servers.filter(
+    server =>
+      server.name.toLowerCase().includes(q) ||
+      server.description.toLowerCase().includes(q) ||
+      (Array.isArray(server.tags) &&
+        server.tags.some(tag => tag.toLowerCase().includes(q))),
+  );
 };
 
 export default function DiscordServerListPageClient({
   servers: allServers,
+  initialLoading = false,
 }: DiscordServerListProps) {
-  const [servers, setServers] = useState<ServerType[]>(
-    allServers.sort((a, b) => b.members - a.members),
-  );
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState('popular');
-  const [showNoResultMessage, setShowNoResultMessage] = useState(false);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
+  // 新增：載入狀態管理
+  const [isLoading, setIsLoading] = useState(initialLoading);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // 模擬初始載入完成（如果有初始載入狀態）
   useEffect(() => {
-    filterAndSearchServers('popular', searchQuery);
-  }, []);
+    if (initialLoading) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1000); // 1秒後完成載入
 
-  // 渲染伺服器列表
-  const renderServerListWithFallback = (servers: ServerType[]) => {
-    if (!servers || servers.length === 0) {
-      return (
-        <div className="text-center text-gray-400 py-10">
-          <p className="text-sm">找不到符合條件的伺服器 🙁</p>
-        </div>
-      );
+      return () => clearTimeout(timer);
     }
+  }, [initialLoading]);
 
-    return (
-      <>
-        <ServerList servers={servers} />
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      </>
-    );
-  };
+  // 使用 useMemo 優化數據處理
+  const processedServers = useMemo(() => {
+    if (isLoading) return [];
 
-  // 計算總頁數
-  const totalPages = Math.ceil(servers.length / ITEMS_PER_PAGE);
+    // 1. 首先根據分類過濾
+    let filteredByCategory = allServers;
 
-  // 獲取當前頁的伺服器
-  const getCurrentPageServers = () => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return servers.slice(startIndex, endIndex);
-  };
+    if (selectedCategoryIds.length > 0) {
+      const categoryNames = categories
+        .filter(cat => selectedCategoryIds.includes(cat.id))
+        .map(cat => cat.name.toLowerCase());
 
-  const calculateTotalTags = () => {
-    let totalTags = 0;
-    allServers.forEach(server => {
-      if (Array.isArray(server.tags)) {
-        totalTags += server.tags.length;
-      }
-    });
-    return totalTags;
-  };
-
-  // 當過濾條件改變時，重置頁碼
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [servers.length]);
-
-  // 處理分類過濾
-  const handleCategoryChange = (selectedCategoryIds: string[]) => {
-    if (selectedCategoryIds.length === 0) {
-      // 如果沒有選擇任何分類，顯示所有伺服器
-      setServers(allServers);
-    } else {
-      // 根據選擇的分類過濾伺服器
-      const filteredServers = allServers.filter(server => {
-        // 這裡假設伺服器的標籤與分類名稱相關
-        // 實際應用中可能需要更複雜的邏輯
-        const categoryNames = categories
-          .filter(cat => selectedCategoryIds.includes(cat.id))
-          .map(cat => cat.name.toLowerCase());
-
+      filteredByCategory = allServers.filter(server => {
         return (
           Array.isArray(server.tags) &&
           server.tags.some(tag =>
@@ -108,118 +115,133 @@ export default function DiscordServerListPageClient({
           )
         );
       });
-
-      setServers(filteredServers);
     }
+
+    // 2. 根據當前標籤排序
+    const sortedServers = sortServersByCategory(filteredByCategory, activeTab);
+
+    // 3. 根據搜索關鍵字過濾
+    const searchFiltered = filterServersBySearch(sortedServers, searchQuery);
+
+    return searchFiltered;
+  }, [
+    allServers,
+    selectedCategoryIds,
+    categories,
+    activeTab,
+    searchQuery,
+    isLoading,
+  ]);
+
+  // 計算統計數據
+  const stats = useMemo(() => {
+    if (isLoading) {
+      return {
+        totalServers: 0,
+        featuredServers: 0,
+        totalTags: 0,
+      };
+    }
+
+    const featuredCount = allServers.filter(
+      server => server.members >= 1000,
+    ).length;
+    const totalTags = allServers.reduce((total, server) => {
+      return total + (Array.isArray(server.tags) ? server.tags.length : 0);
+    }, 0);
+
+    return {
+      totalServers: allServers.length,
+      featuredServers: featuredCount,
+      totalTags,
+    };
+  }, [allServers, isLoading]);
+
+  // 計算分頁數據
+  const paginationData = useMemo(() => {
+    const totalPages = Math.ceil(processedServers.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const currentPageServers = processedServers.slice(startIndex, endIndex);
+
+    return {
+      totalPages,
+      currentPageServers,
+    };
+  }, [processedServers, currentPage]);
+
+  // 當過濾條件改變時，重置頁碼
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [processedServers.length]);
+
+  // 處理分類過濾
+  const handleCategoryChange = (newSelectedCategoryIds: string[]) => {
+    setSelectedCategoryIds(newSelectedCategoryIds);
   };
 
   // 添加自定義分類
   const handleAddCustomCategory = (categoryName: string) => {
-    // 檢查是否已存在相同名稱的分類
     const exists = categories.some(
       cat => cat.name.toLowerCase() === categoryName.toLowerCase(),
     );
 
     if (exists) return;
 
-    // 創建新分類
     const newCategory: CategoryType = {
       id: `custom-${Date.now()}`,
       name: categoryName,
-      color: `bg-[#${Math.floor(Math.random() * 16777215).toString(16)}]`, // 隨機顏色
+      color: `bg-[#${Math.floor(Math.random() * 16777215).toString(16)}]`,
       selected: true,
     };
 
-    // 更新分類列表
     const updatedCategories = [...categories, newCategory];
     setCategories(updatedCategories);
 
-    // 自動選中新分類
-    handleCategoryChange([
-      ...categories.filter(c => c.selected).map(c => c.id),
-      newCategory.id,
-    ]);
+    const updatedSelectedIds = [...selectedCategoryIds, newCategory.id];
+    setSelectedCategoryIds(updatedSelectedIds);
   };
 
-  const filterAndSearchServers = (category: string, query: string = '') => {
-    let filtered = [...allServers];
-
-    switch (category) {
-      case 'popular':
-        filtered.sort((a, b) => {
-          if (a.pin !== b.pin) return a.pin ? -1 : 1;
-          return b.members - a.members;
-        });
-        break;
-      case 'new':
-        filtered.sort(
-          (a, b) =>
-            new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(),
-        );
-        break;
-      case 'featured':
-        filtered = filtered
-          .filter(server => server.members >= 1000)
-          .sort((a, b) => b.upvotes - a.upvotes)
-          .sort((a, b) => b.members - a.members);
-        break;
-      case 'voted':
-        filtered.sort((a, b) => b.upvotes - a.upvotes);
-        break;
-    }
-
-    // 套用搜尋關鍵字
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      filtered = filtered.filter(
-        server =>
-          server.name.toLowerCase().includes(q) ||
-          server.description.toLowerCase().includes(q) ||
-          (Array.isArray(server.tags) &&
-            server.tags.some(tag => tag.toLowerCase().includes(q))),
-      );
-    }
-
-    setServers(filtered);
-
-    // 處理特殊提示（例如 featured 無資料）
-    if (filtered.length === 0) {
-      setShowNoResultMessage(true);
-    } else {
-      setShowNoResultMessage(false);
-    }
-  };
-
-  // 處理搜索
+  // 處理搜索 - 添加搜索載入狀態
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-    filterAndSearchServers(activeTab, value);
+
+    // 如果有搜索內容，顯示搜索載入狀態
+    if (value.trim()) {
+      setIsSearching(true);
+      // 模擬搜索延遲
+      setTimeout(() => {
+        setIsSearching(false);
+      }, 300);
+    } else {
+      setIsSearching(false);
+    }
   };
 
   // 處理頁面變更
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // 滾動到頁面頂部
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
   };
 
-  const allfeatured = () => {
-    let sortedServers = [...allServers];
-    sortedServers.sort((a, b) => b.members - a.members);
-    sortedServers = sortedServers.filter(server => server.members >= 1000);
-    return sortedServers.length;
-  };
-
-  // 處理標籤切換
+  // 處理標籤切換 - 添加切換載入狀態
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setCurrentPage(1);
-    filterAndSearchServers(value, searchQuery); // 套用目前搜尋內容
+
+    // 模擬標籤切換載入
+    setIsSearching(true);
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 200);
   };
+
+  // 統一的載入狀態判斷
+  const shouldShowSkeleton = isLoading || isSearching;
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -265,13 +287,11 @@ export default function DiscordServerListPageClient({
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
               size={20}
             />
-            <Button
-              type="submit"
-              className="absolute right-1 top-1/2 -translate-y-1/2 bg-white text-[#5865f2] hover:bg-white/90 sm:hidden"
-              size="icon"
-            >
-              <Search size={18} />
-            </Button>
+            {isSearching && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -323,22 +343,74 @@ export default function DiscordServerListPageClient({
 
               <TabsContent value="featured" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">精選伺服器</h2>
-                {renderServerListWithFallback(getCurrentPageServers())}
+                <ServerList
+                  servers={paginationData.currentPageServers}
+                  isLoading={shouldShowSkeleton}
+                  skeletonCount={ITEMS_PER_PAGE}
+                />
+                {!shouldShowSkeleton && paginationData.totalPages > 1 && (
+                  <div className="mt-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={paginationData.totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">熱門伺服器</h2>
-                {renderServerListWithFallback(getCurrentPageServers())}
+                <ServerList
+                  servers={paginationData.currentPageServers}
+                  isLoading={shouldShowSkeleton}
+                  skeletonCount={ITEMS_PER_PAGE}
+                />
+                {!shouldShowSkeleton && paginationData.totalPages > 1 && (
+                  <div className="mt-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={paginationData.totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">最新伺服器</h2>
-                {renderServerListWithFallback(getCurrentPageServers())}
+                <ServerList
+                  servers={paginationData.currentPageServers}
+                  isLoading={shouldShowSkeleton}
+                  skeletonCount={ITEMS_PER_PAGE}
+                />
+                {!shouldShowSkeleton && paginationData.totalPages > 1 && (
+                  <div className="mt-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={paginationData.totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="voted" className="mt-6">
                 <h2 className="text-2xl font-bold mb-4">票選伺服器</h2>
-                {renderServerListWithFallback(getCurrentPageServers())}
+                <ServerList
+                  servers={paginationData.currentPageServers}
+                  isLoading={shouldShowSkeleton}
+                  skeletonCount={ITEMS_PER_PAGE}
+                />
+                {!shouldShowSkeleton && paginationData.totalPages > 1 && (
+                  <div className="mt-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={paginationData.totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>
@@ -347,8 +419,6 @@ export default function DiscordServerListPageClient({
           <div className="lg:col-span-1 order-1 lg:order-2 hidden lg:block">
             <div className="bg-[#2b2d31] rounded-lg p-5 mb-6">
               <h3 className="text-lg font-semibold mb-4">分類</h3>
-
-              {/* 分類搜尋和自定義分類 */}
               <div className="mb-4">
                 <CategorySearch
                   categories={categories}
@@ -362,15 +432,27 @@ export default function DiscordServerListPageClient({
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">總伺服器數</span>
-                  <span className="font-medium">{allServers.length}</span>
+                  {isLoading ? (
+                    <div className="h-4 w-8 bg-[#36393f] rounded animate-pulse" />
+                  ) : (
+                    <span className="font-medium">{stats.totalServers}</span>
+                  )}
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">總精選伺服器數量</span>
-                  <span className="font-medium">{allfeatured()}</span>
+                  {isLoading ? (
+                    <div className="h-4 w-8 bg-[#36393f] rounded animate-pulse" />
+                  ) : (
+                    <span className="font-medium">{stats.featuredServers}</span>
+                  )}
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">目前已被使用的分類總數</span>
-                  <span className="font-medium">{calculateTotalTags()}</span>
+                  {isLoading ? (
+                    <div className="h-4 w-8 bg-[#36393f] rounded animate-pulse" />
+                  ) : (
+                    <span className="font-medium">{stats.totalTags}</span>
+                  )}
                 </div>
               </div>
             </div>

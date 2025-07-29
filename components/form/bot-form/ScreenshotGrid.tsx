@@ -28,7 +28,7 @@ export default function ScreenshotGrid({
         {screenshotPreviews.map((preview, index) => (
           <div key={index} className="relative group">
             <img
-              src={preview || '/placeholder.svg'}
+              src={preview || '/placeholder.png'}
               alt={`Screenshot ${index + 1}`}
               className="w-full h-32 object-cover rounded border border-[#1e1f22] cursor-pointer"
               onClick={() => setPreviewImage(preview)}

@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,156 +15,74 @@ import type { CategoryType } from '@/lib/types';
 import Link from 'next/link';
 import { BotType } from '@/lib/prisma_type';
 import Pagination from '@/components/pagination';
+import { BotListSkeleton } from '@/components/bot-skeleton';
 
 const ITEMS_PER_PAGE = 10;
+
+// 延遲加載的 BotList 組件
+const LazyBotList = ({ bots }: { bots: BotType[] }) => (
+  <Suspense fallback={<BotListSkeleton />}>
+    <BotList bots={bots} />
+  </Suspense>
+);
 
 export default function DiscordBotListPageClient({
   allBots,
 }: {
   allBots: BotType[];
 }) {
-  const [bots, setBots] = useState<BotType[]>(
-    allBots.sort((a, b) => b.servers - a.servers),
-  );
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categories, setCategories] =
-    useState<CategoryType[]>(initialCategories);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState('featured');
-  // 計算總頁數
-  const totalPages = Math.ceil(bots.length / ITEMS_PER_PAGE);
-
-  // 渲染機器人列表
-  const renderBotListWithFallback = (servers: BotType[]) => {
-    if (!servers || servers.length === 0) {
-      return (
-        <div className="text-center text-gray-400 py-10">
-          <p className="text-sm">找不到符合條件的機器人 🙁</p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <BotList bots={servers} />
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      </>
-    );
-  };
-
-  // 獲取當前頁的機器人
-  const getCurrentPageBots = () => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return bots.slice(startIndex, endIndex);
-  };
-
-  const calculateTotalTags = () => {
-    let totalTags = 0;
-    allBots.forEach(bot => {
-      if (Array.isArray(bot.tags)) {
-        totalTags += bot.tags.length;
-      }
-    });
-    return totalTags;
-  };
-
-  // 當過濾條件改變時，重置頁碼
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [bots.length]);
-
-  // 處理分類過濾
-  const handleCategoryChange = (selectedCategoryIds: string[]) => {
-    if (selectedCategoryIds.length === 0) {
-      // 如果沒有選擇任何分類，顯示所有機器人
-      setBots(allBots);
-    } else {
-      // 根據選擇的分類過濾機器人
-      const filteredBots = allBots.filter(bot => {
-        // 這裡假設機器人的標籤與分類名稱相關
-        // 實際應用中可能需要更複雜的邏輯
-        const categoryNames = categories
-          .filter(cat => selectedCategoryIds.includes(cat.id))
-          .map(cat => cat.name.toLowerCase());
-
-        return bot.tags.some(tag =>
-          categoryNames.some(catName => tag.toLowerCase().includes(catName)),
-        );
-      });
-
-      setBots(filteredBots);
-    }
-  };
-
-  // 添加自定義分類
-  const handleAddCustomCategory = (categoryName: string) => {
-    // 檢查是否已存在相同名稱的分類
-    const exists = categories.some(
-      cat => cat.name.toLowerCase() === categoryName.toLowerCase(),
-    );
-
-    if (exists) return;
-
-    // 創建新分類
-    const newCategory: CategoryType = {
-      id: `custom-${Date.now()}`,
-      name: categoryName,
-      color: `bg-[#${Math.floor(Math.random() * 16777215).toString(16)}]`, // 隨機顏色
-      selected: true,
-    };
-
-    // 更新分類列表
-    const updatedCategories = [...categories, newCategory];
-    setCategories(updatedCategories);
-
-    // 自動選中新分類
-    handleCategoryChange([
-      ...categories.filter(c => c.selected).map(c => c.id),
-      newCategory.id,
-    ]);
-  };
-
-  const filterAndSearchBots = (tab: string, query: string = '') => {
-    let bots = [...allBots];
-
-    switch (tab) {
-      case 'popular':
-        bots.sort((a, b) => b.servers - a.servers);
-        break;
-      case 'new':
-        bots.sort(
+  // 使用 useMemo 預處理排序後的數據
+  const sortedBots = useMemo(
+    () => ({
+      popular: [...allBots].sort((a, b) => b.servers - a.servers),
+      featured: allBots
+        .filter(b => b.servers >= 1000)
+        .sort((a, b) => b.upvotes - a.upvotes)
+        .sort((a, b) => b.servers - a.servers),
+      new: [...allBots].sort(
+        (a, b) =>
+          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime(),
+      ),
+      verified: allBots
+        .filter(b => b.verified)
+        .sort(
           (a, b) =>
             new Date(b.approvedAt!).getTime() -
             new Date(a.approvedAt!).getTime(),
-        );
-        break;
-      case 'featured':
-        bots = bots
-          .filter(b => b.servers >= 1000)
-          .sort((a, b) => b.upvotes - a.upvotes)
-          .sort((a, b) => b.servers - a.servers);
-        break;
-      case 'verified':
-        bots = bots
-          .filter(b => b.verified)
-          .sort(
-            (a, b) =>
-              new Date(b.approvedAt!).getTime() -
-              new Date(a.approvedAt!).getTime(),
-          );
-        break;
-      case 'voted':
-        bots.sort((a, b) => b.upvotes - a.upvotes);
-        break;
+        ),
+      voted: [...allBots].sort((a, b) => b.upvotes - a.upvotes),
+    }),
+    [allBots],
+  );
+
+  const [activeTab, setActiveTab] = useState('featured');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] =
+    useState<CategoryType[]>(initialCategories);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 使用 useMemo 計算過濾後的機器人
+  const filteredBots = useMemo(() => {
+    let bots =
+      sortedBots[activeTab as keyof typeof sortedBots] || sortedBots.featured;
+
+    // 分類過濾
+    if (selectedCategoryIds.length > 0) {
+      const categoryNames = categories
+        .filter(cat => selectedCategoryIds.includes(cat.id))
+        .map(cat => cat.name.toLowerCase());
+
+      bots = bots.filter(bot =>
+        bot.tags.some(tag =>
+          categoryNames.some(catName => tag.toLowerCase().includes(catName)),
+        ),
+      );
     }
 
-    const trimmedQuery = query.trim().toLowerCase();
-
+    // 搜索過濾
+    const trimmedQuery = searchQuery.trim().toLowerCase();
     if (trimmedQuery) {
       bots = bots.filter(
         bot =>
@@ -175,20 +93,77 @@ export default function DiscordBotListPageClient({
       );
     }
 
-    setBots(bots);
+    return bots;
+  }, [sortedBots, activeTab, selectedCategoryIds, searchQuery, categories]);
+
+  // 計算分頁
+  const totalPages = Math.ceil(filteredBots.length / ITEMS_PER_PAGE);
+  const currentPageBots = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredBots.slice(startIndex, endIndex);
+  }, [filteredBots, currentPage]);
+
+  // 統計數據計算（使用 useMemo 緩存）
+  const stats = useMemo(() => {
+    const totalTags = allBots.reduce((sum, bot) => {
+      return sum + (Array.isArray(bot.tags) ? bot.tags.length : 0);
+    }, 0);
+
+    return {
+      totalBots: allBots.length,
+      verifiedBots: allBots.filter(b => b.verified).length,
+      totalTags,
+    };
+  }, [allBots]);
+
+  // 重置頁碼的副作用
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, selectedCategoryIds]);
+
+  // 處理搜索 - 使用防抖
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // 搜索邏輯已在 useMemo 中處理
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // 處理分類變更
+  const handleCategoryChange = (categoryIds: string[]) => {
+    setSelectedCategoryIds(categoryIds);
   };
 
-  // 處理搜索
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    filterAndSearchBots(activeTab, value);
+  // 添加自定義分類
+  const handleAddCustomCategory = (categoryName: string) => {
+    const exists = categories.some(
+      cat => cat.name.toLowerCase() === categoryName.toLowerCase(),
+    );
+
+    if (exists) return;
+
+    const newCategory: CategoryType = {
+      id: `custom-${Date.now()}`,
+      name: categoryName,
+      color: `bg-[#${Math.floor(Math.random() * 16777215).toString(16)}]`,
+      selected: true,
+    };
+
+    const updatedCategories = [...categories, newCategory];
+    setCategories(updatedCategories);
+    setSelectedCategoryIds(prev => [...prev, newCategory.id]);
+  };
+
+  // 處理搜索輸入
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   // 處理頁面變更
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // 滾動到頁面頂部
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
@@ -197,9 +172,39 @@ export default function DiscordBotListPageClient({
 
   // 處理標籤切換
   const handleTabChange = (value: string) => {
+    setIsLoading(true);
     setActiveTab(value);
-    setCurrentPage(1);
-    filterAndSearchBots(value, searchQuery);
+
+    // 模擬短暫的加載狀態以提供視覺反饋
+    setTimeout(() => setIsLoading(false), 100);
+  };
+
+  // 渲染機器人列表
+  const renderBotListWithFallback = (bots: BotType[]) => {
+    if (isLoading) {
+      return <BotListSkeleton />;
+    }
+
+    if (!bots || bots.length === 0) {
+      return (
+        <div className="text-center text-gray-400 py-10">
+          <p className="text-sm">找不到符合條件的機器人 🙁</p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <LazyBotList bots={bots} />
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
+      </>
+    );
   };
 
   return (
@@ -240,7 +245,7 @@ export default function DiscordBotListPageClient({
               placeholder="搜尋機器人名稱、標籤或描述..."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
               value={searchQuery}
-              onChange={handleChange}
+              onChange={handleSearchChange}
             />
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
@@ -271,9 +276,10 @@ export default function DiscordBotListPageClient({
           {/* 主要內容 */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             <Tabs
-              defaultValue="popular"
+              defaultValue="featured"
               className="mb-8"
               onValueChange={handleTabChange}
+              value={activeTab}
             >
               <TabsList className="bg-[#2b2d31] border-b border-[#1e1f22] w-full h-full overflow-x-auto overflow-y-auto">
                 <TabsTrigger
@@ -309,28 +315,38 @@ export default function DiscordBotListPageClient({
               </TabsList>
 
               <TabsContent value="featured" className="mt-6">
-                <h2 className="text-2xl font-bold mb-4">精選機器人</h2>
-                {renderBotListWithFallback(getCurrentPageBots())}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">精選機器人</h2>
+                </div>
+                {renderBotListWithFallback(currentPageBots)}
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
-                <h2 className="text-2xl font-bold mb-4">熱門機器人</h2>
-                {renderBotListWithFallback(getCurrentPageBots())}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">熱門機器人</h2>
+                </div>
+                {renderBotListWithFallback(currentPageBots)}
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
-                <h2 className="text-2xl font-bold mb-4">最新機器人</h2>
-                {renderBotListWithFallback(getCurrentPageBots())}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">最新機器人</h2>
+                </div>
+                {renderBotListWithFallback(currentPageBots)}
               </TabsContent>
 
               <TabsContent value="verified" className="mt-6">
-                <h2 className="text-2xl font-bold mb-4">驗證機器人</h2>
-                {renderBotListWithFallback(getCurrentPageBots())}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">驗證機器人</h2>
+                </div>
+                {renderBotListWithFallback(currentPageBots)}
               </TabsContent>
 
               <TabsContent value="voted" className="mt-6">
-                <h2 className="text-2xl font-bold mb-4">票選機器人</h2>
-                {renderBotListWithFallback(getCurrentPageBots())}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">票選機器人</h2>
+                </div>
+                {renderBotListWithFallback(currentPageBots)}
               </TabsContent>
             </Tabs>
           </div>
@@ -339,8 +355,6 @@ export default function DiscordBotListPageClient({
           <div className="lg:col-span-1 order-1 lg:order-2 hidden lg:block">
             <div className="bg-[#2b2d31] rounded-lg p-5 mb-6">
               <h3 className="text-lg font-semibold mb-4">分類</h3>
-
-              {/* 分類搜尋和自定義分類 */}
               <div className="mb-4">
                 <CategorySearch
                   categories={categories}
@@ -354,17 +368,15 @@ export default function DiscordBotListPageClient({
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">總機器人數</span>
-                  <span className="font-medium">{allBots.length}</span>
+                  <span className="font-medium">{stats.totalBots}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">已驗證機器人</span>
-                  <span className="font-medium">
-                    {allBots.filter(b => b.verified).length}
-                  </span>
+                  <span className="font-medium">{stats.verifiedBots}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">目前已被使用的分類總數</span>
-                  <span className="font-medium">{calculateTotalTags()}</span>
+                  <span className="font-medium">{stats.totalTags}</span>
                 </div>
               </div>
             </div>

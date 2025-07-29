@@ -170,7 +170,7 @@ export default function BotServerManagement({
                         <div className="flex items-center gap-3">
                           <div className="relative flex-shrink-0">
                             <img
-                              src={bot.icon || '/placeholder.svg'}
+                              src={bot.icon || '/placeholder.png'}
                               alt={bot.name}
                               className="h-10 w-10 rounded-full"
                             />
@@ -247,7 +247,7 @@ export default function BotServerManagement({
                       <div>
                         <div className="flex items-center gap-3">
                           <img
-                            src={server.icon || '/placeholder.svg'}
+                            src={server.icon || '/placeholder.png'}
                             alt={server.name}
                             className="h-10 w-10 rounded-full flex-shrink-0"
                           />
@@ -329,7 +329,7 @@ export default function BotServerManagement({
             <div className="grid gap-4 py-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <img
-                  src={selectedItem.icon || '/placeholder.svg'}
+                  src={selectedItem.icon || '/placeholder.png'}
                   alt={selectedItem.name}
                   className="h-16 w-16 rounded-full flex-shrink-0"
                 />

@@ -42,7 +42,7 @@ export default function FeaturedBots({ bots }: FeaturedBotsProps) {
                 {/* Bot Icon */}
                 <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-full bg-[#36393f] border-4 border-[#2b2d31] overflow-hidden">
                   <img
-                    src={bot.icon || '/placeholder.svg?height=48&width=48'}
+                    src={bot.icon || '/placeholder.png?height=48&width=48'}
                     alt={bot.name}
                     className="w-full h-full object-cover"
                   />

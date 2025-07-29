@@ -4,76 +4,145 @@ import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ServerType } from '@/lib/prisma_type';
 import clsx from 'clsx';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { AvatarFallback } from '@radix-ui/react-avatar';
+import { Avatar } from './ui/avatar';
 
 interface ServerCardProps {
   server: ServerType;
 }
 
-export default function ServerCard({ server }: ServerCardProps) {
+const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
+  // 使用 useMemo 緩存格式化的時間字串
+  const formattedTime = useMemo(() => {
+    return formatDistanceToNow(new Date(server.createdAt), {
+      addSuffix: true,
+      locale: zhTW,
+    });
+  }, [server.createdAt]);
+
+  // 使用 useMemo 緩存格式化的數字
+  const formattedNumbers = useMemo(
+    () => ({
+      members: server.members.toLocaleString(),
+      upvotes: server.upvotes.toLocaleString(),
+      online: server.online?.toLocaleString(),
+    }),
+    [server.members, server.upvotes, server.online],
+  );
+
+  // 使用 useCallback 優化點擊處理函數
+  const handleJoinClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (server.inviteUrl) {
+        window.open(server.inviteUrl, '_blank', 'noopener,noreferrer');
+      }
+      e.preventDefault();
+    },
+    [server.inviteUrl],
+  );
+
+  // 使用 useMemo 緩存動態樣式類
+  const cardClassName = clsx(
+    'rounded-lg overflow-hidden transition-all duration-300',
+    'bg-[#2b2d31]',
+    'border border-[#1e1f22] hover:border-[#5865f2]',
+  );
+
+  // 緩存標籤列表
+  const tagsList = useMemo(
+    () => (
+      <div className="flex flex-wrap gap-2 mb-4">
+        {server.tags.map(tag => (
+          <Badge
+            key={tag}
+            variant="secondary"
+            className="bg-[#36393f] hover:bg-[#4f545c] text-gray-300"
+          >
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    ),
+    [server.tags],
+  );
+
+  const [bannerError, setBannerError] = useState(false);
+
   return (
     <Link href={`/servers/${server.id}`} className="block">
-      <div
-        className={clsx(
-          'rounded-lg overflow-hidden transition-all duration-300',
-          'bg-[#2b2d31]',
-          {
-            'border border-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.6)] animate-[pulseGlow_3s_ease-in-out_infinite] hover:shadow-[0_0_20px_rgba(250,204,21,0.9)]':
-              server.pin,
-            'border border-[#1e1f22] hover:border-[#5865f2]': !server.pin,
-          },
-        )}
-      >
+      <div className={cardClassName}>
         <div className="flex flex-col md:flex-row">
-          {/* Server Banner (mobile) */}
-          {server.banner && (
-            <div className="w-full h-32 md:hidden">
-              <img
-                src={server.banner || '/placeholder.svg'}
+          {/* Server Banner (mobile) - 使用 Next.js Image 組件 */}
+          {server.banner && !bannerError && (
+            <div className="w-full h-32 md:hidden relative">
+              <Image
+                src={server.banner}
                 alt={`${server.name} banner`}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                priority={server.pin}
+                sizes="100vw"
+                onError={() => setBannerError(true)}
               />
             </div>
           )}
 
           <div className="flex-grow p-4 md:p-5">
             <div className="flex flex-col md:flex-row gap-4">
-              {/* Server Icon */}
+              {/* Server Icon (desktop) - 使用 Next.js Image 組件 */}
               <div className="hidden md:block flex-shrink-0">
-                <div className="w-16 h-16 rounded-full bg-[#36393f] overflow-hidden">
-                  <img
-                    src={server.icon || '/placeholder.svg?height=64&width=64'}
-                    alt={server.name}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-16 h-16 rounded-full bg-[#36393f] overflow-hidden relative">
+                  <Avatar className="w-16 h-16">
+                    {server.icon ? (
+                      <Image
+                        src={server.icon}
+                        alt={server.name}
+                        width={64}
+                        height={64}
+                        className="object-cover"
+                        priority={server.pin} // 合作伺服器優先載入
+                      />
+                    ) : (
+                      <AvatarFallback>
+                        {server.name?.charAt(0).toUpperCase() ?? '?'}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
                 </div>
               </div>
 
-              {/* Mobile header with icon */}
-              <div className="flex items-center md:hidden mb-3">
-                <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden mr-3">
-                  <img
-                    src={server.icon || '/placeholder.svg?height=40&width=40'}
-                    alt={server.name}
-                    className="w-full h-full object-cover"
-                  />
+              {/* Mobile header with icon - 使用 Next.js Image 組件 */}
+              <div className="flex items-center md:hidden">
+                <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden mr-3 relative">
+                  <Avatar className="w-10 h-10">
+                    {server.icon ? (
+                      <Image
+                        src={server.icon}
+                        alt={server.name}
+                        width={40}
+                        height={40}
+                        className="object-cover"
+                        priority={server.pin} // 合作伺服器優先載入
+                      />
+                    ) : (
+                      <AvatarFallback>
+                        {server.name?.charAt(0).toUpperCase() ?? '?'}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
                 </div>
 
                 <div className="flex flex-col">
                   <h3 className="text-lg font-bold flex items-center">
                     {server.name}
                     {server.pin && (
-                      <Pin size={16} className="ml-2 text-yellow-400" />
+                      <Pin size={16} className="ml-2 text-gray-400" />
                     )}
                   </h3>
-
-                  {/* 新增合作徽章 */}
-                  {server.pin && (
-                    <span className="mt-1 inline-flex items-center px-3 py-0.5 text-sm font-medium rounded-full bg-yellow-400 text-black hover:bg-yellow-300 transition-colors">
-                      🤝 合作伺服器
-                    </span>
-                  )}
                 </div>
               </div>
 
@@ -84,27 +153,15 @@ export default function ServerCard({ server }: ServerCardProps) {
                     <h3 className="text-xl font-bold flex items-center">
                       {server.name}
                       {server.pin && (
-                        <Pin size={18} className="ml-2 text-yellow-400" />
+                        <Pin size={18} className="ml-2 text-gray-400" />
                       )}
                     </h3>
-                    {server.pin && (
-                      <span className="inline-flex items-center px-3 py-0.5 text-sm font-medium rounded-full bg-yellow-400 text-black hover:bg-yellow-300 transition-colors">
-                        🤝 合作伺服器
-                      </span>
-                    )}
                   </div>
                   <div className="flex items-center">
                     <Button
                       size="sm"
                       className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
-                      onClick={e => {
-                        window.open(
-                          server.inviteUrl!,
-                          '_blank',
-                          'noopener,noreferrer',
-                        );
-                        e.preventDefault();
-                      }}
+                      onClick={handleJoinClick}
                     >
                       加入伺服器
                     </Button>
@@ -116,43 +173,28 @@ export default function ServerCard({ server }: ServerCardProps) {
                   {server.description}
                 </p>
 
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {server.tags.map(tag => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="bg-[#36393f] hover:bg-[#4f545c] text-gray-300"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                {/* Tags - 使用緩存的標籤列表 */}
+                {tagsList}
 
-                {/* Stats */}
+                {/* Stats - 使用緩存的格式化數字 */}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400">
                   <div className="flex items-center">
                     <Users size={16} className="mr-1" />
-                    <span>{server.members.toLocaleString()} 成員</span>
+                    <span>{formattedNumbers.members} 成員</span>
                   </div>
                   <div className="flex items-center">
                     <ArrowUp size={16} className="mr-1" />
-                    <span>{server.upvotes.toLocaleString()} 投票</span>
+                    <span>{formattedNumbers.upvotes} 投票</span>
                   </div>
                   {server.online && (
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
-                      <span>{server.online.toLocaleString()} 在線</span>
+                      <span>{formattedNumbers.online} 在線</span>
                     </div>
                   )}
                   <div className="flex items-center">
                     <Clock size={16} className="mr-1" />
-                    <span>
-                      {formatDistanceToNow(new Date(server.createdAt), {
-                        addSuffix: true,
-                        locale: zhTW,
-                      })}
-                    </span>
+                    <span>{formattedTime}</span>
                   </div>
                 </div>
 
@@ -161,14 +203,7 @@ export default function ServerCard({ server }: ServerCardProps) {
                   <Button
                     size="sm"
                     className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
-                    onClick={e => {
-                      window.open(
-                        server.inviteUrl!,
-                        '_blank',
-                        'noopener,noreferrer',
-                      );
-                      e.preventDefault();
-                    }}
+                    onClick={handleJoinClick}
                   >
                     加入伺服器
                   </Button>
@@ -176,19 +211,10 @@ export default function ServerCard({ server }: ServerCardProps) {
               </div>
             </div>
           </div>
-
-          {/* Server Banner (desktop) */}
-          {/* {server.banner && (
-            <div className="hidden md:block w-48 h-auto bg-[#36393f] flex-shrink-0">
-              <img
-                src={server.banner || '/placeholder.svg'}
-                alt={`${server.name} banner`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )} */}
         </div>
       </div>
     </Link>
   );
-}
+});
+
+export default ServerCard;

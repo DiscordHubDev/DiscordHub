@@ -44,7 +44,7 @@ export default function VoteCard({
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-[#36393f] overflow-hidden">
             <img
-              src={icon || '/placeholder.svg?height=40&width=40'}
+              src={icon || '/placeholder.png?height=40&width=40'}
               alt={name}
               className="w-full h-full object-cover"
             />

@@ -35,14 +35,14 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
               {/* Banner */}
               <div className="h-32 bg-[#36393f] relative">
                 <img
-                  src={server.banner || '/placeholder.svg?height=128&width=256'}
+                  src={server.banner || '/placeholder.png?height=128&width=256'}
                   alt={server.name}
                   className="w-full h-full object-cover"
                 />
                 {/* Server Icon */}
                 <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-full bg-[#36393f] border-4 border-[#2b2d31] overflow-hidden">
                   <img
-                    src={server.icon || '/placeholder.svg?height=48&width=48'}
+                    src={server.icon || '/placeholder.png?height=48&width=48'}
                     alt={server.name}
                     className="w-full h-full object-cover"
                   />

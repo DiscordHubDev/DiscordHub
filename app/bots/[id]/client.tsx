@@ -61,7 +61,7 @@ export default function BotDetailClient({
         {bot.banner ? (
           <div className="relative w-full h-full">
             <img
-              src={bot.banner || '/placeholder.svg?height=300&width=1200'}
+              src={bot.banner || '/placeholder.png?height=300&width=1200'}
               alt={`${bot.name} banner`}
               className="w-full h-full object-cover"
             />
@@ -313,7 +313,7 @@ export default function BotDetailClient({
                         <img
                           src={
                             relatedBot.icon ||
-                            '/placeholder.svg?height=40&width=40'
+                            '/placeholder.png?height=40&width=40'
                           }
                           alt={relatedBot.name}
                           className="w-full h-full object-cover"
@@ -467,7 +467,7 @@ export default function BotDetailClient({
                           className="rounded-lg overflow-hidden bg-[#36393f]"
                         >
                           <img
-                            src={screenshot || '/placeholder.svg'}
+                            src={screenshot || '/placeholder.png'}
                             alt={`${bot.name} screenshot ${index + 1}`}
                             className="w-full h-auto"
                           />
