@@ -135,16 +135,26 @@ export type Simplify<T> = {
 } & {};
 
 export async function fetchUserInfo(id: string): Promise<UserProfile> {
-  const res = await fetch(`https://dchub.mantou.dev/member/${id}`);
+  try {
+    const res = await fetch(`https://dchub.mantou.dev/member/${id}`, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; DiscordBot/2.0)',
+      },
+    });
 
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch user info for ID ${id}: ${res.statusText}`,
-    );
+    if (!res.ok) {
+      throw new Error(
+        `Failed to fetch user info for ID ${id}: ${res.status} ${res.statusText}`,
+      );
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('fetchUserInfo error:', error);
+    throw error;
   }
-
-  const data = await res.json();
-  return data;
 }
 
 export async function refreshAccessToken(token: any) {

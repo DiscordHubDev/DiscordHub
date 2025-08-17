@@ -17,18 +17,49 @@ import { useError } from '@/context/ErrorContext';
 
 const AddBotPageClient = () => {
   const { data: session } = useSession();
+  const { showError } = useError();
+
   if (!session?.access_token || session?.error === 'RefreshAccessTokenError') {
     signIn('discord');
     return;
   }
+
+  const fetchBotInfo = async (client_id: string) => {
+    try {
+      const res = await fetch('/api/proxy/rpc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.error ||
+            `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`,
+        );
+      }
+
+      const rpcData: DiscordBotRPCInfo = await res.json();
+
+      // 確保在客戶端執行
+      if (typeof window !== 'undefined') {
+        const info = await fetchUserInfo(client_id);
+        return { rpcData, info };
+      }
+
+      return { rpcData };
+    } catch (error) {
+      console.error('Bot info fetch failed:', error);
+      throw error;
+    }
+  };
 
   const handleCreate = async (
     data: BotFormData,
     screenshots: Screenshot[],
     banner?: string,
   ) => {
-    const { showError } = useError();
-
     const client_id = new URL(data.botInvite).searchParams.get('client_id');
     if (!client_id) {
       throw new Error('Invite link 無效，找不到 client_id');
@@ -41,19 +72,7 @@ const AddBotPageClient = () => {
       return;
     }
 
-    const res = await fetch('/api/proxy/rpc', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id }),
-    });
-
-    if (!res.ok) {
-      throw new Error(
-        `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`,
-      );
-    }
-
-    const rpcData: DiscordBotRPCInfo = await res.json();
+    const rpcData = (await fetchBotInfo(client_id)).rpcData;
 
     const info = await fetchUserInfo(client_id);
 

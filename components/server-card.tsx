@@ -85,7 +85,7 @@ const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
                 fill
                 className="object-cover"
                 priority={server.pin}
-                sizes="100vw"
+                sizes="(max-width: 768px) 100vw, 0px"
                 onError={() => setBannerError(true)}
               />
             </div>

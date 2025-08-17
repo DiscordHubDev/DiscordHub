@@ -122,9 +122,18 @@ const BotCard = memo(({ bot }: BotCardProps) => {
     [bot.inviteUrl],
   );
 
+  const old_banner_url = bot.banner ? new URL(bot.banner) : null;
+
+  if (old_banner_url) {
+    old_banner_url.searchParams.set('size', '512');
+    old_banner_url.searchParams.set('w', '640');
+  }
+
   // 預計算顯示所需的值
   const iconSrc = bot.icon || '/placeholder.png';
-  const bannerSrc = bot.banner || '/placeholder.png';
+  const bannerSrc = old_banner_url
+    ? old_banner_url.toString()
+    : '/placeholder.png';
   const showBadges = bot.verified || bot.isAdmin;
 
   return (
