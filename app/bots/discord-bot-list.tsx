@@ -31,6 +31,12 @@ export default function DiscordBotListPageClient({
 }: {
   allBots: BotType[];
 }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // 使用 useMemo 預處理排序後的數據
   const sortedBots = useMemo(
     () => ({
@@ -181,6 +187,15 @@ export default function DiscordBotListPageClient({
 
   // 渲染機器人列表
   const renderBotListWithFallback = (bots: BotType[]) => {
+    if (!isClient) {
+      return (
+        <div className="min-h-screen bg-[#1e1f22] text-white flex flex-col items-center justify-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5865f2]"></div>
+          <p className="text-sm text-gray-400 animate-breath">加載中...</p>
+        </div>
+      );
+    }
+
     if (isLoading) {
       return <BotListSkeleton />;
     }

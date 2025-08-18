@@ -289,42 +289,42 @@ const BotForm: React.FC<BotFormProps> = ({
       const botId = extractBotIdFromInviteLink(data.botInvite);
       const avatarUrl = await getBotAvatarUrl(botId);
       if (mode !== 'edit') {
-        // const embed = {
-        //   title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
-        //   description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
-        //   color: 0x4285f4,
-        //   footer: {
-        //     text: '由 DiscordHubs 系統發送',
-        //     icon_url:
-        //       'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-        //   },
-        //   thumbnail: {
-        //     url: avatarUrl || '',
-        //   },
-        // };
-        // const webhookData = {
-        //   content:
-        //     '<@&1361412309209317468> <@549056425943629825> <@857502876108193812>',
-        //   embeds: [embed],
-        //   username: 'DcHubs機器人通知',
-        //   avatar_url:
-        //     'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-        // };
-        // try {
-        //   const response = await fetch(webhookUrl, {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify(webhookData),
-        //   });
-        //   if (!response.ok) {
-        //     console.error('Webhook 發送失敗:', response.statusText);
-        //   } else {
-        //   }
-        // } catch (webhookError) {
-        //   console.error('發送 Webhook 時出錯:', webhookError);
-        // }
+        const embed = {
+          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
+          description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
+          color: 0x4285f4,
+          footer: {
+            text: '由 DiscordHubs 系統發送',
+            icon_url:
+              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+          },
+          thumbnail: {
+            url: avatarUrl || '',
+          },
+        };
+        const webhookData = {
+          content:
+            '<@&1361412309209317468> <@549056425943629825> <@857502876108193812>',
+          embeds: [embed],
+          username: 'DcHubs機器人通知',
+          avatar_url:
+            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+        };
+        try {
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(webhookData),
+          });
+          if (!response.ok) {
+            console.error('Webhook 發送失敗:', response.statusText);
+          } else {
+          }
+        } catch (webhookError) {
+          console.error('發送 Webhook 時出錯:', webhookError);
+        }
       }
       setSuccess(true);
       localStorage.removeItem('desc');
@@ -340,7 +340,12 @@ const BotForm: React.FC<BotFormProps> = ({
   };
 
   if (!isClient) {
-    return <div>Loading...</div>; // 避免 hydration mismatch
+    return (
+      <div className="min-h-screen bg-[#1e1f22] text-white flex flex-col items-center justify-center space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5865f2]"></div>
+        <p className="text-sm text-gray-400 animate-breath">加載中...</p>
+      </div>
+    );
   }
 
   return (

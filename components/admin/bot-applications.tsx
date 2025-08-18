@@ -296,7 +296,7 @@ export default function BotApplications({
                       <>
                         <Button
                           size="sm"
-                          className="bg-[#57F287] hover:bg-[#57F287]/90 text-black"
+                          className="bg-[#57F287] hover:bg-[#57F287]/90 text-black cursor-pointer"
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             handleReview(app.id, 'approved');
@@ -322,7 +322,7 @@ export default function BotApplications({
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-red-700/80 hover:bg-red-700"
+                          className="bg-red-700/80 hover:bg-red-700 cursor-pointer"
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             openRejectDialog(app);
@@ -443,7 +443,7 @@ export default function BotApplications({
               {selectedApp.status === 'pending' && (
                 <>
                   <Button
-                    className="bg-[#57F287] hover:bg-[#57F287]/90 text-black"
+                    className="bg-[#57F287] hover:bg-[#57F287]/90 text-black cursor-pointer"
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       handleReview(selectedApp.id, 'approved');
@@ -469,7 +469,7 @@ export default function BotApplications({
                     </Link>
                   </Button>
                   <Button
-                    className="bg-red-700/80 hover:bg-red-700"
+                    className="bg-red-700/80 hover:bg-red-700 cursor-pointer"
                     onClick={() => openRejectDialog(selectedApp)}
                   >
                     <X className="h-4 w-4 mr-1" /> 拒絕

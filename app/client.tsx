@@ -73,6 +73,8 @@ export default function DiscordServerListPageClient({
   servers: allServers,
   initialLoading = false,
 }: DiscordServerListProps) {
+  const [isClient, setIsClient] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
@@ -239,6 +241,19 @@ export default function DiscordServerListPageClient({
       setIsSearching(false);
     }, 200);
   };
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-[#1e1f22] text-white flex flex-col items-center justify-center space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5865f2]"></div>
+        <p className="text-sm text-gray-400 animate-breath">加載中...</p>
+      </div>
+    );
+  }
 
   // 統一的載入狀態判斷
   const shouldShowSkeleton = isLoading || isSearching;
