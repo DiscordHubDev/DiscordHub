@@ -1,12 +1,12 @@
 import BotCard from './bot-card';
-import { BotType } from '@/lib/prisma_type';
+import { BotType, PublicBot } from '@/lib/prisma_type';
 import { BotListSkeleton } from './bot-skeleton';
 
 export default function BotList({
   bots,
   isLoading = false,
 }: {
-  bots: BotType[];
+  bots: PublicBot[];
   isLoading?: boolean;
 }) {
   if (isLoading) {

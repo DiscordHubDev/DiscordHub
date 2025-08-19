@@ -2,6 +2,9 @@
 
 import {
   CreateServerInput,
+  EditServerType,
+  PublicServer,
+  publicServerSelect,
   ServerType,
   ServerWithMinimalFavorited,
 } from '@/lib/prisma_type';
@@ -126,52 +129,33 @@ export const isOwnerexist = async (id: string) => {
   return user ? true : false;
 };
 
-export const getAllServers = async () => {
+export const AdminGetAllServers = async () => {
   try {
     const servers = await prisma.server.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        longDescription: true, // 若不想公開就拿掉
-        tags: true,
-        members: true,
-        online: true,
-        upvotes: true,
-        icon: true,
-        banner: true,
-        featured: true,
-        createdAt: true,
-        website: true,
-        inviteUrl: true,
-        owner: {
-          select: {
-            username: true,
-            avatar: true,
-            banner: true,
-            banner_color: true,
-          },
-        },
-        _count: {
-          select: {
-            favoritedBy: true,
-            admins: true,
-          },
-        },
-        screenshots: true,
-        rules: true,
-        features: true,
+      include: {
+        owner: true,
+        favoritedBy: true,
+        admins: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
-    // 也可以在這裡做最後一道 map，確保沒有敏感欄位漏出
     return servers;
-  } catch (err) {
-    console.error('❌ 無法獲取伺服器列表:', err);
-    throw err;
+  } catch (error) {
+    console.error('❌ 無法獲取伺服器列表:', error);
+    throw error;
   }
 };
+
+export async function getAllServers(): Promise<PublicServer[]> {
+  const servers = await prisma.server.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: publicServerSelect,
+  });
+  return servers;
+}
 
 // 獲取單一伺服器
 export const getServerWithFavoritedByGuildId = async (
@@ -249,16 +233,113 @@ export async function bulkInsertServerAdmins(
   `);
 }
 
+export const UserGetServerByGuildId = async (
+  guildId: string,
+): Promise<EditServerType | undefined> => {
+  try {
+    const server = await prisma.server.findFirst({
+      where: { id: guildId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        longDescription: true,
+        tags: true,
+        members: true,
+        online: true,
+        upvotes: true,
+        icon: true,
+        banner: true,
+        featured: true,
+        createdAt: true,
+        website: true,
+        inviteUrl: true,
+        VoteNotificationURL: true,
+        secret: true,
+        pin: true,
+        owner: {
+          select: {
+            id: true,
+            username: true,
+            avatar: true,
+            banner: true,
+            banner_color: true,
+          },
+        },
+        admins: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        favoritedBy: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        screenshots: true,
+        rules: true,
+        features: true,
+      },
+    });
+
+    if (!server) {
+      return undefined;
+    }
+
+    return server;
+  } catch (error) {
+    console.error(`❌ 進入表單時無法獲取伺服器 (${guildId}):`, error);
+    throw error;
+  }
+};
+
 export const getServerByGuildId = async (
   guildId: string,
 ): Promise<ServerType | undefined> => {
   try {
     const server = await prisma.server.findFirst({
       where: { id: guildId },
-      include: {
-        owner: true,
-        favoritedBy: true,
-        admins: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        longDescription: true, // 若不想公開就拿掉
+        tags: true,
+        members: true,
+        online: true,
+        upvotes: true,
+        icon: true,
+        banner: true,
+        featured: true,
+        createdAt: true,
+        website: true,
+        inviteUrl: true,
+        pin: true,
+        owner: {
+          select: {
+            username: true,
+            avatar: true,
+            banner: true,
+            banner_color: true,
+          },
+        },
+        admins: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        favoritedBy: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        screenshots: true,
+        rules: true,
+        features: true,
       },
     });
 

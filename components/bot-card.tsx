@@ -6,7 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BotType } from '@/lib/prisma_type';
+import { PublicBot } from '@/lib/prisma_type';
 import {
   Tooltip,
   TooltipContent,
@@ -16,7 +16,7 @@ import {
 import { useCallback, useMemo, memo } from 'react';
 
 interface BotCardProps {
-  bot: BotType;
+  bot: PublicBot;
 }
 
 // 抽取驗證徽章組件以減少重複代碼
@@ -74,7 +74,7 @@ const TagsList = memo(({ tags }: { tags: string[] }) => (
 ));
 
 // 抽取統計信息組件
-const BotStats = memo(({ bot }: { bot: BotType }) => {
+const BotStats = memo(({ bot }: { bot: PublicBot }) => {
   const formattedTime = useMemo(() => {
     if (!bot.approvedAt) return '';
     return formatDistanceToNow(bot.approvedAt, {

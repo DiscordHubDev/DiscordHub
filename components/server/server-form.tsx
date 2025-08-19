@@ -27,7 +27,11 @@ import {
   getCloudinarySignature,
 } from '@/lib/actions/image';
 import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
-import { CreateServerInput, ServerType } from '@/lib/prisma_type';
+import {
+  CreateServerInput,
+  EditServerType,
+  ServerType,
+} from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
 import {
   buildConnectOrCreateAdmins,
@@ -49,7 +53,7 @@ type Screenshot = {
 
 type ServerFormProps = {
   server?: ActiveServerInfo;
-  edit_server?: ServerType;
+  edit_server?: EditServerType;
   mode: 'create' | 'edit';
 };
 

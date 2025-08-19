@@ -8,7 +8,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { se, zhTW } from 'date-fns/locale';
 import Link from 'next/link';
 import VoteButton from '@/components/vote-button';
-import { ServerType, ServerWithMinimalFavorited } from '@/lib/prisma_type';
+import {
+  PublicServer,
+  ServerType,
+  ServerWithMinimalFavorited,
+} from '@/lib/prisma_type';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FavoriteButton } from '@/components/favorite-button';
 import { useSession } from 'next-auth/react';
@@ -18,7 +22,7 @@ import { useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
 
 type ServerDetailPageProps = {
-  allServers: ServerType[];
+  allServers: PublicServer[];
   server: ServerWithMinimalFavorited;
   isFavorited: boolean;
 };

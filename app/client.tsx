@@ -11,7 +11,7 @@ import CategorySearch from '@/components/category-search';
 import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { Servercategories as initialCategories } from '@/lib/categories';
 import type { CategoryType } from '@/lib/types';
-import { ServerType } from '@/lib/prisma_type';
+import { PublicServer, ServerType } from '@/lib/prisma_type';
 import Link from 'next/link';
 import Pagination from '@/components/pagination';
 import DiscordWidget from '@/components/DiscordWidget';
@@ -19,15 +19,15 @@ import DiscordWidget from '@/components/DiscordWidget';
 const ITEMS_PER_PAGE = 10;
 
 type DiscordServerListProps = {
-  servers: ServerType[];
+  servers: PublicServer[];
   initialLoading?: boolean;
 };
 
 // 數據處理函數
 const sortServersByCategory = (
-  servers: ServerType[],
+  servers: PublicServer[],
   category: string,
-): ServerType[] => {
+): PublicServer[] => {
   const serversCopy = [...servers];
 
   switch (category) {
@@ -54,9 +54,9 @@ const sortServersByCategory = (
 };
 
 const filterServersBySearch = (
-  servers: ServerType[],
+  servers: PublicServer[],
   query: string,
-): ServerType[] => {
+): PublicServer[] => {
   if (!query.trim()) return servers;
 
   const q = query.toLowerCase();

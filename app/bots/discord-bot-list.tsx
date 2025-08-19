@@ -13,14 +13,14 @@ import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { botCategories as initialCategories } from '@/lib/bot-categories';
 import type { CategoryType } from '@/lib/types';
 import Link from 'next/link';
-import { BotType } from '@/lib/prisma_type';
+import { BotType, PublicBot } from '@/lib/prisma_type';
 import Pagination from '@/components/pagination';
 import { BotListSkeleton } from '@/components/bot-skeleton';
 
 const ITEMS_PER_PAGE = 10;
 
 // 延遲加載的 BotList 組件
-const LazyBotList = ({ bots }: { bots: BotType[] }) => (
+const LazyBotList = ({ bots }: { bots: PublicBot[] }) => (
   <Suspense fallback={<BotListSkeleton />}>
     <BotList bots={bots} />
   </Suspense>
@@ -29,7 +29,7 @@ const LazyBotList = ({ bots }: { bots: BotType[] }) => (
 export default function DiscordBotListPageClient({
   allBots,
 }: {
-  allBots: BotType[];
+  allBots: PublicBot[];
 }) {
   const [isClient, setIsClient] = useState(false);
 
@@ -186,7 +186,7 @@ export default function DiscordBotListPageClient({
   };
 
   // 渲染機器人列表
-  const renderBotListWithFallback = (bots: BotType[]) => {
+  const renderBotListWithFallback = (bots: PublicBot[]) => {
     if (!isClient) {
       return (
         <div className="min-h-screen bg-[#1e1f22] text-white flex flex-col items-center justify-center space-y-4">

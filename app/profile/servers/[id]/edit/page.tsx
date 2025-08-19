@@ -1,6 +1,6 @@
 import { checkServerPermission } from '@/lib/actions/check-permission';
 import ServerEditClient from './client';
-import { getServerByGuildId } from '@/lib/actions/servers';
+import { UserGetServerByGuildId } from '@/lib/actions/servers';
 
 export default async function ServerEditPage({
   params,
@@ -9,7 +9,7 @@ export default async function ServerEditPage({
 }) {
   const { id } = await params;
   await checkServerPermission(id);
-  const server = await getServerByGuildId(id);
+  const server = await UserGetServerByGuildId(id);
 
   if (!server) return <div className="text-white p-4">找不到伺服器</div>;
 

@@ -5,14 +5,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ServerType } from '@/lib/prisma_type';
+import { PublicServer } from '@/lib/prisma_type';
 import clsx from 'clsx';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Avatar } from './ui/avatar';
 
 interface ServerCardProps {
-  server: ServerType;
+  server: PublicServer;
 }
 
 const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {

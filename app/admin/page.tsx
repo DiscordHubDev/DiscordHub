@@ -4,21 +4,20 @@ import BotServerManagement from '@/components/admin/bot-server-management';
 import ReportInbox from '@/components/admin/report-inbox';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { getPendingBots } from '@/lib/actions/bots';
-import { getAllBots } from '@/lib/actions/bots';
+import { AdminGetAllBots, getPendingBots } from '@/lib/actions/bots';
 import { getReports } from '@/lib/actions/report';
-import { getAllServers } from '@/lib/actions/servers';
+import { AdminGetAllServers } from '@/lib/actions/servers';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   const bots = await getPendingBots();
 
-  const allBots = await getAllBots();
+  const allBots = await AdminGetAllBots();
 
   const allReports = await getReports();
 
-  const servers = await getAllServers();
+  const servers = await AdminGetAllServers();
 
   return (
     <div className="space-y-6 p-13">

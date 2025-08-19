@@ -40,9 +40,11 @@ async function sendDataToWebServerOrDiscord(
     targetId,
   };
 
-  const csrf = getCookie('csrfToken');
+  const { csrfToken } = await fetch('/api/vote/csrf', {
+    credentials: 'include',
+  }).then(r => r.json());
   const headers = new Headers({ 'Content-Type': 'application/json' });
-  if (csrf) headers.set('x-csrf-token', csrf);
+  if (csrfToken) headers.set('x-csrf-token', csrfToken);
 
   try {
     const res = await fetch('/api/proxy/vote_api', {

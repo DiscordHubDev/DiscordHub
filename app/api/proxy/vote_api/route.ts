@@ -2,47 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 type VoteType = 'bot' | 'server';
-
 type ClientBody = {
   type: VoteType;
   user: { id: string; username: string; avatar: string };
   targetId: string;
 };
+type TargetRecord = { id: string; name: string; url: string; secret?: string };
 
-type TargetRecord = {
-  id: string;
-  name: string;
-  url: string;
-  secret?: string;
-};
-
-// ---- Edge-safe helpers ----
 const enc = new TextEncoder();
 
 function timingSafeEqualStr(a: string, b: string) {
-  // 以 Uint8Array 做 constant-time 比較（避免 Buffer 與 Node.timingSafeEqual）
-  const aa = enc.encode(a);
-  const bb = enc.encode(b);
+  const aa = enc.encode(a),
+    bb = enc.encode(b);
   if (aa.length !== bb.length) return false;
   let diff = 0;
-  for (let i = 0; i < aa.length; i++) {
-    diff |= aa[i] ^ bb[i];
-  }
+  for (let i = 0; i < aa.length; i++) diff |= aa[i] ^ bb[i];
   return diff === 0;
 }
 
 function toHex(ab: ArrayBuffer) {
   const view = new Uint8Array(ab);
   let out = '';
-  for (let i = 0; i < view.length; i++) {
-    const h = view[i].toString(16).padStart(2, '0');
-    out += h;
-  }
+  for (let i = 0; i < view.length; i++)
+    out += view[i].toString(16).padStart(2, '0');
   return out;
 }
 
 async function signBodyHMAC(secret: string, body: string) {
-  // Web Crypto HMAC-SHA256
   const key = await crypto.subtle.importKey(
     'raw',
     enc.encode(secret),
@@ -54,29 +40,30 @@ async function signBodyHMAC(secret: string, body: string) {
   return toHex(sig);
 }
 
-// ---- rest of your logic ----
 async function getTargetById(
   type: VoteType,
   targetId: string,
 ): Promise<TargetRecord | null> {
   if (type === 'bot') {
     const bot = await prisma.bot.findUnique({ where: { id: targetId } });
-    if (!bot) return null;
-    return {
-      id: bot.id,
-      name: bot.name,
-      url: bot.VoteNotificationURL || '',
-      secret: bot.secret ?? undefined,
-    };
+    return bot
+      ? {
+          id: bot.id,
+          name: bot.name,
+          url: bot.VoteNotificationURL || '',
+          secret: bot.secret ?? undefined,
+        }
+      : null;
   } else {
     const server = await prisma.server.findUnique({ where: { id: targetId } });
-    if (!server) return null;
-    return {
-      id: server.id,
-      name: server.name,
-      url: server.VoteNotificationURL || '',
-      secret: server.secret ?? undefined,
-    };
+    return server
+      ? {
+          id: server.id,
+          name: server.name,
+          url: server.VoteNotificationURL || '',
+          secret: server.secret ?? undefined,
+        }
+      : null;
   }
 }
 
@@ -86,24 +73,11 @@ const ALLOWED_ORIGINS = new Set<string>([
   'http://localhost:3000',
 ]);
 
-export async function POST(req: NextRequest) {
-  const headerToken = req.headers.get('x-csrf-token') || '';
-  const cookieToken = req.cookies.get('csrfToken')?.value || '';
-  if (
-    !headerToken ||
-    !cookieToken ||
-    !timingSafeEqualStr(headerToken, cookieToken)
-  ) {
-    // 用長度協助除錯，避免洩漏值
-    console.warn('Invalid CSRF token', {
-      headerLen: headerToken.length,
-      cookieLen: cookieToken.length,
-      origin: req.headers.get('origin'),
-      host: req.headers.get('host'),
-    });
-    return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
-  }
+// ✅ 若你有設定 edge runtime，Prisma 會炸掉；確保是 Node.js
+export const runtime = 'nodejs';
 
+export async function POST(req: NextRequest) {
+  // 1) 先檢查來源（比 CSRF 更早退）
   const origin = req.headers.get('origin');
   const referer = req.headers.get('referer');
   let source: string | null = null;
@@ -112,13 +86,25 @@ export async function POST(req: NextRequest) {
   } catch {
     source = null;
   }
-
   const isSameOrigin = !!source && source === req.nextUrl.origin;
   const allowed = isSameOrigin || ALLOWED_ORIGINS.has(source ?? '');
   if (!allowed) {
     return NextResponse.json({ error: 'Forbidden origin' }, { status: 403 });
   }
 
+  // 2) CSRF：雙送 cookie
+  const headerToken = req.headers.get('x-csrf-token') || '';
+  const cookieToken = req.cookies.get('csrfToken')?.value || '';
+  if (
+    !headerToken ||
+    !cookieToken ||
+    !timingSafeEqualStr(headerToken, cookieToken)
+  ) {
+    // 不回 token；請先打 GET /api/vote/csrf 拿 token
+    return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+  }
+
+  // 3) 解析 Body
   let body: ClientBody;
   try {
     body = (await req.json()) as ClientBody;
@@ -134,9 +120,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 4) 目標查詢
   const target = await getTargetById(type, targetId);
-  if (!target) {
+  if (!target)
     return NextResponse.json({ error: 'Unknown target' }, { status: 404 });
+
+  // 5) 沒設定 webhook/url → 直接成功（避免落入 500）
+  if (!target.url) {
+    return NextResponse.json({ success: true, skipped: true }); // 也可用 204：NextResponse.json(null, { status: 204 })
   }
 
   const isDiscordWebhook = target.url.startsWith(
@@ -151,13 +142,7 @@ export async function POST(req: NextRequest) {
             author: { name: user.username, icon_url: user.avatar },
             title: '❤️ | 感謝投票!',
             url: 'https://dchubs.org',
-            description: `感謝您的支持與投票！您的每一票都是讓${
-              type === 'server' ? '伺服器' : '機器人'
-            }變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${
-              type === 'bot' ? 'bots' : 'servers'
-            }/${target.id}) 投票一次，讓更多人發現我們的${
-              type === 'server' ? '伺服器' : '機器人'
-            }吧！✨`,
+            description: `感謝您的支持與投票！您的每一票都是讓${type === 'server' ? '伺服器' : '機器人'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${type === 'bot' ? 'bots' : 'servers'}/${target.id}) 投票一次，讓更多人發現我們的${type === 'server' ? '伺服器' : '機器人'}吧！✨`,
             color: Math.floor(Math.random() * 0xffffff),
             footer: {
               text: 'Powered by DcHubs Vote System',
@@ -189,17 +174,41 @@ export async function POST(req: NextRequest) {
     headers['x-timestamp'] = ts;
   }
 
-  if (target.url) {
-    try {
-      await fetch(target.url, {
-        method: 'POST',
-        headers,
-        body: bodyStr,
-      });
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error('Unexpected error forwarding vote', error);
-      return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
+  // 6) 呼叫對方 webhook：失敗回 502（不要 500）
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 10_000); // 10 秒超時（避免卡住）
+    const r = await fetch(target.url, {
+      method: 'POST',
+      headers,
+      body: bodyStr,
+      signal: ctrl.signal,
+      cache: 'no-store',
+    });
+    clearTimeout(t);
+
+    if (!r.ok) {
+      const text = await r.text().catch(() => '');
+      // 用 502 報上游錯誤，方便你在前端分辨不是自己 API 掛了
+      return NextResponse.json(
+        {
+          success: false,
+          upstreamStatus: r.status,
+          upstreamBody: text.slice(0, 500),
+        },
+        { status: 502 },
+      );
     }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    // 例如超時、DNS、連線被拒等
+    console.error('Unexpected error forwarding vote', {
+      msg: String(error?.message || error),
+    });
+    return NextResponse.json(
+      { error: 'Upstream network error' },
+      { status: 502 },
+    );
   }
 }

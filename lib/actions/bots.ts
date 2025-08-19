@@ -7,7 +7,12 @@ import {
   Screenshot,
   UserProfile,
 } from '../types';
-import { BotUpdateInput } from '../prisma_type';
+import {
+  BotType,
+  BotUpdateInput,
+  PublicBot,
+  publicBotSelect,
+} from '../prisma_type';
 import {
   extractPermissionsFromInviteUrl,
   fetchUserInfo,
@@ -162,41 +167,21 @@ export async function getUserVotesForBots(userId: string, botIds: string[]) {
   return new Map(votes.map(vote => [vote.itemId, vote]));
 }
 
-export async function getAllBots() {
-  return await prisma.bot.findMany({
-    where: {
-      status: 'approved',
-    },
+export async function getAllBots(): Promise<PublicBot[]> {
+  return prisma.bot.findMany({
+    where: { status: 'approved' },
+    orderBy: { createdAt: 'desc' }, // 或 upvotes: 'desc'
+    select: publicBotSelect,
+  });
+}
+
+export async function AdminGetAllBots(): Promise<BotType[]> {
+  return prisma.bot.findMany({
+    orderBy: { createdAt: 'desc' },
     include: {
-      developers: {
-        select: {
-          id: true,
-          username: true,
-          avatar: true,
-          banner: true,
-          banner_color: true,
-          bio: true,
-          joinedAt: true,
-          social: true,
-        },
-      },
-      commands: {
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          usage: true,
-          category: true,
-        },
-      },
-      favoritedBy: {
-        select: {
-          id: true,
-        },
-      },
-    },
-    orderBy: {
-      upvotes: 'desc',
+      developers: true,
+      commands: true,
+      favoritedBy: true,
     },
   });
 }

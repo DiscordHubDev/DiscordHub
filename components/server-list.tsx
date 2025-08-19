@@ -1,9 +1,9 @@
-import { ServerType } from '@/lib/prisma_type';
+import { PublicServer } from '@/lib/prisma_type';
 import ServerCard from './server-card';
 import ServerListSkeleton from './server-list-skeleton';
 
 type ServerListProps = {
-  servers: ServerType[];
+  servers: PublicServer[];
   isLoading?: boolean;
   skeletonCount?: number;
 };
