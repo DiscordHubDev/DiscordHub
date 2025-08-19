@@ -30,14 +30,13 @@ import { useError } from '@/context/ErrorContext';
 import { useCooldownController } from '@/hooks/use-cooldown';
 
 async function sendDataToWebServerOrDiscord(
-  type: 'bot' | 'server',
+  type: VoteType,
   user: UserType,
-  server?: ServerType,
-  bot?: BotType,
+  server?: { id: string } | null,
+  bot?: { id: string } | null,
 ) {
-  const target = server ?? bot;
-
-  if (!target?.VoteNotificationURL) return;
+  const targetId = server?.id ?? bot?.id;
+  if (!targetId) return null;
 
   const payload = {
     type,
@@ -46,12 +45,7 @@ async function sendDataToWebServerOrDiscord(
       username: user.username,
       avatar: user.avatar,
     },
-    target: {
-      id: target.id,
-      name: target.name,
-      VoteNotificationURL: target.VoteNotificationURL,
-      secret: target.secret,
-    },
+    targetId,
   };
 
   try {
@@ -59,7 +53,10 @@ async function sendDataToWebServerOrDiscord(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // 若你有 CSRF token，可一起帶上（選用）
+        // 'x-csrf-token': getCsrfTokenFromMeta(),
       },
+      credentials: 'include', // 建議加上，讓同站 Cookie（會話/CSRF）一併帶上
       body: JSON.stringify(payload),
     });
 

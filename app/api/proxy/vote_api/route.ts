@@ -1,47 +1,125 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
+import { prisma } from '@/lib/prisma';
 
-type VoteRequestBody = {
-  type: 'bot' | 'server';
-  user: {
-    id: string;
-    username: string;
-    avatar: string;
-  };
-  target: {
-    id: string;
-    name: string;
-    VoteNotificationURL: string;
-    secret?: string;
-  };
+/** ========== 型別 ========== **/
+type VoteType = 'bot' | 'server';
+
+type ClientBody = {
+  type: VoteType;
+  user: { id: string; username: string; avatar: string };
+  targetId: string;
 };
 
+type TargetRecord = {
+  id: string;
+  name: string;
+  url: string;
+  secret?: string;
+};
+
+export async function getTargetById(
+  type: VoteType,
+  targetId: string,
+): Promise<TargetRecord | null> {
+  if (type === 'bot') {
+    const bot = await prisma.bot.findUnique({
+      where: { id: targetId },
+    });
+    if (!bot) return null;
+    return {
+      id: bot.id,
+      name: bot.name,
+      url: bot.VoteNotificationURL || '',
+      secret: bot.secret ?? undefined,
+    };
+  } else {
+    const server = await prisma.server.findUnique({
+      where: { id: targetId },
+    });
+    if (!server) return null;
+    return {
+      id: server.id,
+      name: server.name,
+      url: server.VoteNotificationURL || '',
+      secret: server.secret ?? undefined,
+    };
+  }
+}
+
+function timingSafeEqualStr(a: string, b: string) {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ab, bb);
+}
+
+function signBodyHMAC(secret: string, body: string) {
+  return crypto.createHmac('sha256', secret).update(body).digest('hex');
+}
+
+const ALLOWED_ORIGINS = new Set<string>([
+  'https://dchubs.org',
+  'http://localhost:3000',
+]);
+
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as VoteRequestBody;
+  const headerToken = req.headers.get('x-csrf-token') || '';
+  const cookieToken = req.cookies.get('csrfToken')?.value || '';
+  if (
+    !headerToken ||
+    !cookieToken ||
+    !timingSafeEqualStr(headerToken, cookieToken)
+  ) {
+    return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
+  }
 
-  const { type, user, target } = body;
+  const origin = req.headers.get('origin');
+  const referer = req.headers.get('referer');
+  const source = origin ?? (referer ? new URL(referer).origin : null);
+  if (!source || !ALLOWED_ORIGINS.has(source)) {
+    return NextResponse.json({ error: 'Forbidden origin' }, { status: 403 });
+  }
 
-  if (!target?.VoteNotificationURL) {
+  let body: ClientBody;
+  try {
+    body = (await req.json()) as ClientBody;
+  } catch {
+    return NextResponse.json({ error: 'Bad JSON' }, { status: 400 });
+  }
+
+  const { type, user, targetId } = body || {};
+  if (!type || !user?.id || !user?.username || !targetId) {
     return NextResponse.json(
-      { error: 'Missing VoteNotificationURL' },
+      { error: 'Missing required fields' },
       { status: 400 },
     );
   }
 
-  const url = target.VoteNotificationURL;
-  const isDiscordWebhook = url.startsWith('https://discord.com/api/webhooks/');
+  const target = await getTargetById(type, targetId);
+  if (!target?.url) {
+    return NextResponse.json({ error: 'Unknown target' }, { status: 404 });
+  }
+
+  const isDiscordWebhook = target.url.startsWith(
+    'https://discord.com/api/webhooks/',
+  );
 
   const payload = isDiscordWebhook
     ? {
         content: `<@${user.id}>`,
         embeds: [
           {
-            author: {
-              name: user.username,
-              icon_url: user.avatar,
-            },
+            author: { name: user.username, icon_url: user.avatar },
             title: '❤️ | 感謝投票!',
             url: 'https://dchubs.org',
-            description: `感謝您的支持與投票！您的每一票都是讓${type === 'bot' ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${type === 'bot' ? 'bots' : 'servers'}/${target.id}) 投票一次，讓更多人發現我們的${type === 'bot' ? '機器人' : '伺服器'}吧！✨`,
+            description: `感謝您的支持與投票！您的每一票都是讓${
+              type === 'server' ? '伺服器' : '機器人'
+            }變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${
+              type === 'bot' ? 'bots' : 'servers'
+            }/${target.id}) 投票一次，讓更多人發現我們的${
+              type === 'server' ? '伺服器' : '機器人'
+            }吧！✨`,
             color: Math.floor(Math.random() * 0xffffff),
             footer: {
               text: 'Powered by DcHubs Vote System',
@@ -61,33 +139,36 @@ export async function POST(req: NextRequest) {
         itemName: target.name,
       };
 
+  const bodyStr = JSON.stringify(payload);
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
 
   if (!isDiscordWebhook && target.secret) {
-    headers['x-api-secret'] = target.secret;
+    const ts = Date.now().toString();
+    const signature = signBodyHMAC(target.secret, ts + '.' + bodyStr);
+    headers['x-signature'] = signature;
+    headers['x-timestamp'] = ts;
   }
 
   try {
-    const resp = await fetch(url, {
+    const resp = await fetch(target.url, {
       method: 'POST',
       headers,
-      body: JSON.stringify(payload),
+      body: bodyStr,
     });
 
-    const text = await resp.text();
-    console.log('body', text);
-
     if (!resp.ok) {
+      console.error('Vote forward failed', resp.status);
       return NextResponse.json(
         { error: 'Failed to forward vote' },
-        { status: 500 },
+        { status: 502 },
       );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Unexpected error forwarding vote');
     return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
   }
 }
