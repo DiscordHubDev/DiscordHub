@@ -23,6 +23,7 @@ import { getBot } from '@/lib/actions/bots';
 import { useError } from '@/context/ErrorContext';
 import { useCooldownController } from '@/hooks/use-cooldown';
 import { getCookie } from '@/lib/utils';
+import { sendWebhook } from '@/lib/webhook';
 
 async function sendDataToWebServerOrDiscord(
   type: VoteType,
@@ -144,46 +145,6 @@ export default function VoteButton({
   }, [id, type, start]);
 
   // 發送 Discord Webhook
-  const sendWebhook = async (
-    user: UserType,
-    server?: ServerType,
-    bot?: BotType,
-  ) => {
-    const target = (server ?? bot)!;
-    const webhookUrl =
-      'https://discord.com/api/webhooks/1407350957351632966/ayBrmW0G4Bm1bhgbi6-u5lTo1svwFLrsCvQGgKNAEZ-kOVMmP-i1hGOo4NB13exEewdd';
-    const username = user?.username;
-    const userid = user?.id;
-    const voteItem = type === 'server' ? '伺服器' : '機器人';
-    const embed = {
-      title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 投票系統`,
-      description: `➤用戶：**${username}**\n➤用戶ID：**${userid}**\n> ➤對**${voteItem}**：**${target.name}** 進行了投票\n> ➤${voteItem}ID：**${id}**`,
-      color: 0x4285f4,
-    };
-
-    const data = {
-      embeds: [embed],
-      username: 'DcHubs投票通知',
-      avatar_url:
-        'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-    };
-    try {
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        console.error('Webhook 發送失敗:', response.statusText);
-      } else {
-      }
-    } catch (error) {
-      console.error('發送 Webhook 時出錯:', error);
-    }
-  };
 
   const handleVote = async () => {
     if (hasVoted) return;
@@ -243,7 +204,7 @@ export default function VoteButton({
 
     router.refresh();
 
-    await sendWebhook(user, server, bot);
+    await sendWebhook(type, user, id, server, bot);
   };
 
   // 格式化冷卻時間

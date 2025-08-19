@@ -31,4 +31,18 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'cdn.discordapp.com' },
     ],
   },
+  productionBrowserSourceMaps: false,
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.devtool = false;
+    }
+    return config;
+  },
+  swcMinify: true,
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? { exclude: ['error', 'warn'] }
+        : false,
+  },
 };

@@ -189,15 +189,17 @@ export async function POST(req: NextRequest) {
     headers['x-timestamp'] = ts;
   }
 
-  try {
-    const resp = await fetch(target.url, {
-      method: 'POST',
-      headers,
-      body: bodyStr,
-    });
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Unexpected error forwarding vote', error);
-    return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
+  if (target.url) {
+    try {
+      await fetch(target.url, {
+        method: 'POST',
+        headers,
+        body: bodyStr,
+      });
+      return NextResponse.json({ success: true });
+    } catch (error) {
+      console.error('Unexpected error forwarding vote', error);
+      return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
+    }
   }
 }

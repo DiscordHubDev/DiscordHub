@@ -30,6 +30,7 @@ import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { toast } from 'react-toastify';
 import { usePersistedFormField } from '@/hooks/use-field';
 import { useError } from '@/context/ErrorContext';
+import { sendPendingWebhook } from '@/lib/webhook';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {
@@ -135,9 +136,6 @@ const BotForm: React.FC<BotFormProps> = ({
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
-
-  const webhookUrl =
-    'https://discord.com/api/webhooks/1361383631796572345/zwDOea-BFSW7aDksperh06YX0tjEWQPxLJT_pO3MMGEY3fWC2zjqY4kuO3gFPG1-uW38';
 
   const handleScroll = () => {
     const textarea = textareaRef.current;
@@ -289,42 +287,7 @@ const BotForm: React.FC<BotFormProps> = ({
       const botId = extractBotIdFromInviteLink(data.botInvite);
       const avatarUrl = await getBotAvatarUrl(botId);
       if (mode !== 'edit') {
-        const embed = {
-          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
-          description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
-          color: 0x4285f4,
-          footer: {
-            text: '由 DiscordHubs 系統發送',
-            icon_url:
-              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-          },
-          thumbnail: {
-            url: avatarUrl || '',
-          },
-        };
-        const webhookData = {
-          content:
-            '<@&1361412309209317468> <@549056425943629825> <@857502876108193812>',
-          embeds: [embed],
-          username: 'DcHubs機器人通知',
-          avatar_url:
-            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-        };
-        try {
-          const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(webhookData),
-          });
-          if (!response.ok) {
-            console.error('Webhook 發送失敗:', response.statusText);
-          } else {
-          }
-        } catch (webhookError) {
-          console.error('發送 Webhook 時出錯:', webhookError);
-        }
+        await sendPendingWebhook(data, avatarUrl);
       }
       setSuccess(true);
       localStorage.removeItem('desc');

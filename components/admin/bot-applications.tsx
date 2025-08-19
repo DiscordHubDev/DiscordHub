@@ -31,14 +31,11 @@ import { BotType } from '@/lib/prisma_type';
 import { updateBotStatus } from '@/lib/actions/update-bot-status';
 import { sendNotification } from '@/lib/actions/sendNotification';
 import RejectBotDialog from '@/components/RejectBotDialog';
-import { toast } from 'react-toastify';
 import { updateBotServerCount } from '@/lib/actions/bots';
 import MarkdownRenderer from '../MarkdownRenderer';
 import Link from 'next/link';
 import { useError } from '@/context/ErrorContext';
-
-const webhookUrl =
-  'https://discord.com/api/webhooks/1361355742015263042/a0VNI1v7S9tUWISWmchBAFu3K8-ILtyeI3GKObc9XN__zohKBu2oZJ8PHhqEtMdvI0dH';
+import { sendApprovedWebhook } from '@/lib/webhook';
 
 type BotApplicationsProps = {
   applications: BotType[];
@@ -133,52 +130,9 @@ export default function BotApplications({
 
       // 發送Webhook消息
       if (isApproved) {
-        const developerNames = app.developers
-          .map(dev => dev.username || '未知')
-          .join('\n');
-        const embed = {
-          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新機器人發佈通知！`,
-          description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${app.prefix}**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\n> ${app.inviteUrl}\n➤網站連結：\n> https://dchubs.org/bots/${app.id || '無'}\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
-          color: 0x4285f4,
-          footer: {
-            text: '由 DiscordHubs 系統發送',
-            icon_url:
-              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-          },
-          thumbnail: {
-            url: app.icon || '',
-          },
-          image: {
-            url: app.banner || '',
-          },
-        };
-
-        const webhookData = {
-          content: '<@&1355617017549426919>',
-          embeds: [embed],
-          username: 'DcHubs機器人通知',
-          avatar_url:
-            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-        };
-
-        try {
-          const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(webhookData),
-          });
-
-          if (!response.ok) {
-            console.error('Webhook 發送失敗:', response.statusText);
-          } else {
-          }
-        } catch (webhookError) {
-          console.error('發送 Webhook 時出錯:', webhookError);
-        }
+        await sendApprovedWebhook(app);
+        await handleFetchBotServerCount(app.id);
       }
-      await handleFetchBotServerCount(app.id);
     }
 
     setIsDialogOpen(false);
