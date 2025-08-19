@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
   }
 
   const target = await getTargetById(type, targetId);
-  if (!target?.url) {
+  if (!target) {
     return NextResponse.json({ error: 'Unknown target' }, { status: 404 });
   }
 
@@ -188,13 +188,6 @@ export async function POST(req: NextRequest) {
       headers,
       body: bodyStr,
     });
-    if (!resp.ok) {
-      console.error('Vote forward failed', resp.status);
-      return NextResponse.json(
-        { error: 'Failed to forward vote' },
-        { status: 502 },
-      );
-    }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Unexpected error forwarding vote', error);
