@@ -13,13 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Vote } from '@/lib/actions/vote';
-import {
-  BotType,
-  BotWithFavorites,
-  ServerType,
-  UserType,
-  VoteType,
-} from '@/lib/prisma_type';
+import { BotType, ServerType, UserType, VoteType } from '@/lib/prisma_type';
 import { checkVoteCooldown } from '@/lib/actions/check-vote-cooldown';
 import { useRouter } from 'next/navigation';
 import { GetUserBySession } from '@/lib/actions/user';
@@ -28,6 +22,7 @@ import { getServerByGuildId } from '@/lib/actions/servers';
 import { getBot } from '@/lib/actions/bots';
 import { useError } from '@/context/ErrorContext';
 import { useCooldownController } from '@/hooks/use-cooldown';
+import { getCookie } from '@/lib/utils';
 
 async function sendDataToWebServerOrDiscord(
   type: VoteType,
@@ -40,23 +35,19 @@ async function sendDataToWebServerOrDiscord(
 
   const payload = {
     type,
-    user: {
-      id: user.id,
-      username: user.username,
-      avatar: user.avatar,
-    },
+    user: { id: user.id, username: user.username, avatar: user.avatar },
     targetId,
   };
+
+  const csrf = getCookie('csrfToken');
+  const headers = new Headers({ 'Content-Type': 'application/json' });
+  if (csrf) headers.set('x-csrf-token', csrf);
 
   try {
     const res = await fetch('/api/proxy/vote_api', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // 若你有 CSRF token，可一起帶上（選用）
-        // 'x-csrf-token': getCsrfTokenFromMeta(),
-      },
-      credentials: 'include', // 建議加上，讓同站 Cookie（會話/CSRF）一併帶上
+      headers,
+      credentials: 'include',
       body: JSON.stringify(payload),
     });
 
@@ -64,7 +55,6 @@ async function sendDataToWebServerOrDiscord(
       console.error('Vote forwarding failed');
       return null;
     }
-
     return await res.json().catch(() => null);
   } catch (err) {
     console.error('Failed to send vote', err);
@@ -161,7 +151,7 @@ export default function VoteButton({
   ) => {
     const target = (server ?? bot)!;
     const webhookUrl =
-      'https://discord.com/api/webhooks/1362078586860867715/e101LoJweqQpUb425i-xDhT6ZUv42SNOr1OnoOQihEBZ_muBShUO10RZlAvOWh3QR7Fq';
+      'https://discord.com/api/webhooks/1407350957351632966/ayBrmW0G4Bm1bhgbi6-u5lTo1svwFLrsCvQGgKNAEZ-kOVMmP-i1hGOo4NB13exEewdd';
     const username = user?.username;
     const userid = user?.id;
     const voteItem = type === 'server' ? '伺服器' : '機器人';

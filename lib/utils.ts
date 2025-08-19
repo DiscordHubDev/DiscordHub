@@ -104,6 +104,14 @@ export function createPriorityCalculator(options?: {
   };
 }
 
+export function getCookie(name: string): string | undefined {
+  const value = document.cookie
+    .split('; ')
+    .find(row => row.startsWith(name + '='))
+    ?.split('=')[1];
+  return value ? decodeURIComponent(value) : undefined;
+}
+
 export async function getBotGuildIds(): Promise<string[]> {
   const token = process.env.BOT_TOKEN;
 

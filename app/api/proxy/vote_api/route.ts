@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 
-/** ========== 型別 ========== **/
 type VoteType = 'bot' | 'server';
 
 type ClientBody = {
@@ -18,14 +16,51 @@ type TargetRecord = {
   secret?: string;
 };
 
-export async function getTargetById(
+// ---- Edge-safe helpers ----
+const enc = new TextEncoder();
+
+function timingSafeEqualStr(a: string, b: string) {
+  // 以 Uint8Array 做 constant-time 比較（避免 Buffer 與 Node.timingSafeEqual）
+  const aa = enc.encode(a);
+  const bb = enc.encode(b);
+  if (aa.length !== bb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aa.length; i++) {
+    diff |= aa[i] ^ bb[i];
+  }
+  return diff === 0;
+}
+
+function toHex(ab: ArrayBuffer) {
+  const view = new Uint8Array(ab);
+  let out = '';
+  for (let i = 0; i < view.length; i++) {
+    const h = view[i].toString(16).padStart(2, '0');
+    out += h;
+  }
+  return out;
+}
+
+async function signBodyHMAC(secret: string, body: string) {
+  // Web Crypto HMAC-SHA256
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(body));
+  return toHex(sig);
+}
+
+// ---- rest of your logic ----
+async function getTargetById(
   type: VoteType,
   targetId: string,
 ): Promise<TargetRecord | null> {
   if (type === 'bot') {
-    const bot = await prisma.bot.findUnique({
-      where: { id: targetId },
-    });
+    const bot = await prisma.bot.findUnique({ where: { id: targetId } });
     if (!bot) return null;
     return {
       id: bot.id,
@@ -34,9 +69,7 @@ export async function getTargetById(
       secret: bot.secret ?? undefined,
     };
   } else {
-    const server = await prisma.server.findUnique({
-      where: { id: targetId },
-    });
+    const server = await prisma.server.findUnique({ where: { id: targetId } });
     if (!server) return null;
     return {
       id: server.id,
@@ -47,19 +80,9 @@ export async function getTargetById(
   }
 }
 
-function timingSafeEqualStr(a: string, b: string) {
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
-  return crypto.timingSafeEqual(ab, bb);
-}
-
-function signBodyHMAC(secret: string, body: string) {
-  return crypto.createHmac('sha256', secret).update(body).digest('hex');
-}
-
 const ALLOWED_ORIGINS = new Set<string>([
   'https://dchubs.org',
+  'https://www.dchubs.org',
   'http://localhost:3000',
 ]);
 
@@ -76,8 +99,16 @@ export async function POST(req: NextRequest) {
 
   const origin = req.headers.get('origin');
   const referer = req.headers.get('referer');
-  const source = origin ?? (referer ? new URL(referer).origin : null);
-  if (!source || !ALLOWED_ORIGINS.has(source)) {
+  let source: string | null = null;
+  try {
+    source = origin ?? (referer ? new URL(referer).origin : null);
+  } catch {
+    source = null;
+  }
+
+  const isSameOrigin = !!source && source === req.nextUrl.origin;
+  const allowed = isSameOrigin || ALLOWED_ORIGINS.has(source ?? '');
+  if (!allowed) {
     return NextResponse.json({ error: 'Forbidden origin' }, { status: 403 });
   }
 
@@ -146,7 +177,7 @@ export async function POST(req: NextRequest) {
 
   if (!isDiscordWebhook && target.secret) {
     const ts = Date.now().toString();
-    const signature = signBodyHMAC(target.secret, ts + '.' + bodyStr);
+    const signature = await signBodyHMAC(target.secret, ts + '.' + bodyStr);
     headers['x-signature'] = signature;
     headers['x-timestamp'] = ts;
   }
@@ -157,7 +188,6 @@ export async function POST(req: NextRequest) {
       headers,
       body: bodyStr,
     });
-
     if (!resp.ok) {
       console.error('Vote forward failed', resp.status);
       return NextResponse.json(
@@ -165,10 +195,9 @@ export async function POST(req: NextRequest) {
         { status: 502 },
       );
     }
-
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Unexpected error forwarding vote');
+    console.error('Unexpected error forwarding vote', error);
     return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
   }
 }
