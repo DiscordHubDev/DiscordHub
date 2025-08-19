@@ -94,6 +94,13 @@ export async function POST(req: NextRequest) {
     !cookieToken ||
     !timingSafeEqualStr(headerToken, cookieToken)
   ) {
+    // 用長度協助除錯，避免洩漏值
+    console.warn('Invalid CSRF token', {
+      headerLen: headerToken.length,
+      cookieLen: cookieToken.length,
+      origin: req.headers.get('origin'),
+      host: req.headers.get('host'),
+    });
     return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
   }
 
