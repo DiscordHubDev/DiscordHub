@@ -48,14 +48,14 @@ export const getCachedAllBots = unstable_cache(
   },
 );
 
-// 快取單個 bot 資料，快取 10 分鐘
+// 快取單個 bot 資料，快取 1 分鐘
 export const getCachedBot = unstable_cache(
   async (id: string) => {
     return await getBot(id);
   },
   ['bot-detail'], // 快取鍵前綴
   {
-    revalidate: 600, // 10 分鐘後重新驗證
+    revalidate: 60, // 1 分鐘後重新驗證
     tags: ['bots', 'bot-detail'], // 標籤
   },
 );
