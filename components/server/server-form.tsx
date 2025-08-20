@@ -27,20 +27,14 @@ import {
   getCloudinarySignature,
 } from '@/lib/actions/image';
 import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
-import {
-  CreateServerInput,
-  EditServerType,
-  ServerType,
-} from '@/lib/prisma_type';
+import { EditServerType } from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
 import {
   buildConnectOrCreateAdmins,
   getServerAdmins,
   insertServer,
-  isOwnerexist,
   updateServer,
 } from '@/lib/actions/servers';
-import { fetchUserInfo } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import MarkdownRenderer from '../MarkdownRenderer';
 
@@ -261,29 +255,7 @@ export default function ServerFormPage({
     }
 
     try {
-      let avatar: string = '';
-      let banner: string | null = null; // user banner
-      let global_name: string = '未知使用者';
-
       let server_banner = bannerPreviews[0]?.url ?? null;
-
-      const isActiveServer = (s: any): s is ActiveServerInfo =>
-        s &&
-        typeof s.memberCount === 'number' &&
-        typeof s.OnlineMemberCount === 'number';
-
-      const memberCount = isActiveServer(activeServer)
-        ? activeServer.memberCount
-        : (edit_server?.members ?? 0);
-
-      const onlineCount = isActiveServer(activeServer)
-        ? activeServer.OnlineMemberCount
-        : (edit_server?.online ?? 0);
-
-      const ownerId =
-        typeof activeServer.owner === 'string'
-          ? activeServer.owner
-          : activeServer.owner?.id;
 
       const adminIds = await getServerAdmins(activeServer.id);
 
@@ -291,104 +263,36 @@ export default function ServerFormPage({
         adminIds ?? [],
       );
 
-      const existingOwner = await isOwnerexist(ownerId!);
-
-      if (!existingOwner) {
-        const userInfo = await fetchUserInfo(ownerId!);
-        avatar = userInfo.avatar_url;
-        banner = userInfo.banner_url;
-        global_name = userInfo.global_name;
-      }
-
-      const payload: CreateServerInput = {
+      // 只傳送需要更新的欄位
+      const payload = {
         id: activeServer.id,
         name: data.serverName,
-        icon: activeServer.icon,
         banner: server_banner,
         description: data.shortDescription,
         longDescription: data.longDescription,
         inviteUrl: data.inviteLink,
         website: data.websiteLink,
-        VoteNotificationURL: data.webhook_url,
-        secret: data.secret,
         tags: data.tags,
-        members: memberCount,
-        online: onlineCount,
         rules: data.rules,
         screenshots: screenshotPreviews.map(s => s.url),
-        ...(mode === 'create'
-          ? { upvotes: 0 }
-          : { upvotes: edit_server?.upvotes ?? 0 }),
-        owner: {
-          connectOrCreate: {
-            where: { id: ownerId },
-            create: {
-              id: ownerId!,
-              username: global_name,
-              avatar: avatar,
-              banner: banner,
-            },
-          },
-        },
       };
 
       if (mode === 'edit') {
-        await updateServer(payload, connectOrCreateAdmins);
+        await updateServer(activeServer.id, payload);
       } else {
         await insertServer(payload, connectOrCreateAdmins);
       }
 
       if (mode !== 'edit') {
-        const embed = {
-          title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
-          description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
-          color: 0x4285f4,
-          thumbnail: {
-            url: activeServer?.icon || '',
-          },
-          image: {
-            url: activeServer?.banner || '',
-          },
-          footer: {
-            text: '由 DiscordHubs 系統發送',
-            icon_url:
-              'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-          },
-        };
-
-        const webhookData = {
-          content: '<@&1355617333967585491>',
-          embeds: [embed],
-          username: 'DcHubs伺服器通知',
-          avatar_url:
-            'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-        };
-
-        try {
-          const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(webhookData),
-          });
-
-          if (!response.ok) {
-            console.error('Webhook 發送失敗:', response.statusText);
-          } else {
-          }
-        } catch (webhookError) {
-          console.error('發送 Webhook 時出錯:', webhookError);
-        }
+        // sendServerWebhook(data, activeServer);
         reset();
       }
       toast.success(mode === 'edit' ? '伺服器更新成功' : '伺服器發布成功');
     } catch (err: any) {
       console.error(err);
-      setError(err.message ?? '發生未知錯誤');
-    } finally {
-      setLoading(false);
+      setError('發生錯誤：' + (err.message || '發生未知錯誤'));
     }
+    setLoading(false);
   };
 
   // const handleTestWebhook = async () => {

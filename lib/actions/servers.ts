@@ -14,6 +14,27 @@ import { MinimalServerInfo } from '../get-user-guild';
 
 const CHUNK_SIZE = 500;
 
+import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../authOptions';
+import { fetchDiscordServerInfo, verifyServerOwnership } from '../discord';
+
+const UpdateServerSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(300).optional(),
+  longDescription: z.string().max(5000).optional(),
+  tags: z.array(z.string()).max(25).optional(),
+  icon: z.string().url().nullable().optional(),
+  banner: z.string().url().nullable().optional(),
+  website: z.string().url().or(z.literal('')).nullable().optional(),
+  inviteUrl: z.string().url().optional(),
+  rules: z.array(z.any()).max(50).optional(),
+  features: z.array(z.string()).max(50).optional(),
+  screenshots: z.array(z.string().url()).max(5).optional(),
+});
+
+type SafeUpdate = z.infer<typeof UpdateServerSchema>;
+
 export async function buildConnectOrCreateAdmins(
   admins: (string | { id: string })[],
 ) {
@@ -39,81 +60,144 @@ export async function buildConnectOrCreateAdmins(
 }
 
 export async function updateServer(
-  data: CreateServerInput,
-  connectOrCreateAdmins?: any[],
+  serverId: string,
+  input: {
+    name?: string;
+    description?: string;
+    longDescription?: string;
+    tags?: string[];
+    icon?: string;
+    banner?: string;
+    website?: string;
+    inviteUrl?: string;
+    rules?: any[];
+    features?: string[];
+    screenshots?: string[];
+  },
 ) {
-  const existingServer = await prisma.server.findUnique({
-    where: { id: data.id },
-    select: { screenshots: true },
+  const session = await getServerSession(authOptions);
+  const userId = session?.discordProfile?.id;
+  if (!userId) throw new Error('UNAUTHORIZED');
+
+  // 驗證用戶是否有權限編輯這個伺服器
+  const server = await prisma.server.findFirst({
+    where: {
+      id: serverId,
+      OR: [{ ownerId: userId }, { admins: { some: { id: userId } } }],
+    },
   });
 
-  try {
-    const updatedServer = await prisma.server.update({
-      where: {
-        id: data.id,
-      },
-      data: {
-        name: data.name,
-        description: data.description,
-        longDescription: data.longDescription,
-        tags: data.tags,
-        members: data.members,
-        online: data.online,
-        upvotes: data.upvotes,
-        icon: data.icon,
-        banner: data.banner,
-        website: data.website,
-        inviteUrl: data.inviteUrl,
-        secret: data.secret,
-        VoteNotificationURL: data.VoteNotificationURL,
-        rules: data.rules,
-        features: data.features ?? [],
-        screenshots: {
-          set: Array.isArray(data.screenshots) ? data.screenshots : [],
-        },
-
-        // connect owner
-        owner: data.owner?.connectOrCreate
-          ? {
-              connect: {
-                id: data.owner.connectOrCreate.where.id,
-              },
-            }
-          : undefined,
-
-        // connectOrCreate admins
-        admins:
-          connectOrCreateAdmins && connectOrCreateAdmins.length > 0
-            ? {
-                set: [],
-                connectOrCreate: connectOrCreateAdmins,
-              }
-            : undefined,
-      },
-    });
-
-    console.log(
-      `✅ 已更新伺服器 ${data.name}，並同步 ${connectOrCreateAdmins?.length ?? 0} 位管理員`,
-    );
-
-    return updatedServer;
-  } catch (error) {
-    console.error('❌ 更新伺服器失敗:', error);
-    throw error;
+  if (!server) {
+    throw new Error('NOT_FOUND');
   }
+
+  // 只更新允許的欄位，絕對不包含 owner、admins 等敏感欄位
+  const updateData: any = {};
+  if (input.name !== undefined) updateData.name = input.name;
+  if (input.description !== undefined)
+    updateData.description = input.description;
+  if (input.longDescription !== undefined)
+    updateData.longDescription = input.longDescription;
+  if (input.tags !== undefined) updateData.tags = input.tags;
+  if (input.icon !== undefined) updateData.icon = input.icon;
+  if (input.banner !== undefined) updateData.banner = input.banner;
+  if (input.website !== undefined) updateData.website = input.website;
+  if (input.inviteUrl !== undefined) updateData.inviteUrl = input.inviteUrl;
+  if (input.rules !== undefined) updateData.rules = input.rules;
+  if (input.features !== undefined) updateData.features = input.features;
+  if (input.screenshots !== undefined)
+    updateData.screenshots = { set: input.screenshots };
+
+  const result = await prisma.server.update({
+    where: { id: serverId },
+    data: updateData,
+  });
+
+  return result;
 }
 
 export async function insertServer(
-  data: CreateServerInput,
+  data: {
+    id: string;
+    name: string;
+    description?: string;
+    longDescription?: string;
+    inviteUrl?: string;
+    website?: string;
+    tags?: string[];
+    rules?: any[];
+    screenshots?: string[];
+    icon?: string;
+    banner?: string;
+  },
   connectOrCreateAdmins?: any[],
 ) {
+  // 1. 驗證用戶身份
+  const session = await getServerSession(authOptions);
+  const userId = session?.discordProfile?.id;
+
+  if (!userId) {
+    throw new Error('UNAUTHORIZED');
+  }
+
   try {
+    // 2. 驗證伺服器是否已存在
+    const existingServer = await prisma.server.findUnique({
+      where: { id: data.id },
+    });
+
+    if (existingServer) {
+      throw new Error('SERVER_ALREADY_EXISTS');
+    }
+
+    // 3. 驗證用戶是否真的是這個Discord伺服器的擁有者
+    const isActualOwner = await verifyServerOwnership(data.id, userId);
+    if (!isActualOwner) {
+      throw new Error('NOT_SERVER_OWNER');
+    }
+
+    // 4. 獲取伺服器的實際資訊（從Discord API）
+    const discordServerInfo = await fetchDiscordServerInfo(data.id);
+
+    // 5. 先確保 User 存在（使用 upsert）
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: {}, // 如果存在就不更新
+      create: {
+        id: userId,
+        username: session.discordProfile?.name || '未知使用者',
+        avatar: session.discordProfile?.image_url || '',
+      },
+    });
+
+    // 6. 創建伺服器
     const createdServer = await prisma.server.create({
       data: {
-        ...data,
-        admins: {
-          connectOrCreate: connectOrCreateAdmins,
-        },
+        id: data.id,
+        name: data.name,
+        description: data.description || '',
+        longDescription: data.longDescription,
+        inviteUrl: data.inviteUrl,
+        website: data.website,
+        tags: data.tags || [],
+        rules: data.rules || [],
+        screenshots: data.screenshots || [],
+        icon: data.icon || discordServerInfo.icon,
+        banner: data.banner,
+
+        // 關鍵：這些欄位由後端控制
+        ownerId: userId, // 直接設定 ownerId
+        members: discordServerInfo.memberCount || 0,
+        online: discordServerInfo.onlineCount || 0,
+        upvotes: 0,
+
+        // 如果有管理員，使用 connect 連接已存在的用戶
+        ...(connectOrCreateAdmins &&
+          connectOrCreateAdmins.length > 0 && {
+            admins: {
+              connectOrCreate: connectOrCreateAdmins,
+            },
+          }),
       },
     });
 

@@ -1,8 +1,10 @@
 'use server';
 
 import { botFormSchema } from '@/schemas/add-bot-schema';
-import { BotType, ServerType, UserType } from './prisma_type';
+import { BotType, EditServerType, ServerType, UserType } from './prisma_type';
 import { z } from 'zod';
+import { ServerFormSchema } from '@/schemas/add-server-schema';
+import { ActiveServerInfo } from './get-user-guild';
 
 export const sendWebhook = async (
   type: 'server' | 'bot',
@@ -128,6 +130,56 @@ export const sendPendingWebhook = async (data: FormData, avatarUrl: string) => {
       },
       body: JSON.stringify(webhookData),
     });
+    if (!response.ok) {
+      console.error('Webhook 發送失敗:', response.statusText);
+    } else {
+    }
+  } catch (webhookError) {
+    console.error('發送 Webhook 時出錯:', webhookError);
+  }
+};
+
+type FormSchemaType = z.infer<typeof ServerFormSchema>;
+
+export const sendServerWebhook = async (
+  data: FormSchemaType,
+  activeServer: ActiveServerInfo | EditServerType,
+) => {
+  const webhookUrl = process.env.SERVER_WEBHOOK_URL || '';
+  const embed = {
+    title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
+    description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
+    color: 0x4285f4,
+    thumbnail: {
+      url: activeServer?.icon || '',
+    },
+    image: {
+      url: activeServer?.banner || '',
+    },
+    footer: {
+      text: '由 DiscordHubs 系統發送',
+      icon_url:
+        'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+    },
+  };
+
+  const webhookData = {
+    content: '<@&1355617333967585491>',
+    embeds: [embed],
+    username: 'DcHubs伺服器通知',
+    avatar_url:
+      'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(webhookData),
+    });
+
     if (!response.ok) {
       console.error('Webhook 發送失敗:', response.statusText);
     } else {

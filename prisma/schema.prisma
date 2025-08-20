@@ -11,7 +11,7 @@ datasource db {
 
 model User {
   id           String   @id
-  username     String
+  username     String   @unique // 新增：使用者名稱唯一性約束
   avatar       String
   banner       String?
   banner_color String?
@@ -34,6 +34,10 @@ model User {
   handledBots Bot[]  @relation("HandleBots")
 
   adminIn    Server[]   @relation("ServerAdmins")
+
+  // 新增索引
+  @@index([username])
+  @@index([joinedAt])
 }
 
 enum EmailPriority {
@@ -60,6 +64,12 @@ model Notification {
   priority  EmailPriority @default(info)
   isSystem  Boolean       @default(false)
   read      Boolean       @default(false)
+
+  // 新增索引
+  @@index([userId])
+  @@index([createdAt])
+  @@index([read])
+  @@index([userId, read]) // 複合索引：查詢特定用戶的未讀通知
 }
 
 model Server {
@@ -93,6 +103,17 @@ model Server {
   pinExpiry  DateTime? 
 
   Review Review[]
+  
+  // 優化索引
+  @@index([ownerId])
+  @@index([featured])
+  @@index([createdAt])
+  @@index([upvotes])
+  @@index([members])
+  @@index([pin])
+  @@index([featured, upvotes]) // 複合索引：熱門精選伺服器
+  @@index([createdAt, upvotes]) // 複合索引：按時間和票數排序
+  @@unique([id, ownerId])
 }
 
 model Bot {
@@ -136,6 +157,22 @@ model Bot {
   pinExpiry  DateTime? 
 
   isAdmin       Boolean  @default(false)
+  
+  // 新增索引
+  @@index([status])
+  @@index([featured])
+  @@index([verified])
+  @@index([createdAt])
+  @@index([approvedAt])
+  @@index([upvotes])
+  @@index([servers])
+  @@index([users])
+  @@index([pin])
+  @@index([handledById])
+  @@index([status, createdAt]) // 複合索引：按狀態和時間查詢
+  @@index([featured, upvotes]) // 複合索引：熱門精選機器人
+  @@index([verified, upvotes]) // 複合索引：驗證過的熱門機器人
+  @@index([status, featured]) // 複合索引：狀態和精選組合
 }
 
 model BotCommand {
@@ -146,6 +183,11 @@ model BotCommand {
   category    String?
   botId       String
   bot         Bot     @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  // 新增索引
+  @@index([botId])
+  @@index([category])
+  @@index([name])
 }
 
 model Review {
@@ -161,6 +203,15 @@ model Review {
 
   serverId String?
   server   Server? @relation(fields: [serverId], references: [id])
+
+  // 新增索引
+  @@index([botId])
+  @@index([serverId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([rating])
+  @@index([botId, rating]) // 複合索引：機器人評分查詢
+  @@index([serverId, rating]) // 複合索引：伺服器評分查詢
 }
 
 model Report {
@@ -185,6 +236,18 @@ model Report {
   handledById    String?
   handledBy      User?          @relation("HandledReports", fields: [handledById], references: [id])
   handledAt      DateTime? 
+
+  // 新增索引
+  @@index([status])
+  @@index([severity])
+  @@index([type])
+  @@index([itemId])
+  @@index([reportedById])
+  @@index([handledById])
+  @@index([reportedAt])
+  @@index([status, severity]) // 複合索引：狀態和嚴重程度
+  @@index([type, itemId]) // 複合索引：類型和項目ID
+  @@index([status, reportedAt]) // 複合索引：狀態和時間排序
 }
 
 enum ReportStatus {
@@ -213,6 +276,14 @@ model Vote {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id])
+
+  // 新增索引和約束
+  @@index([userId])
+  @@index([itemId])
+  @@index([itemType])
+  @@index([createdAt])
+  @@index([userId, itemId, itemType]) // 複合索引：防止重複投票查詢
+  @@unique([userId, itemId, itemType]) // 唯一約束：防止重複投票
 }
 
 enum VoteType {
