@@ -60,24 +60,6 @@ export default withAuth(
 
     // 先準備回應
     const res = NextResponse.next();
-    const nonce = genNonce();
-
-    res.headers.set('x-csp-nonce', nonce);
-    const csp = [
-      "default-src 'self'",
-      `script-src 'self' 'nonce-${nonce}' https://www.googletagmanager.com`,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https://api.example.com",
-      "frame-ancestors 'self'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "object-src 'none'",
-      "require-trusted-types-for 'script'",
-      'trusted-types nextjs#bundler',
-    ].join('; ');
-    res.headers.set('Content-Security-Policy', csp);
 
     // 沒有 CSRF cookie 就種一顆（無論 GET 或 POST）
     if (!req.cookies.get('csrfToken')?.value) {

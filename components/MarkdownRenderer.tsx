@@ -212,7 +212,7 @@ export default function MarkdownRenderer({ content }: Props) {
           forceBlock: true,
           forceInline: false,
           wrapper: 'div',
-          disableParsingRawHTML: true,
+          disableParsingRawHTML: false,
           overrides: {
             img: { component: SafeImage },
             iframe: { component: SafeIframe },

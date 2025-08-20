@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 type BotDetailProps = {
   allBots: PublicBot[];

@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from './ui/tooltip';
 import { useCallback, useMemo, memo } from 'react';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface BotCardProps {
   bot: PublicBot;

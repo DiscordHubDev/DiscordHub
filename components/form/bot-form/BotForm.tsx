@@ -31,7 +31,7 @@ import { toast } from 'react-toastify';
 import { usePersistedFormField } from '@/hooks/use-field';
 import { useError } from '@/context/ErrorContext';
 import { sendPendingWebhook } from '@/lib/webhook';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {

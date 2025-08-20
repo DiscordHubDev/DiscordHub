@@ -37,7 +37,7 @@ import {
 } from '@/lib/actions/servers';
 import { toast } from 'react-toastify';
 import MarkdownRenderer from '../MarkdownRenderer';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 type FormSchemaType = z.infer<typeof ServerFormSchema>;
 

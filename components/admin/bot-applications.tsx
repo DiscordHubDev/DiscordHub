@@ -28,7 +28,7 @@ import MarkdownRenderer from '../MarkdownRenderer';
 import Link from 'next/link';
 import { useError } from '@/context/ErrorContext';
 import { sendApprovedWebhook } from '@/lib/webhook';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 type BotApplicationsProps = {
   applications: BotType[];

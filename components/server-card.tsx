@@ -10,7 +10,7 @@ import clsx from 'clsx';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Avatar } from './ui/avatar';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface ServerCardProps {
   server: PublicServer;

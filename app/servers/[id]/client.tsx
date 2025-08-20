@@ -15,7 +15,7 @@ import { ReportDialog } from '@/components/ReportDialog';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 type ServerDetailPageProps = {
   allServers: PublicServer[];
