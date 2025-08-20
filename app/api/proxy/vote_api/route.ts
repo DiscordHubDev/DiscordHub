@@ -172,6 +172,7 @@ export async function POST(req: NextRequest) {
     const signature = await signBodyHMAC(target.secret, ts + '.' + bodyStr);
     headers['x-signature'] = signature;
     headers['x-timestamp'] = ts;
+    headers['Authorization'] = `Bearer ${target.secret}`;
   }
 
   // 6) 呼叫對方 webhook：失敗回 502（不要 500）
