@@ -283,7 +283,6 @@ model Vote {
   @@index([itemType])
   @@index([createdAt])
   @@index([userId, itemId, itemType]) // 複合索引：防止重複投票查詢
-  @@unique([userId, itemId, itemType]) // 唯一約束：防止重複投票
 }
 
 enum VoteType {
