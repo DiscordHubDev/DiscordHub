@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, ArrowUp, Clock, Globe, AlertCircle } from 'lucide-react';
+import { Users, ArrowUp, Clock, Globe } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import { ReportDialog } from '@/components/ReportDialog';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
+import DOMPurify from 'dompurify';
 
 type ServerDetailPageProps = {
   allServers: PublicServer[];
@@ -177,7 +178,9 @@ export default function ServerDetailClientPage({
               <TabsContent value="about" className="mt-6">
                 <div className="bg-[#2b2d31] rounded-lg p-6">
                   <h2 className="text-xl font-bold mb-4">伺服器介紹</h2>
-                  <MarkdownRenderer content={server.longDescription || ''} />
+                  <MarkdownRenderer
+                    content={DOMPurify.sanitize(server.longDescription || '')}
+                  />
 
                   {server.features && server.features.length > 0 && (
                     <div className="mt-8">

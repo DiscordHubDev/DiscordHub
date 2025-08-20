@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from './ui/tooltip';
 import { useCallback, useMemo, memo } from 'react';
+import DOMPurify from 'dompurify';
 
 interface BotCardProps {
   bot: PublicBot;
@@ -217,9 +218,12 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                 </div>
 
                 {/* Description */}
-                <p className="text-gray-300 mb-4 line-clamp-2">
-                  {bot.description}
-                </p>
+                <p
+                  className="text-gray-300 mb-4 line-clamp-2"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(bot.description),
+                  }}
+                />
 
                 {/* Tags */}
                 {bot.tags.length > 0 && <TagsList tags={bot.tags} />}

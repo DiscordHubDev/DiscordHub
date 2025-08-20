@@ -17,15 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import {
-  Bot,
-  ExternalLink,
-  Check,
-  X,
-  Search,
-  MailPlus,
-  Link2,
-} from 'lucide-react';
+import { Bot, ExternalLink, Check, X, Search, Link2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { BotType } from '@/lib/prisma_type';
 import { updateBotStatus } from '@/lib/actions/update-bot-status';
@@ -36,6 +28,7 @@ import MarkdownRenderer from '../MarkdownRenderer';
 import Link from 'next/link';
 import { useError } from '@/context/ErrorContext';
 import { sendApprovedWebhook } from '@/lib/webhook';
+import DOMPurify from 'dompurify';
 
 type BotApplicationsProps = {
   applications: BotType[];
@@ -360,7 +353,9 @@ export default function BotApplications({
               <div>
                 <h4 className="text-sm font-medium text-gray-400">詳細描述</h4>
                 <MarkdownRenderer
-                  content={selectedApp.longDescription || '無'}
+                  content={DOMPurify.sanitize(
+                    selectedApp.longDescription || '無',
+                  )}
                 />
               </div>
 

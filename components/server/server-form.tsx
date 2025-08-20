@@ -37,6 +37,7 @@ import {
 } from '@/lib/actions/servers';
 import { toast } from 'react-toastify';
 import MarkdownRenderer from '../MarkdownRenderer';
+import DOMPurify from 'dompurify';
 
 type FormSchemaType = z.infer<typeof ServerFormSchema>;
 
@@ -427,7 +428,9 @@ export default function ServerFormPage({
                   className="h-[250px] overflow-auto bg-[#1e1f22] border border-gray-700 rounded-md p-4 mt-4"
                 >
                   <MarkdownRenderer
-                    content={longDescription || '詳細描述預覽 (支援Markdown)'}
+                    content={DOMPurify.sanitize(
+                      longDescription || '詳細描述預覽 (支援Markdown)',
+                    )}
                   />
                 </div>
 

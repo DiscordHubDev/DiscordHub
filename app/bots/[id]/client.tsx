@@ -8,7 +8,6 @@ import {
   ArrowUp,
   Clock,
   Globe,
-  MessageSquare,
   Terminal,
   AlertTriangle,
 } from 'lucide-react';
@@ -17,7 +16,7 @@ import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
 import VoteButton from '@/components/vote-button';
 
-import { BotType, BotWithFavorites, PublicBot } from '@/lib/prisma_type';
+import { PublicBot } from '@/lib/prisma_type';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FavoriteButton } from '@/components/favorite-button';
@@ -31,6 +30,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
+import DOMPurify from 'dompurify';
 
 type BotDetailProps = {
   allBots: PublicBot[];
@@ -383,7 +383,10 @@ export default function BotDetailClient({
                   <h2 className="text-xl font-bold mb-4">機器人介紹</h2>
 
                   <MarkdownRenderer
-                    content={bot.longDescription || '**暫無介紹**'}
+                    content={
+                      DOMPurify.sanitize(bot.longDescription || '') ||
+                      '**暫無介紹**'
+                    }
                   />
 
                   {bot.features && bot.features.length > 0 && (

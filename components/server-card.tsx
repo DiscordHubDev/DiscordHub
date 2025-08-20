@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Avatar } from './ui/avatar';
+import DOMPurify from 'dompurify';
 
 interface ServerCardProps {
   server: PublicServer;
@@ -169,9 +170,12 @@ const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
                 </div>
 
                 {/* Description */}
-                <p className="text-gray-300 mb-4 line-clamp-2">
-                  {server.description}
-                </p>
+                <p
+                  className="text-gray-300 mb-4 line-clamp-2"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(server.description),
+                  }}
+                />
 
                 {/* Tags - 使用緩存的標籤列表 */}
                 {tagsList}

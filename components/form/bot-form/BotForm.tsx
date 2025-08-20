@@ -31,6 +31,7 @@ import { toast } from 'react-toastify';
 import { usePersistedFormField } from '@/hooks/use-field';
 import { useError } from '@/context/ErrorContext';
 import { sendPendingWebhook } from '@/lib/webhook';
+import DOMPurify from 'dompurify';
 
 const getBotAvatarUrl = async (botId: any) => {
   try {
@@ -409,7 +410,9 @@ const BotForm: React.FC<BotFormProps> = ({
                   className="h-[250px] overflow-auto bg-[#1e1f22] border border-gray-700 rounded-md p-4 mt-4"
                 >
                   <MarkdownRenderer
-                    content={longDescription || '詳細描述預覽 (支援Markdown)'}
+                    content={DOMPurify.sanitize(
+                      longDescription || '詳細描述預覽 (支援Markdown)',
+                    )}
                   />
                 </div>
 
