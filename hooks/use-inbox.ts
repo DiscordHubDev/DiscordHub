@@ -1,81 +1,32 @@
 // hooks/useInbox.ts
 import useSWR from 'swr';
-import { supabase } from '@/lib/supabase';
-import { useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
 
-function transformNotification(n: any) {
-  return {
-    id: n.id,
-    content: n.content,
-    name: n.name ?? '系統通知',
-    createdAt: new Date(n.createdAt).toISOString().split('T')[0],
-    subject: n.subject,
-    teaser: n.teaser ?? '',
-    priority: n.priority,
-    isSystem: n.userId === null,
-    read: n.read,
-  };
-}
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function useInbox() {
-  const { data: session } = useSession();
-  const userId = session?.discordProfile?.id;
-
-  const [mails, setMails] = useState<any[]>([]);
+  const { data, error, isLoading, mutate } = useSWR('/api/inbox', fetcher);
 
   const markAsRead = async (mailId: string) => {
-    await supabase.from('Notification').update({ read: true }).eq('id', mailId);
-
-    setMails(prev =>
-      prev.map(mail => (mail.id === mailId ? { ...mail, read: true } : mail)),
-    );
+    await fetch('/api/inbox', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: mailId }),
+    });
+    mutate();
   };
 
   const deleteMail = async (mailId: string) => {
-    setMails(prev => prev.filter(mail => mail.id !== mailId));
-
-    const { error } = await supabase
-      .from('Notification')
-      .delete()
-      .eq('id', mailId);
-
-    if (error) {
-      console.error('❌ 刪除失敗：', error);
-      throw error;
-    }
-  };
-
-  const { data, error, isLoading, mutate } = useSWR(
-    userId ? ['inbox', userId] : null,
-    async () => {
-      const { data, error } = await supabase
-        .from('Notification')
-        .select('*')
-        .or(`userId.eq.${userId},userId.is.null`)
-        .order('createdAt', { ascending: false });
-
-      if (error) throw error;
-
-      return data.map(transformNotification);
-    },
-  );
-
-  useEffect(() => {
-    if (data) setMails(data);
-  }, [data]);
-
-  const addMail = (newRawMail: any) => {
-    const newMail = transformNotification(newRawMail);
-    setMails(prev => [newMail, ...prev]);
+    await fetch(`/api/inbox?id=${mailId}`, { method: 'DELETE' });
+    mutate();
   };
 
   return {
-    mails,
+    mails: data ?? [],
     isLoading,
     error,
     refresh: mutate,
-    addMail,
+    addMail: (m: any) =>
+      mutate((prev: any[] = []) => [m, ...prev], { revalidate: false }),
     markAsRead,
     deleteMail,
   };
