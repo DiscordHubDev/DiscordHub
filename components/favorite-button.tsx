@@ -39,7 +39,7 @@ export function FavoriteButton({
     setLoading(true);
 
     try {
-      await toggleFavorite({ userId, target, id });
+      await toggleFavorite({ target, id });
     } catch (err) {
       setFavorited(prev => !prev);
       showError('收藏操作失敗');

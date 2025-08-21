@@ -17,12 +17,11 @@ import { BotType, ServerType, UserType, VoteType } from '@/lib/prisma_type';
 import { checkVoteCooldown } from '@/lib/actions/check-vote-cooldown';
 import { useRouter } from 'next/navigation';
 import { GetUserBySession } from '@/lib/actions/user';
-import { useSession } from 'next-auth/react';
+import { getCsrfToken, useSession } from 'next-auth/react';
 import { getServerByGuildId } from '@/lib/actions/servers';
 import { getBot } from '@/lib/actions/bots';
 import { useError } from '@/context/ErrorContext';
 import { useCooldownController } from '@/hooks/use-cooldown';
-import { getCookie } from '@/lib/utils';
 import { sendWebhook } from '@/lib/webhook';
 
 async function sendDataToWebServerOrDiscord(
@@ -40,9 +39,7 @@ async function sendDataToWebServerOrDiscord(
     targetId,
   };
 
-  const { csrfToken } = await fetch('/api/vote/csrf', {
-    credentials: 'include',
-  }).then(r => r.json());
+  const csrfToken = await getCsrfToken();
   const headers = new Headers({ 'Content-Type': 'application/json' });
   if (csrfToken) headers.set('x-csrf-token', csrfToken);
 

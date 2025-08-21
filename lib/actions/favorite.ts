@@ -2,16 +2,19 @@
 
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../authOptions';
 
 export async function toggleFavorite({
-  userId,
   target,
   id,
 }: {
-  userId: string;
   target: 'server' | 'bot';
   id: string;
 }): Promise<boolean> {
+  const session = await getServerSession(authOptions);
+  const userId = session?.discordProfile?.id;
+
   if (!userId) throw new Error('未登入');
 
   const user = (await prisma.user.findUnique({

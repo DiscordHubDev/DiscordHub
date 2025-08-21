@@ -73,11 +73,10 @@ const ALLOWED_ORIGINS = new Set<string>([
   'http://localhost:3000',
 ]);
 
-// ✅ 若你有設定 edge runtime，Prisma 會炸掉；確保是 Node.js
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  // 1) 先檢查來源（比 CSRF 更早退）
+  // 1) 来源检查
   const origin = req.headers.get('origin');
   const referer = req.headers.get('referer');
   let source: string | null = null;
@@ -92,15 +91,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden origin' }, { status: 403 });
   }
 
-  // 2) CSRF：雙送 cookie
+  // 2) NextAuth.js CSRF 保护：验证从 getCsrfToken() 获取的 token
   const headerToken = req.headers.get('x-csrf-token') || '';
-  const cookieToken = req.cookies.get('csrfToken')?.value || '';
+  // NextAuth.js 将 CSRF token 存储在这个 cookie 中
+  const cookieToken = req.cookies.get('next-auth.csrf-token')?.value || '';
+
   if (
     !headerToken ||
     !cookieToken ||
     !timingSafeEqualStr(headerToken, cookieToken)
   ) {
-    // 不回 token；請先打 GET /api/vote/csrf 拿 token
     return NextResponse.json({ error: 'Invalid CSRF token' }, { status: 403 });
   }
 
@@ -120,14 +120,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 4) 目標查詢
+  // 4) 目标查询
   const target = await getTargetById(type, targetId);
   if (!target)
     return NextResponse.json({ error: 'Unknown target' }, { status: 404 });
 
-  // 5) 沒設定 webhook/url → 直接成功（避免落入 500）
+  // 5) 没有设置 webhook/url 直接成功
   if (!target.url) {
-    return NextResponse.json({ success: true, skipped: true }); // 也可用 204：NextResponse.json(null, { status: 204 })
+    return NextResponse.json({ success: true, skipped: true });
   }
 
   const isDiscordWebhook = target.url.startsWith(
@@ -175,10 +175,10 @@ export async function POST(req: NextRequest) {
     headers['Authorization'] = `Bearer ${target.secret}`;
   }
 
-  // 6) 呼叫對方 webhook：失敗回 502（不要 500）
+  // 6) 调用外部 webhook
   try {
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 10_000); // 10 秒超時（避免卡住）
+    const t = setTimeout(() => ctrl.abort(), 10_000);
     const r = await fetch(target.url, {
       method: 'POST',
       headers,
@@ -190,7 +190,6 @@ export async function POST(req: NextRequest) {
 
     if (!r.ok) {
       const text = await r.text().catch(() => '');
-      // 用 502 報上游錯誤，方便你在前端分辨不是自己 API 掛了
       return NextResponse.json(
         {
           success: false,
@@ -203,7 +202,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    // 例如超時、DNS、連線被拒等
     console.error('Unexpected error forwarding vote', {
       msg: String(error?.message || error),
     });

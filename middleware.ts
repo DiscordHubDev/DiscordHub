@@ -8,47 +8,24 @@ const ALLOWED_ORIGINS = new Set([
   'http://localhost:3000',
 ]);
 
-function makeToken(): string {
-  const bytes = new Uint8Array(32);
-  crypto.getRandomValues(bytes);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  const b64 = btoa(bin);
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
-function genNonce() {
-  // 產生隨機、不可預測的 nonce；用 webcrypto
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return Buffer.from(bytes).toString('base64');
-}
-
-const CSRF_COOKIE_OPTS =
-  process.env.NODE_ENV === 'production'
-    ? {
-        httpOnly: false,
-        sameSite: 'strict' as const,
-        secure: true,
-        path: '/',
-        maxAge: 60 * 60 * 2,
-        domain: '.dchubs.org',
-      }
-    : {
-        httpOnly: false,
-        sameSite: 'lax' as const,
-        secure: false,
-        path: '/',
-        maxAge: 60 * 60 * 2,
-      };
-
 export default withAuth(
   function middleware(req) {
     const { token } = req.nextauth;
     const { pathname, origin } = req.nextUrl;
 
+    // Skip middleware for specific API routes
+    if (
+      pathname.startsWith('/api/update_server_stats') ||
+      pathname.startsWith('/api/update_bot_servers') ||
+      pathname.startsWith('/api/auth/') // Skip NextAuth.js routes
+    ) {
+      return NextResponse.next();
+    }
+
     const method = req.method.toUpperCase();
     const isStateChanging = !['GET', 'HEAD', 'OPTIONS'].includes(method);
 
+    // Origin validation for state-changing requests
     const reqOrigin = req.headers.get('origin');
     const referer = req.headers.get('referer');
     let source: string | null = null;
@@ -58,20 +35,12 @@ export default withAuth(
     const isSameOrigin = !!source && source === req.nextUrl.origin;
     const allowedOrigin = isSameOrigin || ALLOWED_ORIGINS.has(source ?? '');
 
-    // 先準備回應
-    const res = NextResponse.next();
-
-    // 沒有 CSRF cookie 就種一顆（無論 GET 或 POST）
-    if (!req.cookies.get('csrfToken')?.value) {
-      res.cookies.set('csrfToken', makeToken(), CSRF_COOKIE_OPTS);
-    }
-
-    // 來源檢查（只對 state-changing）
+    // Origin-based CSRF protection for state-changing requests
     if (isStateChanging && !allowedOrigin) {
       return new NextResponse('Forbidden (CSRF: bad origin)', { status: 403 });
     }
 
-    // /admin 保護
+    // Admin route protection
     if (pathname.startsWith('/admin')) {
       if (
         token?.discordProfile?.id &&
@@ -81,9 +50,13 @@ export default withAuth(
       }
     }
 
-    return res;
+    return NextResponse.next();
   },
-  { callbacks: { authorized: ({ token }) => !!token } },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+  },
 );
 
 export const config = {
