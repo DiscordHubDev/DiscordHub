@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import UserSettingsForm from './form/user-form/SettingsForm';
 import UserHeader from './user-header';
-import { PublicServer, UserType } from '@/lib/prisma_type';
+import { UserType } from '@/lib/prisma_type';
 import {
   Tooltip,
   TooltipContent,
