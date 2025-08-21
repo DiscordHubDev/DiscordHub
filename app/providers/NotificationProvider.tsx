@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase/supabase';
 import { signIn, useSession } from 'next-auth/react';
+import { supabase } from '@/lib/supabase';
 
 export function NotificationListener({
   onNotify,

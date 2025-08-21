@@ -1,10 +1,14 @@
 // hooks/useInbox.ts
+import { Mail } from '@/lib/types';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function useInbox() {
-  const { data, error, isLoading, mutate } = useSWR('/api/inbox', fetcher);
+  const { data, error, isLoading, mutate } = useSWR<Mail[]>(
+    '/api/inbox',
+    fetcher,
+  );
 
   const markAsRead = async (mailId: string) => {
     await fetch('/api/inbox', {
@@ -25,8 +29,8 @@ export function useInbox() {
     isLoading,
     error,
     refresh: mutate,
-    addMail: (m: any) =>
-      mutate((prev: any[] = []) => [m, ...prev], { revalidate: false }),
+    addMail: (m: Mail) =>
+      mutate((prev: Mail[] = []) => [m, ...prev], { revalidate: false }),
     markAsRead,
     deleteMail,
   };

@@ -6,14 +6,15 @@ import {
   getServersByCategoryAction,
 } from '@/lib/actions/servers';
 import DiscordServerListPageClient from './client';
-interface ServersPageProps {
-  searchParams: {
-    page?: string;
-    tab?: string;
-    search?: string;
-  };
+interface ServersPageSearchParams {
+  page?: string;
+  tab?: string;
+  search?: string;
 }
 
+interface ServersPageProps {
+  searchParams?: Promise<ServersPageSearchParams>;
+}
 // 載入骨架屏組件
 function ServerPageSkeleton() {
   return (
@@ -74,19 +75,18 @@ function ServerPageSkeleton() {
 
 // 主要數據載入組件
 async function ServerDataContainer({ searchParams }: ServersPageProps) {
-  const page = Math.max(1, parseInt(searchParams.page || '1'));
-  const tab = searchParams.tab || 'popular';
+  const sp = (
+    searchParams ? await searchParams : {}
+  ) as ServersPageSearchParams;
+
+  const page = Math.max(1, parseInt(sp.page ?? '1'));
+  const tab = sp.tab ?? 'popular';
 
   const { servers, total, currentPage, totalPages } =
     await getServersByCategoryAction(tab, page, 10);
 
   try {
-    console.time('SSR-data-fetch');
-
-    // 只需要獲取所有伺服器數據，在客戶端處理排序和分頁
     const allServers = await getAllServersAction();
-
-    console.timeEnd('SSR-data-fetch');
 
     return (
       <DiscordServerListPageClient

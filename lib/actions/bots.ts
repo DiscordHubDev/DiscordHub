@@ -18,6 +18,7 @@ import {
   fetchUserInfo,
   hasAdministratorPermission,
 } from '../utils';
+import { unstable_cache } from 'next/cache';
 
 export async function transformToBotUpdateData(
   formData: BotFormData,
@@ -313,16 +314,18 @@ function buildBotQuery(category: string): BotQuery {
   return { where, orderBy };
 }
 
-// Bot 專用的取得所有伺服器
-export async function getAllBotsAction(): Promise<PublicBot[]> {
-  // 可加上快取邏輯（如需要）
-  return prisma.bot.findMany({
-    orderBy: { servers: 'desc' },
-    select: publicBotSelect,
-  });
-}
+export const getAllBotsAction = unstable_cache(
+  async (): Promise<PublicBot[]> => {
+    return prisma.bot.findMany({
+      orderBy: { servers: 'desc' },
+      select: publicBotSelect,
+    });
+  },
+  ['bots', 'all'],
+  { revalidate: 30 },
+);
 
-// Bot 專用的依類別分頁取得伺服器
+// 依類別 + 分頁取得 Bot，快取 30 秒
 export async function getBotsByCategoryAction(
   category: string,
   page = 1,
@@ -334,27 +337,35 @@ export async function getBotsByCategoryAction(
   currentPage: number;
   totalPages: number;
 }> {
-  const skip = (page - 1) * limit;
-  const { where, orderBy } = buildBotQuery(category);
+  const key = ['bots', `cat:${category}`, `p:${page}`, `l:${limit}`];
 
-  const [bots, total] = await prisma.$transaction([
-    prisma.bot.findMany({
-      where,
-      orderBy,
-      skip,
-      take: limit,
-      select: publicBotSelect,
-    }),
-    prisma.bot.count({ where }),
-  ]);
+  return unstable_cache(
+    async () => {
+      const skip = (page - 1) * limit;
+      const { where, orderBy } = buildBotQuery(category);
 
-  return {
-    bots,
-    total,
-    hasMore: skip + bots.length < total,
-    currentPage: page,
-    totalPages: Math.ceil(total / limit),
-  };
+      const [bots, total] = await prisma.$transaction([
+        prisma.bot.findMany({
+          where,
+          orderBy,
+          skip,
+          take: limit,
+          select: publicBotSelect,
+        }),
+        prisma.bot.count({ where }),
+      ]);
+
+      return {
+        bots,
+        total,
+        hasMore: skip + bots.length < total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+      };
+    },
+    key,
+    { revalidate: 30 },
+  )();
 }
 
 // Bot 專用快取重驗證（如需要）

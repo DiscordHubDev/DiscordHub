@@ -1,7 +1,6 @@
 'use server';
 
 import {
-  CreateServerInput,
   EditServerType,
   PublicServer,
   publicServerSelect,
@@ -282,7 +281,7 @@ export const getAllServersAction = unstable_cache(
     console.time('getAllServers');
 
     const servers = await prisma.server.findMany({
-      orderBy: { members: 'desc' }, // 默認按創建時間排序
+      orderBy: { members: 'desc' },
       select: publicServerSelect,
     });
 
