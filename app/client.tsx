@@ -506,11 +506,7 @@ export default function DiscordServerListPageClient({
               想要推廣您的 Discord
               伺服器嗎？立即加入我們的平台，讓更多人發現您的社群！
             </p>
-            <Link
-              href="https://discord.gg/puQ9DPdG3M"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link href="/add-server" target="_blank" rel="noopener noreferrer">
               <Button className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white">
                 新增伺服器
               </Button>

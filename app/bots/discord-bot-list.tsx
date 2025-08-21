@@ -22,8 +22,9 @@ import CategorySearch from '@/components/category-search';
 import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Link } from 'lucide-react';
+import { Search } from 'lucide-react';
 import Pagination from '@/components/pagination';
+import Link from 'next/link';
 
 const ITEMS_PER_PAGE = 10;
 
