@@ -84,15 +84,11 @@ async function BotDataContainer({ searchParams }: BotsPageProps) {
   const tab = sp.tab ?? 'popular';
 
   try {
-    console.time('SSR-bot-fetch');
-
     const { bots, total, currentPage, totalPages } =
       await getBotsByCategoryAction(tab, page, 10);
 
     // 只需要獲取所有 bots 數據，在客戶端處理排序和分頁
     const allBots = await getAllBotsAction();
-
-    console.timeEnd('SSR-bot-fetch');
 
     return (
       <DiscordBotListPageClient

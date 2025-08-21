@@ -235,12 +235,10 @@ export const AdminGetAllServers = async () => {
 };
 
 export async function getAllServers(): Promise<PublicServer[]> {
-  console.time('getAllServers');
   const servers = await prisma.server.findMany({
     orderBy: { createdAt: 'desc' },
     select: publicServerSelect,
   });
-  console.timeEnd('getAllServers');
   console.log('Server count:', servers.length);
   return servers;
 }
@@ -278,15 +276,10 @@ function buildQuery(category: string) {
 // 獲取所有伺服器（用於客戶端排序和分頁）
 export const getAllServersAction = unstable_cache(
   async (): Promise<PublicServer[]> => {
-    console.time('getAllServers');
-
     const servers = await prisma.server.findMany({
       orderBy: { members: 'desc' },
       select: publicServerSelect,
     });
-
-    console.timeEnd('getAllServers');
-    console.log(`載入 ${servers.length} 個伺服器`);
 
     return servers;
   },
