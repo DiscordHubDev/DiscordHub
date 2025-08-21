@@ -5,6 +5,7 @@ import { Session } from 'next-auth';
 import { getUser } from '../get-user';
 import { UserType } from '../prisma_type';
 import { JWTDiscordProfile } from '@/app/types/next-auth';
+import { unstable_cache } from 'next/cache';
 
 type UpdateState = {
   success?: string;
@@ -120,6 +121,15 @@ export async function updateUserSettings(
     return { error: '儲存失敗' };
   }
 }
+
+export const getCachedUser = unstable_cache(
+  async (id: string) => {
+    if (!id) return null;
+    return await getUserById(id);
+  },
+  ['get-user'],
+  { revalidate: 120 },
+);
 
 export async function getUserById(id: string): Promise<UserType | null> {
   if (!id) return null;

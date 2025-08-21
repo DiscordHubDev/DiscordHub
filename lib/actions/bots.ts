@@ -364,7 +364,7 @@ export async function getBotsByCategoryAction(
       };
     },
     key,
-    { revalidate: 30 },
+    { revalidate: 120 }, // 2分鐘快取
   )();
 }
 

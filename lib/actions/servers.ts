@@ -272,8 +272,6 @@ function buildQuery(category: string) {
   return { where, orderBy };
 }
 
-// 你現有的 getServers 函數，添加快取
-// 獲取所有伺服器（用於客戶端排序和分頁）
 export const getAllServersAction = unstable_cache(
   async (): Promise<PublicServer[]> => {
     const servers = await prisma.server.findMany({
@@ -285,7 +283,7 @@ export const getAllServersAction = unstable_cache(
   },
   ['all-servers'],
   {
-    revalidate: 60, // 1分鐘快取
+    revalidate: 120, // 2分鐘快取
     tags: ['servers'],
   },
 );
