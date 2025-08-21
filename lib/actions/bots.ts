@@ -281,3 +281,84 @@ export async function updateBotServerCount(botId: string, serverCount: number) {
     console.error(error);
   }
 }
+
+type BotQuery = {
+  where: Record<string, any>;
+  orderBy: Record<string, 'asc' | 'desc'>[];
+};
+
+function buildBotQuery(category: string): BotQuery {
+  const where: Record<string, any> = {};
+  const orderBy: Record<string, 'asc' | 'desc'>[] = [];
+
+  switch (category) {
+    case 'popular':
+      orderBy.push({ pin: 'desc' }, { servers: 'desc' });
+      break;
+    case 'new':
+      orderBy.push({ createdAt: 'desc' });
+      break;
+    case 'featured':
+      where.servers = { gte: 1000 };
+      orderBy.push({ upvotes: 'desc' }, { servers: 'desc' });
+      break;
+    case 'voted':
+      orderBy.push({ upvotes: 'desc' });
+      break;
+    default:
+      orderBy.push({ servers: 'desc' });
+      break;
+  }
+
+  return { where, orderBy };
+}
+
+// Bot 專用的取得所有伺服器
+export async function getAllBotsAction(): Promise<PublicBot[]> {
+  // 可加上快取邏輯（如需要）
+  return prisma.bot.findMany({
+    orderBy: { servers: 'desc' },
+    select: publicBotSelect,
+  });
+}
+
+// Bot 專用的依類別分頁取得伺服器
+export async function getBotsByCategoryAction(
+  category: string,
+  page = 1,
+  limit = 10,
+): Promise<{
+  bots: PublicBot[];
+  total: number;
+  hasMore: boolean;
+  currentPage: number;
+  totalPages: number;
+}> {
+  const skip = (page - 1) * limit;
+  const { where, orderBy } = buildBotQuery(category);
+
+  const [bots, total] = await prisma.$transaction([
+    prisma.bot.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+      select: publicBotSelect,
+    }),
+    prisma.bot.count({ where }),
+  ]);
+
+  return {
+    bots,
+    total,
+    hasMore: skip + bots.length < total,
+    currentPage: page,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+// Bot 專用快取重驗證（如需要）
+export async function botRevalidateServersCache() {
+  const { revalidateTag } = await import('next/cache');
+  revalidateTag('servers');
+}

@@ -18,6 +18,8 @@ import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../authOptions';
 import { fetchDiscordServerInfo, verifyServerOwnership } from '../discord';
+import { unstable_cache } from 'next/cache';
+import { Prisma } from '@prisma/client';
 
 const UpdateServerSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -234,11 +236,112 @@ export const AdminGetAllServers = async () => {
 };
 
 export async function getAllServers(): Promise<PublicServer[]> {
+  console.time('getAllServers');
   const servers = await prisma.server.findMany({
     orderBy: { createdAt: 'desc' },
     select: publicServerSelect,
   });
+  console.timeEnd('getAllServers');
+  console.log('Server count:', servers.length);
   return servers;
+}
+
+function buildQuery(category: string) {
+  const where: Prisma.ServerWhereInput = {};
+  const orderBy: Prisma.ServerOrderByWithRelationInput[] = [];
+
+  switch (category) {
+    case 'popular':
+      // 置頂優先，其次人數
+      orderBy.push({ pin: 'desc' }, { members: 'desc' });
+      break;
+    case 'new':
+      // 最新建立（createdAt 越近越前）
+      orderBy.push({ createdAt: 'desc' });
+      break;
+    case 'featured':
+      // 先篩出一定規模，再依 upvotes / members
+      where.members = { gte: 1000 };
+      orderBy.push({ upvotes: 'desc' }, { members: 'desc' });
+      break;
+    case 'voted':
+      orderBy.push({ upvotes: 'desc' });
+      break;
+    default:
+      orderBy.push({ members: 'desc' });
+      break;
+  }
+
+  return { where, orderBy };
+}
+
+// 你現有的 getServers 函數，添加快取
+// 獲取所有伺服器（用於客戶端排序和分頁）
+export const getAllServersAction = unstable_cache(
+  async (): Promise<PublicServer[]> => {
+    console.time('getAllServers');
+
+    const servers = await prisma.server.findMany({
+      orderBy: { members: 'desc' }, // 默認按創建時間排序
+      select: publicServerSelect,
+    });
+
+    console.timeEnd('getAllServers');
+    console.log(`載入 ${servers.length} 個伺服器`);
+
+    return servers;
+  },
+  ['all-servers'],
+  {
+    revalidate: 60, // 1分鐘快取
+    tags: ['servers'],
+  },
+);
+
+export async function getServersByCategoryAction(
+  category: string,
+  page = 1,
+  limit = 10,
+) {
+  const skip = (page - 1) * limit;
+
+  return unstable_cache(
+    async () => {
+      const { where, orderBy } = buildQuery(category);
+
+      const [servers, total] = await prisma.$transaction([
+        prisma.server.findMany({
+          where,
+          orderBy,
+          skip,
+          take: limit,
+          select: publicServerSelect,
+        }),
+        prisma.server.count({ where }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        servers,
+        total,
+        hasMore: skip + servers.length < total,
+        currentPage: page,
+        totalPages,
+      };
+    },
+    // ✅ 這裡把參數寫進 key
+    ['servers', `cat:${category}`, `p:${page}`, `l:${limit}`],
+    { revalidate: 30, tags: ['servers'] },
+  )(); // ← 立刻呼叫取得結果
+}
+
+// 清除快取的輔助函數（當有新伺服器加入時使用）
+export async function revalidateServers() {
+  'use server';
+
+  const { revalidateTag } = await import('next/cache');
+  revalidateTag('servers');
 }
 
 // 獲取單一伺服器

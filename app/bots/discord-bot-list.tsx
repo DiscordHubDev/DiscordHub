@@ -2,199 +2,124 @@
 
 import type React from 'react';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
-import { Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useState,
+  useEffect,
+  useMemo,
+  Suspense,
+  useCallback,
+  useTransition,
+} from 'react';
 import BotList from '@/components/bot-list';
-import CategorySearch from '@/components/category-search';
-import MobileCategoryFilter from '@/components/mobile-category-filter';
 import { botCategories as initialCategories } from '@/lib/bot-categories';
 import type { CategoryType } from '@/lib/types';
-import Link from 'next/link';
-import { BotType, PublicBot } from '@/lib/prisma_type';
-import Pagination from '@/components/pagination';
+import { PublicBot } from '@/lib/prisma_type';
 import { BotListSkeleton } from '@/components/bot-skeleton';
+import { getBotsByCategoryAction } from '@/lib/actions/bots';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CategorySearch from '@/components/category-search';
+import MobileCategoryFilter from '@/components/mobile-category-filter';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Search, Link } from 'lucide-react';
+import Pagination from '@/components/pagination';
 
 const ITEMS_PER_PAGE = 10;
 
-// 延遲加載的 BotList 組件
 const LazyBotList = ({ bots }: { bots: PublicBot[] }) => (
   <Suspense fallback={<BotListSkeleton />}>
     <BotList bots={bots} />
   </Suspense>
 );
 
-export default function DiscordBotListPageClient({
-  allBots,
-}: {
-  allBots: PublicBot[];
-}) {
-  const [isClient, setIsClient] = useState(false);
+type DiscordBotListProps = {
+  initialBots: PublicBot[];
+  initialTotal: number;
+  initialPage: number;
+  initialTotalPages: number;
+  allBotsForFiltering: PublicBot[];
+};
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+const sortBotsByCategory = (
+  bots: PublicBot[],
+  category: string,
+): PublicBot[] => {
+  const botsCopy = [...bots];
+  if (category === 'popular') {
+    return botsCopy.sort((a, b) => b.servers - a.servers);
+  }
+  if (category === 'new') {
+    return botsCopy.sort(
+      (a, b) => +new Date(b.approvedAt!) - +new Date(a.approvedAt!),
+    );
+  }
+  if (category === 'featured') {
+    return botsCopy
+      .filter(bot => bot.servers >= 1000)
+      .sort((a, b) => b.upvotes - a.upvotes || b.servers - a.servers);
+  }
+  if (category === 'verified') {
+    return botsCopy
+      .filter(bot => bot.verified)
+      .sort((a, b) => +new Date(b.approvedAt!) - +new Date(a.approvedAt!));
+  }
+  if (category === 'voted') {
+    return botsCopy.sort((a, b) => b.upvotes - a.upvotes);
+  }
+  return botsCopy;
+};
 
-  // 使用 useMemo 預處理排序後的數據
-  const sortedBots = useMemo(
-    () => ({
-      popular: [...allBots].sort((a, b) => b.servers - a.servers),
-      featured: allBots
-        .filter(b => b.servers >= 1000)
-        .sort((a, b) => b.upvotes - a.upvotes)
-        .sort((a, b) => b.servers - a.servers),
-      new: [...allBots].sort(
-        (a, b) =>
-          new Date(b.approvedAt!).getTime() - new Date(a.approvedAt!).getTime(),
-      ),
-      verified: allBots
-        .filter(b => b.verified)
-        .sort(
-          (a, b) =>
-            new Date(b.approvedAt!).getTime() -
-            new Date(a.approvedAt!).getTime(),
-        ),
-      voted: [...allBots].sort((a, b) => b.upvotes - a.upvotes),
-    }),
-    [allBots],
+const filterBotsBySearch = (bots: PublicBot[], query: string): PublicBot[] => {
+  if (!query.trim()) return bots;
+  const q = query.toLowerCase();
+  return bots.filter(
+    bot =>
+      bot.name.toLowerCase().includes(q) ||
+      bot.description.toLowerCase().includes(q) ||
+      (Array.isArray(bot.tags) &&
+        bot.tags.some(tag => tag.toLowerCase().includes(q))),
   );
+};
 
-  const [activeTab, setActiveTab] = useState('featured');
-  const [searchQuery, setSearchQuery] = useState('');
+export default function DiscordBotListPageClient({
+  initialBots,
+  initialTotal,
+  initialPage,
+  initialTotalPages,
+  allBotsForFiltering,
+}: DiscordBotListProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  // --- State ---
+  const [isClient, setIsClient] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get('search') || '',
+  );
   const [categories, setCategories] =
     useState<CategoryType[]>(initialCategories);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get('tab') || 'popular',
+  );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [bots, setBots] = useState<PublicBot[]>(initialBots);
+  const [total, setTotal] = useState(initialTotal);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
-  // 使用 useMemo 計算過濾後的機器人
-  const filteredBots = useMemo(() => {
-    let bots =
-      sortedBots[activeTab as keyof typeof sortedBots] || sortedBots.featured;
-
-    // 分類過濾
-    if (selectedCategoryIds.length > 0) {
-      const categoryNames = categories
-        .filter(cat => selectedCategoryIds.includes(cat.id))
-        .map(cat => cat.name.toLowerCase());
-
-      bots = bots.filter(bot =>
-        bot.tags.some(tag =>
-          categoryNames.some(catName => tag.toLowerCase().includes(catName)),
-        ),
-      );
-    }
-
-    // 搜索過濾
-    const trimmedQuery = searchQuery.trim().toLowerCase();
-    if (trimmedQuery) {
-      bots = bots.filter(
-        bot =>
-          bot.name.toLowerCase().includes(trimmedQuery) ||
-          bot.description.toLowerCase().includes(trimmedQuery) ||
-          (Array.isArray(bot.tags) &&
-            bot.tags.some(tag => tag.toLowerCase().includes(trimmedQuery))),
-      );
-    }
-
-    return bots;
-  }, [sortedBots, activeTab, selectedCategoryIds, searchQuery, categories]);
-
-  // 計算分頁
-  const totalPages = Math.ceil(filteredBots.length / ITEMS_PER_PAGE);
-  const currentPageBots = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredBots.slice(startIndex, endIndex);
-  }, [filteredBots, currentPage]);
-
-  // 統計數據計算（使用 useMemo 緩存）
-  const stats = useMemo(() => {
-    const totalTags = allBots.reduce((sum, bot) => {
-      return sum + (Array.isArray(bot.tags) ? bot.tags.length : 0);
-    }, 0);
-
-    return {
-      totalBots: allBots.length,
-      verifiedBots: allBots.filter(b => b.verified).length,
-      totalTags,
-    };
-  }, [allBots]);
-
-  // 重置頁碼的副作用
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, searchQuery, selectedCategoryIds]);
-
-  // 處理搜索 - 使用防抖
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      // 搜索邏輯已在 useMemo 中處理
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  // 處理分類變更
-  const handleCategoryChange = (categoryIds: string[]) => {
-    setSelectedCategoryIds(categoryIds);
-  };
-
-  // 添加自定義分類
-  const handleAddCustomCategory = (categoryName: string) => {
-    const exists = categories.some(
-      cat => cat.name.toLowerCase() === categoryName.toLowerCase(),
-    );
-
-    if (exists) return;
-
-    const newCategory: CategoryType = {
-      id: `custom-${Date.now()}`,
-      name: categoryName,
-      color: `bg-[#${Math.floor(Math.random() * 16777215).toString(16)}]`,
-      selected: true,
-    };
-
-    const updatedCategories = [...categories, newCategory];
-    setCategories(updatedCategories);
-    setSelectedCategoryIds(prev => [...prev, newCategory.id]);
-  };
-
-  // 處理搜索輸入
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // 處理頁面變更
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  };
-
-  // 處理標籤切換
-  const handleTabChange = (value: string) => {
-    setIsLoading(true);
-    setActiveTab(value);
-
-    // 模擬短暫的加載狀態以提供視覺反饋
-    setTimeout(() => setIsLoading(false), 100);
-  };
-
-  // 渲染機器人列表
   const renderBotListWithFallback = (bots: PublicBot[]) => {
-    if (!isClient) {
-      return (
-        <div className="min-h-screen bg-[#1e1f22] text-white flex flex-col items-center justify-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5865f2]"></div>
-          <p className="text-sm text-gray-400 animate-breath">加載中...</p>
-        </div>
-      );
-    }
+    // if (!isClient) {
+    //   return (
+    //     <div className="min-h-screen bg-[#1e1f22] text-white flex flex-col items-center justify-center space-y-4">
+    //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5865f2]"></div>
+    //       <p className="text-sm text-gray-400 animate-breath">加載中...</p>
+    //     </div>
+    //   );
+    // }
 
     if (isLoading) {
       return <BotListSkeleton />;
@@ -221,6 +146,193 @@ export default function DiscordBotListPageClient({
       </>
     );
   };
+
+  // --- Filtering ---
+  const useClientSideFiltering = Boolean(
+    searchQuery.trim() || selectedCategoryIds.length,
+  );
+
+  // Memoized client-side filter and pagination
+  const clientFilteredBots = useMemo(() => {
+    if (!useClientSideFiltering) return [];
+    let filtered = allBotsForFiltering;
+    if (selectedCategoryIds.length) {
+      const categoryNames = categories
+        .filter(cat => selectedCategoryIds.includes(cat.id))
+        .map(cat => cat.name.toLowerCase());
+      filtered = filtered.filter(
+        bot =>
+          Array.isArray(bot.tags) &&
+          bot.tags.some(tag =>
+            categoryNames.some(catName => tag.toLowerCase().includes(catName)),
+          ),
+      );
+    }
+    return filterBotsBySearch(
+      sortBotsByCategory(filtered, activeTab),
+      searchQuery,
+    );
+  }, [
+    allBotsForFiltering,
+    selectedCategoryIds,
+    categories,
+    activeTab,
+    searchQuery,
+    useClientSideFiltering,
+  ]);
+
+  const clientPaginationData = useMemo(() => {
+    if (!useClientSideFiltering) return null;
+    const totalFiltered = clientFilteredBots.length;
+    const totalPagesFiltered = Math.ceil(totalFiltered / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return {
+      bots: clientFilteredBots.slice(startIndex, startIndex + ITEMS_PER_PAGE),
+      total: totalFiltered,
+      totalPages: totalPagesFiltered,
+    };
+  }, [clientFilteredBots, currentPage, useClientSideFiltering]);
+
+  const displayData =
+    useClientSideFiltering && clientPaginationData
+      ? clientPaginationData
+      : { bots, total, totalPages };
+
+  // --- Handlers ---
+  const updateURL = useCallback(
+    (newParams: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams);
+      Object.entries(newParams).forEach(([key, value]) =>
+        value == null || value === ''
+          ? params.delete(key)
+          : params.set(key, value),
+      );
+      window.history.replaceState({}, '', `${pathname}?${params.toString()}`);
+    },
+    [pathname, searchParams],
+  );
+
+  const fetchBotPage = useCallback(
+    async (page: number, tab: string) => {
+      if (useClientSideFiltering) return;
+      setIsLoading(true);
+      try {
+        const result = await getBotsByCategoryAction(tab, page, ITEMS_PER_PAGE);
+        setBots(sortBotsByCategory(result.bots, tab));
+        setTotal(result.total);
+        setTotalPages(result.totalPages);
+        setCurrentPage(page);
+      } catch (error) {
+        console.error('獲取機器人數據失敗:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [useClientSideFiltering],
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      startTransition(() => {
+        setCurrentPage(page);
+        if (!useClientSideFiltering) fetchBotPage(page, activeTab);
+        updateURL({ page: page.toString() });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    },
+    [useClientSideFiltering, activeTab, fetchBotPage, updateURL],
+  );
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      startTransition(() => {
+        setActiveTab(value);
+        setCurrentPage(1);
+        setIsSearching(true);
+        setTimeout(() => setIsSearching(false), 200);
+        if (!useClientSideFiltering) fetchBotPage(1, value);
+        updateURL({ tab: value, page: '1' });
+      });
+    },
+    [useClientSideFiltering, fetchBotPage, updateURL],
+  );
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setSearchQuery(value);
+      setCurrentPage(1);
+      value.trim() ? setIsSearching(true) : setIsSearching(false);
+      if (value.trim()) setTimeout(() => setIsSearching(false), 300);
+      updateURL({ search: value.trim() || null, page: '1' });
+    },
+    [updateURL],
+  );
+
+  const handleCategoryChange = useCallback(
+    (newSelectedCategoryIds: string[]) => {
+      setSelectedCategoryIds(newSelectedCategoryIds);
+      setCurrentPage(1);
+      updateURL({ page: '1' });
+    },
+    [updateURL],
+  );
+
+  const handleAddCustomCategory = useCallback(
+    (categoryName: string) => {
+      if (
+        categories.some(
+          cat => cat.name.toLowerCase() === categoryName.toLowerCase(),
+        )
+      )
+        return;
+      const newCategory: CategoryType = {
+        id: `custom-${Date.now()}`,
+        name: categoryName,
+        color: `bg-[#${Math.floor(Math.random() * 16777215).toString(16)}]`,
+        selected: true,
+      };
+      setCategories([...categories, newCategory]);
+      setSelectedCategoryIds([...selectedCategoryIds, newCategory.id]);
+      setCurrentPage(1);
+      updateURL({ page: '1' });
+    },
+    [categories, selectedCategoryIds, updateURL],
+  );
+
+  const stats = useMemo(
+    () => ({
+      totalBots: allBotsForFiltering.length,
+      verifiedBots: allBotsForFiltering.filter(bot => bot.verified).length,
+      totalTags: allBotsForFiltering.reduce(
+        (total, bot) => total + (Array.isArray(bot.tags) ? bot.tags.length : 0),
+        0,
+      ),
+    }),
+    [allBotsForFiltering],
+  );
+
+  // --- Effects ---
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const search = searchParams.get('search');
+    const page = searchParams.get('page');
+    if (tab && tab !== activeTab) setActiveTab(tab);
+    if (search !== searchQuery) setSearchQuery(search || '');
+    if (page && parseInt(page) !== currentPage) setCurrentPage(parseInt(page));
+  }, [searchParams, activeTab, searchQuery, currentPage]);
+
+  // if (!isClient) {
+  //   return (
+  //     <div className="min-h-screen bg-[#1e1f22] text-white flex flex-col items-center justify-center space-y-4">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5865f2]"></div>
+  //       <p className="text-sm text-gray-400 animate-breath">加載中...</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -333,35 +445,35 @@ export default function DiscordBotListPageClient({
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">精選機器人</h2>
                 </div>
-                {renderBotListWithFallback(currentPageBots)}
+                {renderBotListWithFallback(displayData.bots)}
               </TabsContent>
 
               <TabsContent value="popular" className="mt-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">熱門機器人</h2>
                 </div>
-                {renderBotListWithFallback(currentPageBots)}
+                {renderBotListWithFallback(displayData.bots)}
               </TabsContent>
 
               <TabsContent value="new" className="mt-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">最新機器人</h2>
                 </div>
-                {renderBotListWithFallback(currentPageBots)}
+                {renderBotListWithFallback(displayData.bots)}
               </TabsContent>
 
               <TabsContent value="verified" className="mt-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">驗證機器人</h2>
                 </div>
-                {renderBotListWithFallback(currentPageBots)}
+                {renderBotListWithFallback(displayData.bots)}
               </TabsContent>
 
               <TabsContent value="voted" className="mt-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">票選機器人</h2>
                 </div>
-                {renderBotListWithFallback(currentPageBots)}
+                {renderBotListWithFallback(displayData.bots)}
               </TabsContent>
             </Tabs>
           </div>

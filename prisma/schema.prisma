@@ -11,7 +11,7 @@ datasource db {
 
 model User {
   id           String   @id
-  username     String   @unique // 新增：使用者名稱唯一性約束
+  username     String
   avatar       String
   banner       String?
   banner_color String?
@@ -36,7 +36,6 @@ model User {
   adminIn    Server[]   @relation("ServerAdmins")
 
   // 新增索引
-  @@index([username])
   @@index([joinedAt])
 }
 
