@@ -153,8 +153,12 @@ export async function insertServer(
 
     // 3. 驗證用戶是否真的是這個Discord伺服器的擁有者
     const isActualOwner = await verifyServerOwnership(data.id, userId);
-    if (!isActualOwner) {
-      throw new Error('NOT_SERVER_OWNER');
+    const isAdmin = connectOrCreateAdmins?.some(admin => admin.id === userId);
+    if (!isActualOwner && !isAdmin) {
+      console.error(
+        `User ${userId} is not the owner or admin of server ${data.id}`,
+      );
+      throw new Error('NOT_SERVER_OWNER_OR_ADMIN');
     }
 
     // 4. 獲取伺服器的實際資訊（從Discord API）
