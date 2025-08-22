@@ -87,7 +87,7 @@ export default function VoteButton({
   size = 'default',
   variant = 'default',
 }: VoteButtonProps) {
-  const [votes, setVotes] = useState(initialVotes);
+  // 🔧 移除內部的 votes 狀態，完全依賴 props
   const [hasVoted, setHasVoted] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -98,7 +98,7 @@ export default function VoteButton({
   const { showError } = useError();
 
   if (!session) {
-    return;
+    return null; // 🔧 改為 return null 而不是 return
   }
 
   useEffect(() => {
@@ -143,67 +143,82 @@ export default function VoteButton({
     fetchCooldown();
   }, [id, type, start]);
 
-  // 發送 Discord Webhook
-
   const handleVote = async () => {
     if (hasVoted) return;
 
     setIsVoting(true);
 
-    const vote = await Vote(id, type.toUpperCase() as VoteType);
-    const updatedVotes = vote.upvotes ?? 0;
+    try {
+      const vote = await Vote(id, type.toUpperCase() as VoteType);
+      const updatedVotes = vote.upvotes ?? 0;
 
-    const user = await GetUserBySession(session);
+      const user = await GetUserBySession(session);
 
-    if (!user) {
-      showError('請先登入！');
-      setIsVoting(false);
-      return;
-    }
-
-    let server: ServerType | undefined;
-    let bot: BotType | undefined;
-
-    if (type === 'server') {
-      server = await getServerByGuildId(id);
-    } else {
-      const result = await getBot(id);
-      bot = result ?? undefined;
-    }
-
-    // 處理錯誤情況
-    if (!vote.success) {
-      if (vote.error === 'COOLDOWN') {
-        const remainingSec = vote.remaining
-          ? Math.ceil(vote.remaining / 1000)
-          : 0;
-
-        setHasVoted(true);
-        start(remainingSec); // ✅ 啟動倒數
-      }
-
-      if (vote.error === 'NOT_LOGGED_IN') {
+      if (!user) {
         showError('請先登入！');
+        setIsVoting(false);
+        return;
       }
 
+      let server: ServerType | undefined;
+      let bot: BotType | undefined;
+
+      if (type === 'server') {
+        server = await getServerByGuildId(id);
+      } else {
+        const result = await getBot(id);
+        bot = result ?? undefined;
+      }
+
+      // 處理錯誤情況
+      if (!vote.success) {
+        if (vote.error === 'COOLDOWN') {
+          const remainingSec = vote.remaining
+            ? Math.ceil(vote.remaining / 1000)
+            : 0;
+
+          setHasVoted(true);
+          start(remainingSec);
+
+          // 🔧 緩存冷卻時間
+          const cacheKey = `vote_cooldown_${id}_${type}`;
+          const endTime = Date.now() + remainingSec * 1000;
+          localStorage.setItem(cacheKey, JSON.stringify({ endTime }));
+        }
+
+        if (vote.error === 'NOT_LOGGED_IN') {
+          showError('請先登入！');
+        }
+
+        setIsVoting(false);
+        return;
+      }
+
+      // ✅ 投票成功 - 通知父組件更新
+      onVote(updatedVotes);
+      setHasVoted(true);
+      setShowDialog(true);
+
+      // 🔧 立即緩存新的冷卻時間
+      const cacheKey = `vote_cooldown_${id}_${type}`;
+      const endTime = Date.now() + 43200 * 1000; // 12 小時
+      localStorage.setItem(cacheKey, JSON.stringify({ endTime }));
+
+      start(43200); // 啟動 12 小時倒數
+
+      // 🔧 同時處理 webhook 和路由刷新
+      await Promise.all([
+        sendDataToWebServerOrDiscord(type, user, server, bot),
+        sendWebhook(type, user, id, server, bot),
+      ]);
+
+      router.refresh(); // 重新整理伺服器端資料
+    } catch (error) {
+      console.error('Vote error:', error);
+      showError('投票失敗，請稍後再試');
+    } finally {
       setIsVoting(false);
-      return;
     }
-
-    // ✅ 投票成功
-    setVotes(updatedVotes);
-    onVote(updatedVotes);
-    setHasVoted(true);
-    setShowDialog(true);
-    setIsVoting(false);
-
-    start(43200); // ✅ 啟動 12 小時倒數（43200 秒）
-
-    await sendDataToWebServerOrDiscord(type, user, server, bot);
-
-    router.refresh();
-
-    await sendWebhook(type, user, id, server, bot);
   };
 
   // 格式化冷卻時間
@@ -217,12 +232,6 @@ export default function VoteButton({
 
   return (
     <>
-      {/* <Button onClick={sendWebhook} className="mb-2" variant="secondary">
-        測試
-      </Button> */}
-      {/* <Button onClick={sendWebhook} className="mb-2" variant="secondary">
-        測試
-      </Button> */}
       <Button
         onClick={hasVoted ? undefined : handleVote}
         disabled={hasVoted || isVoting}
@@ -248,7 +257,8 @@ export default function VoteButton({
         ) : (
           <div className="flex items-center text-gray-300">
             <ArrowUp size={16} className="mr-1.5" />
-            <span>投票 ({(votes ?? 0).toLocaleString()})</span>
+            {/* 🔧 使用 props 傳入的 initialVotes 而不是內部狀態 */}
+            <span>投票 ({(initialVotes ?? 0).toLocaleString()})</span>
           </div>
         )}
       </Button>
@@ -283,8 +293,9 @@ export default function VoteButton({
                 <ArrowUp size={18} className="text-[#5865f2] mr-2" />
                 <span className="font-medium">當前票數</span>
               </div>
+              {/* 🔧 使用 props 的 initialVotes */}
               <span className="font-bold text-lg">
-                {votes.toLocaleString()}
+                {initialVotes.toLocaleString()}
               </span>
             </div>
           </div>

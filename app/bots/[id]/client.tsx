@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
 import DOMPurify from 'isomorphic-dompurify';
 
@@ -43,16 +43,30 @@ export default function BotDetailClient({
   allBots,
   isFavorited,
 }: BotDetailProps) {
-  const [voteCount, setVoteCount] = useState<number>(bot.upvotes);
-
-  const handleInviteButtonClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleInviteButtonClick = () => {
     window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
   };
 
-  const handleVoteButtonClick = (vote: number) => {
-    setVoteCount(vote);
+  const [voteCount, setVoteCount] = useState<number>(bot.upvotes);
+
+  const handleBotVoteClick = (newVoteCount: number) => {
+    setVoteCount(newVoteCount);
+
+    const cacheKey = `bot_votes_${bot.id}`;
+    localStorage.setItem(cacheKey, newVoteCount.toString());
   };
+
+  useEffect(() => {
+    const cacheKey = `bot_votes_${bot.id}`;
+    const cachedVotes = localStorage.getItem(cacheKey);
+
+    if (cachedVotes) {
+      const votes = parseInt(cachedVotes, 10);
+      if (votes > bot.upvotes) {
+        setVoteCount(votes);
+      }
+    }
+  }, [bot.id, bot.upvotes]);
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -136,7 +150,7 @@ export default function BotDetailClient({
                 </div>
                 <div className="flex items-center">
                   <ArrowUp size={16} className="mr-1" />
-                  <span>{bot.upvotes.toLocaleString()} 投票</span>
+                  <span>{voteCount.toLocaleString()} 投票</span>
                 </div>
                 {bot.prefix && (
                   <div className="flex items-center">
@@ -284,9 +298,9 @@ export default function BotDetailClient({
               <VoteButton
                 id={bot.id}
                 type="bot"
-                initialVotes={bot.upvotes}
+                initialVotes={voteCount}
                 className="w-full bg-[#5865f2] hover:bg-[#4752c4]"
-                onVote={handleVoteButtonClick}
+                onVote={handleBotVoteClick}
               />
               <p className="text-gray-400 text-xs mt-2 text-center">
                 每 12 小時可投一次票

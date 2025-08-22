@@ -13,15 +13,6 @@ export default withAuth(
     const { token } = req.nextauth;
     const { pathname, origin } = req.nextUrl;
 
-    // Skip middleware for specific API routes
-    if (
-      pathname.startsWith('/api/update_server_stats') ||
-      pathname.startsWith('/api/update_bot_servers') ||
-      pathname.startsWith('/api/auth/') // Skip NextAuth.js routes
-    ) {
-      return NextResponse.next();
-    }
-
     const method = req.method.toUpperCase();
     const isStateChanging = !['GET', 'HEAD', 'OPTIONS'].includes(method);
 
@@ -60,5 +51,9 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/:path*'],
+  matcher: [
+    '/admin/:path*',
+    // 只匹配需要驗證的 API 路由，排除不需要驗證的路由
+    '/api/((?!update_server_stats|update_bot_servers|check_servers|auth/).)*',
+  ],
 };

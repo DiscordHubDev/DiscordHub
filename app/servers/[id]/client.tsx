@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FavoriteButton } from '@/components/favorite-button';
 import { ReportDialog } from '@/components/ReportDialog';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
 import DOMPurify from 'isomorphic-dompurify';
 
@@ -34,9 +34,24 @@ export default function ServerDetailClientPage({
 
   const [voteCount, setVoteCount] = useState<number>(server.upvotes);
 
-  const handleServerVoteClick = (vote: number) => {
-    setVoteCount(vote);
+  const handleServerVoteClick = (newVoteCount: number) => {
+    setVoteCount(newVoteCount);
+
+    const cacheKey = `server_votes_${server.id}`;
+    localStorage.setItem(cacheKey, newVoteCount.toString());
   };
+
+  useEffect(() => {
+    const cacheKey = `server_votes_${server.id}`;
+    const cachedVotes = localStorage.getItem(cacheKey);
+
+    if (cachedVotes) {
+      const votes = parseInt(cachedVotes, 10);
+      if (votes > server.upvotes) {
+        setVoteCount(votes);
+      }
+    }
+  }, [server.id, server.upvotes]);
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -89,7 +104,7 @@ export default function ServerDetailClientPage({
                 </div>
                 <div className="flex items-center">
                   <ArrowUp size={16} className="mr-1" />
-                  <span>{server.upvotes.toLocaleString()} 投票</span>
+                  <span>{voteCount.toLocaleString()} 投票</span>
                 </div>
                 {server.online && (
                   <div className="flex items-center">
@@ -312,7 +327,7 @@ export default function ServerDetailClientPage({
               <VoteButton
                 id={server.id}
                 type="server"
-                initialVotes={server.upvotes}
+                initialVotes={voteCount}
                 onVote={handleServerVoteClick}
                 className="w-full bg-[#5865f2] hover:bg-[#4752c4]"
               />
