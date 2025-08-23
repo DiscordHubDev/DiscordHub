@@ -49,6 +49,7 @@ async function updateServerStats(guildId: string) {
     }),
     members: data.approximate_member_count,
     online: data.approximate_presence_count,
+    ownerId: data.owner_id,
   };
 
   console.log('Updating server stats for guildId:', guildId);

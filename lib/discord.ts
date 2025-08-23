@@ -7,7 +7,7 @@ const BOT_TOKEN = process.env.BOT_TOKEN!;
 export async function verifyServerOwnership(
   serverId: string,
   userId: string,
-): Promise<boolean> {
+): Promise<false | { isOwner: boolean; owner_id: string }> {
   try {
     const res = await fetch(`${DISCORD_API_BASE}/guilds/${serverId}`, {
       headers: {
@@ -30,7 +30,7 @@ export async function verifyServerOwnership(
       owner_id: string;
     };
 
-    return guild.owner_id === userId;
+    return { isOwner: guild.owner_id === userId, owner_id: guild.owner_id };
   } catch (error) {
     console.error('驗證伺服器擁有權失敗:', error);
     return false;

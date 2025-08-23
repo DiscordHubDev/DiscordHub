@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
+  ScreenshotUpload,
 } from '@/lib/actions/image';
 import ScreenshotGrid from './form/bot-form/ScreenshotGrid';
 import { Upload } from 'lucide-react';
@@ -36,38 +37,17 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
     try {
       const sig = await getCloudinarySignature();
 
-      for (const file of fileArray) {
-        const isImage = file.type.startsWith('image/');
-        const isVideo = file.type.startsWith('video/');
-        const resourceType = isImage ? 'image' : isVideo ? 'video' : 'raw';
+      const result = await ScreenshotUpload(sig, fileArray);
+      onChange([...value, ...result]);
 
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('api_key', sig.apiKey);
-        formData.append('timestamp', sig.timestamp.toString());
-        formData.append('signature', sig.signature);
-        formData.append('upload_preset', sig.uploadPreset);
-
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sig.cloudName}/${resourceType}/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          },
+      if (result.length < fileArray.length) {
+        toast.warning(
+          `只上傳了 ${result.length} 個檔案，其他可能是格式不符或上傳失敗。`,
         );
+      }
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error?.message || '上傳失敗');
-
-        const uploaded: UploadedFile = {
-          url: data.secure_url,
-          public_id: data.public_id,
-          format: data.format,
-          type: resourceType,
-          original_filename: data.original_filename,
-        };
-
-        onChange([...value, uploaded]);
+      if (result.length === fileArray.length) {
+        toast.success('上傳成功！');
       }
     } catch (err: any) {
       showError('上傳失敗：' + err.message);

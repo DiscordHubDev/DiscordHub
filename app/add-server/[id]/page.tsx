@@ -1,5 +1,5 @@
 import ServerFormPage from '@/components/server/server-form';
-import { getGuildDetails } from '@/lib/get-user-guild';
+import { getGuildDetailsWithAdmins } from '@/lib/get-user-guild';
 import { notFound } from 'next/navigation';
 
 export default async function AddServerFormPage({
@@ -9,7 +9,7 @@ export default async function AddServerFormPage({
 }) {
   const { id } = await params;
 
-  const server = await getGuildDetails(id);
+  const server = await getGuildDetailsWithAdmins(id);
 
   if (!server) return notFound();
 

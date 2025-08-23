@@ -8,6 +8,7 @@ import {
   getServerByGuildId,
   getServerWithFavoritedByGuildId,
 } from './actions/servers';
+import { getDiscordMember } from './actions/discord';
 
 export type PriorityInput = {
   upvotes?: number;
@@ -144,20 +145,12 @@ export type Simplify<T> = {
 
 export async function fetchUserInfo(id: string): Promise<UserProfile> {
   try {
-    const res = await fetch(`https://dchub.mantou.dev/member/${id}`, {
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'Mozilla/5.0 (compatible; DiscordBot/2.0)',
-      },
-    });
+    const data = await getDiscordMember(id);
 
-    if (!res.ok) {
-      throw new Error(
-        `Failed to fetch user info for ID ${id}: ${res.status} ${res.statusText}`,
-      );
+    if (!data) {
+      throw new Error(`Failed to fetch user info for ID ${id}: `);
     }
 
-    const data = await res.json();
     return data;
   } catch (error) {
     console.error('fetchUserInfo error:', error);

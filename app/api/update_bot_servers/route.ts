@@ -1,4 +1,5 @@
 import { getBotListChunked } from '@/lib/actions/bots';
+import { getDiscordMember } from '@/lib/actions/discord';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -12,14 +13,12 @@ interface BotInfo {
 
 async function fetchBotInfo(botId: string): Promise<BotInfo | null> {
   try {
-    const res = await fetch(`https://dchub.mantou.dev/member/${botId}`);
+    const data = await getDiscordMember(botId);
 
-    if (!res.ok) {
-      console.error(`❌ 無法取得 ${botId} 的資訊，狀態碼: ${res.status}`);
+    if (!data) {
+      console.error(`❌ 無法取得 ${botId} 的資訊`);
       return null;
     }
-
-    const data = await res.json();
 
     const global_name =
       typeof data.global_name === 'string' ? data.global_name : null;

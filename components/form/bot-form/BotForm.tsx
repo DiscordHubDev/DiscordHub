@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
+  ScreenshotUpload,
 } from '@/lib/actions/image';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -209,42 +210,22 @@ const BotForm: React.FC<BotFormProps> = ({
 
     const sig = await getCloudinarySignature();
 
-    for (const file of fileArray) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('api_key', sig.apiKey);
-      formData.append('timestamp', sig.timestamp.toString());
-      formData.append('signature', sig.signature);
-      formData.append('upload_preset', sig.uploadPreset);
+    try {
+      const result = await ScreenshotUpload(sig, fileArray);
+      setPreviews(prev => [...prev, ...result]);
 
-      try {
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          },
+      if (result.length < fileArray.length) {
+        toast.warning(
+          `只上傳了 ${result.length} 個檔案，其他可能是格式不符或上傳失敗。`,
         );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.error('上傳失敗', {
-            status: res.status,
-            statusText: res.statusText,
-            body: data,
-          });
-          continue;
-        }
-
-        const imageUrl = data.secure_url;
-        const publicId = data.public_id;
-
-        setPreviews(prev => [...prev, { url: imageUrl, public_id: publicId }]);
-      } catch (error) {
-        showError('未知錯誤');
-        console.error('Unexpected error:', error);
       }
+
+      if (result.length === fileArray.length) {
+        toast.success('上傳成功！');
+      }
+    } catch (error) {
+      showError('未知錯誤');
+      console.error('Unexpected error:', error);
     }
 
     setUploading(false);

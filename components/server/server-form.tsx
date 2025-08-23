@@ -25,16 +25,12 @@ import { ActiveServerInfo } from '@/lib/get-user-guild';
 import {
   deleteCloudinaryImage,
   getCloudinarySignature,
+  ScreenshotUpload,
 } from '@/lib/actions/image';
 import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
 import { EditServerType } from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
-import {
-  buildConnectOrCreateAdmins,
-  getServerAdmins,
-  insertServer,
-  updateServer,
-} from '@/lib/actions/servers';
+import { insertServer, updateServer } from '@/lib/actions/servers';
 import { toast } from 'react-toastify';
 import MarkdownRenderer from '../MarkdownRenderer';
 import DOMPurify from 'isomorphic-dompurify';
@@ -51,9 +47,6 @@ type ServerFormProps = {
   edit_server?: EditServerType;
   mode: 'create' | 'edit';
 };
-
-const webhookUrl =
-  'https://discord.com/api/webhooks/1361334441498378452/pa6cNfNoKTo8tpB_ClSzVZhqnO0DoAjNZ_INJYwPPEvAcT7RkjZLN-H5BQqNSSW_TTUf';
 
 export default function ServerFormPage({
   server,
@@ -189,42 +182,23 @@ export default function ServerFormPage({
 
     const sig = await getCloudinarySignature();
 
-    for (const file of fileArray) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('api_key', sig.apiKey);
-      formData.append('timestamp', sig.timestamp.toString());
-      formData.append('signature', sig.signature);
-      formData.append('upload_preset', sig.uploadPreset);
+    try {
+      const result = await ScreenshotUpload(sig, fileArray);
 
-      try {
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          },
+      setPreviews(prev => [...prev, ...result]);
+
+      if (result.length < fileArray.length) {
+        toast.warning(
+          `只上傳了 ${result.length} 個檔案，其他可能是格式不符或上傳失敗。`,
         );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.error('上傳失敗', {
-            status: res.status,
-            statusText: res.statusText,
-            body: data,
-          });
-          continue;
-        }
-
-        const imageUrl = data.secure_url;
-        const publicId = data.public_id;
-
-        setPreviews(prev => [...prev, { url: imageUrl, public_id: publicId }]);
-      } catch (error) {
-        toast.error('未知錯誤');
-        console.error('Unexpected error:', error);
       }
+
+      if (result.length === fileArray.length) {
+        toast.success('上傳成功！');
+      }
+    } catch (error) {
+      toast.error('未知錯誤');
+      console.error('Unexpected error:', error);
     }
 
     setUploading(false);
@@ -258,11 +232,7 @@ export default function ServerFormPage({
     try {
       let server_banner = bannerPreviews[0]?.url ?? null;
 
-      const adminIds = await getServerAdmins(activeServer.id);
-
-      const connectOrCreateAdmins = await buildConnectOrCreateAdmins(
-        adminIds ?? [],
-      );
+      console.log('server admins:', server?.admins);
 
       // 只傳送需要更新的欄位
       const payload = {
@@ -281,7 +251,7 @@ export default function ServerFormPage({
       if (mode === 'edit') {
         await updateServer(activeServer.id, payload);
       } else {
-        await insertServer(payload, connectOrCreateAdmins);
+        await insertServer(payload, server?.admins || []);
       }
 
       if (mode !== 'edit') {

@@ -11,6 +11,7 @@ export type UserProfile = {
   avatar_url: string;
   banner_url: string | null;
   accent_color: string | null;
+  updatedAt: string; // ISO
 };
 
 export interface CategoryType {

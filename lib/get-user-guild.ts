@@ -5,6 +5,7 @@ import {
   getPublishedServerMap,
 } from './actions/servers';
 import { prisma } from './prisma';
+import { get } from 'http';
 
 // ==================== 常數定義 ====================
 const LIMITS = {
@@ -14,7 +15,7 @@ const LIMITS = {
   BASE_DELAY: 50, // 減少基礎延遲
   TIMEOUT: 5000, // 減少超時時間
   BATCH_DELAY: 5, // 減少批次延遲
-  CACHE_TTL: 1800, // 增加快取時間到30分鐘
+  CACHE_TTL: 60, // 增加快取時間到30分鐘
   IMAGE_SIZE: 512,
   PREFETCH_THRESHOLD: 10, // 預取閾值
 } as const;
@@ -32,9 +33,47 @@ const ENDPOINTS = {
     `https://cdn.discordapp.com/${type}/${id}/${hash}.${ext}?size=${LIMITS.IMAGE_SIZE}`,
 } as const;
 
-const PERMISSIONS = {
-  REQUIRED: BigInt(0x20 | 0x8), // MANAGE_GUILD | ADMINISTRATOR
+const ENDPOINTS_EXTENDED = {
+  ...ENDPOINTS,
+  DISCORD_GUILD_MEMBERS: (
+    guildId: string,
+    limit: number = 1000,
+    after?: string,
+  ) =>
+    `https://discord.com/api/guilds/${guildId}/members?limit=${limit}${after ? `&after=${after}` : ''}`,
+  DISCORD_GUILD_ROLES: (guildId: string) =>
+    `https://discord.com/api/guilds/${guildId}/roles`,
 } as const;
+
+const PERMISSIONS = {
+  MANAGE_GUILD: BigInt(0x20), // 管理伺服器
+  ADMINISTRATOR: BigInt(0x8), // 管理員
+} as const;
+
+class DiscordPermissions {
+  // 檢查是否有管理員權限（最高權限，擁有所有權限）
+  public static hasAdministratorPermission(permissions: bigint): boolean {
+    return (permissions & PERMISSIONS.ADMINISTRATOR) !== BigInt(0);
+  }
+
+  // 檢查是否有管理公會權限
+  public static hasManageGuildPermission(permissions: bigint): boolean {
+    return (BigInt(permissions) & PERMISSIONS.MANAGE_GUILD) !== BigInt(0);
+  }
+
+  // 檢查是否有管理權限（管理員 OR 管理公會）
+  public static hasManagementPermission(permissions: bigint): boolean {
+    return (
+      this.hasAdministratorPermission(permissions) ||
+      this.hasManageGuildPermission(permissions)
+    );
+  }
+
+  // 如果你想要更嚴格，只允許管理員
+  public static hasStrictAdminPermission(permissions: bigint): boolean {
+    return this.hasAdministratorPermission(permissions);
+  }
+}
 
 // ==================== 並行控制 ====================
 const limit = pLimit(LIMITS.CONCURRENT_REQUESTS);
@@ -77,6 +116,39 @@ export type MinimalServerInfo = {
   memberCount: number;
   isInServer: boolean;
   isPublished: boolean;
+};
+type DiscordMember = {
+  user: {
+    id: string;
+    username: string;
+    discriminator: string;
+    avatar: string | null;
+  };
+  nick: string | null;
+  roles: string[];
+  joined_at: string;
+  premium_since: string | null;
+  permissions?: string;
+};
+
+type DiscordRole = {
+  id: string;
+  name: string;
+  color: number;
+  hoist: boolean;
+  position: number;
+  permissions: string;
+  managed: boolean;
+  mentionable: boolean;
+};
+
+type GuildAdminInfo = {
+  userId: string;
+  username: string;
+  nickname: string | null;
+  hasDirectPermission: boolean;
+  hasRolePermission: boolean;
+  roles: string[];
 };
 
 type DiscordGuild = {
@@ -124,7 +196,7 @@ class PrefetchManager {
     const promises = guildIds.map(async guildId => {
       this.prefetchQueue.add(guildId);
       try {
-        await getGuildDetails(guildId);
+        await getGuildDetailsWithAdmins(guildId);
       } catch (error) {
         console.warn(`Prefetch failed for ${guildId}:`, error);
       } finally {
@@ -336,7 +408,7 @@ class Utils {
     permissions: string | number | bigint,
   ): boolean {
     const perms = BigInt(permissions);
-    return (perms & PERMISSIONS.REQUIRED) !== BigInt(0);
+    return DiscordPermissions.hasManageGuildPermission(perms);
   }
 
   static getDiscordImageUrl(
@@ -661,12 +733,220 @@ class HttpClient {
   }
 }
 
+class GuildAdminManager {
+  private static readonly adminCache = new Map<
+    string,
+    {
+      admins: string[];
+      timestamp: number;
+    }
+  >();
+  private static readonly ADMIN_CACHE_TTL = 60000; // 5分鐘快取
+
+  /**
+   * 獲取群組中所有具有 ManageGuild 權限的用戶 ID
+   */
+  static async getGuildAdmins(guildId: string): Promise<string[]> {
+    const cacheKey = `guild_admins:${guildId}`;
+
+    // // 檢查快取
+    // const cached = this.adminCache.get(cacheKey);
+    // if (cached && Date.now() - cached.timestamp < this.ADMIN_CACHE_TTL) {
+    //   return cached.admins;
+    // }
+
+    try {
+      const adminIds = await this.fetchGuildAdmins(guildId);
+
+      // 更新快取
+      this.adminCache.set(cacheKey, {
+        admins: adminIds,
+        timestamp: Date.now(),
+      });
+
+      return adminIds;
+    } catch (error) {
+      console.error(
+        `💥 Failed to get admins for guild ${guildId}:`,
+        Utils.getErrorMessage(error),
+      );
+      return [];
+    }
+  }
+
+  /**
+   * 獲取群組詳細管理員信息（包含用戶名等）
+   */
+  static async getGuildAdminDetails(
+    guildId: string,
+  ): Promise<GuildAdminInfo[]> {
+    try {
+      const [members, roles] = await Promise.all([
+        this.fetchGuildMembers(guildId),
+        this.fetchGuildRoles(guildId),
+      ]);
+
+      const rolePermissions = new Map<string, bigint>();
+      roles.forEach(role => {
+        rolePermissions.set(role.id, BigInt(role.permissions));
+      });
+
+      const adminDetails: GuildAdminInfo[] = [];
+
+      for (const member of members) {
+        const { hasDirectPermission, hasRolePermission } =
+          this.checkMemberPermissions(member, rolePermissions);
+
+        if (hasDirectPermission || hasRolePermission) {
+          adminDetails.push({
+            userId: member.user.id,
+            username: member.user.username,
+            nickname: member.nick,
+            hasDirectPermission,
+            hasRolePermission,
+            roles: member.roles,
+          });
+        }
+      }
+
+      return adminDetails;
+    } catch (error) {
+      console.error(
+        `💥 Failed to get admin details for guild ${guildId}:`,
+        Utils.getErrorMessage(error),
+      );
+      return [];
+    }
+  }
+
+  private static async fetchGuildAdmins(guildId: string): Promise<string[]> {
+    const members = await this.fetchGuildMembers(guildId);
+    const roles = await this.fetchGuildRoles(guildId);
+
+    // 建立角色權限映射
+    const rolePermissions = new Map<string, bigint>();
+    roles.forEach(role => {
+      rolePermissions.set(role.id, BigInt(role.permissions));
+    });
+
+    const adminIds: string[] = [];
+
+    for (const member of members) {
+      const { hasDirectPermission, hasRolePermission } =
+        this.checkMemberPermissions(member, rolePermissions);
+
+      if (hasDirectPermission || hasRolePermission) {
+        adminIds.push(member.user.id);
+      }
+    }
+
+    return adminIds;
+  }
+
+  private static checkMemberPermissions(
+    member: DiscordMember,
+    rolePermissions: Map<string, bigint>,
+  ): { hasDirectPermission: boolean; hasRolePermission: boolean } {
+    // 檢查直接權限
+    const hasDirectPermission = member.permissions
+      ? this.hasManageGuildPermission(BigInt(member.permissions))
+      : false;
+
+    // 檢查角色權限
+    let hasRolePermission = false;
+    for (const roleId of member.roles) {
+      const rolePerms = rolePermissions.get(roleId);
+      if (rolePerms && this.hasManageGuildPermission(rolePerms)) {
+        hasRolePermission = true;
+        break;
+      }
+    }
+
+    return { hasDirectPermission, hasRolePermission };
+  }
+
+  private static hasManageGuildPermission(permissions: bigint): boolean {
+    return DiscordPermissions.hasManagementPermission(permissions);
+  }
+
+  private static async fetchGuildMembers(
+    guildId: string,
+  ): Promise<DiscordMember[]> {
+    const allMembers: DiscordMember[] = [];
+    let after: string | undefined;
+    const limit = 1000; // Discord API 最大限制
+
+    do {
+      const url = ENDPOINTS_EXTENDED.DISCORD_GUILD_MEMBERS(
+        guildId,
+        limit,
+        after,
+      );
+      const response = await RetryManager.smartFetchWithRetry(
+        url,
+        { headers: HttpClient.createHeaders(BOT_TOKEN, 'bot') },
+        0,
+        'bot',
+      );
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          console.warn(
+            `⚠️ Insufficient permissions to fetch members for guild ${guildId}`,
+          );
+          break;
+        }
+        throw new Error(`Failed to fetch guild members: ${response.status}`);
+      }
+
+      const members: DiscordMember[] = await response.json();
+
+      if (members.length === 0) break;
+
+      allMembers.push(...members);
+      after = members[members.length - 1].user.id;
+    } while (after && allMembers.length < 50000); // 安全限制
+
+    console.log(`📋 Fetched ${allMembers.length} members for guild ${guildId}`);
+    return allMembers;
+  }
+
+  private static async fetchGuildRoles(
+    guildId: string,
+  ): Promise<DiscordRole[]> {
+    const response = await RetryManager.smartFetchWithRetry(
+      ENDPOINTS_EXTENDED.DISCORD_GUILD_ROLES(guildId),
+      { headers: HttpClient.createHeaders(BOT_TOKEN, 'bot') },
+      0,
+      'bot',
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch guild roles: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * 清理過期的快取
+   */
+  static cleanupCache(): void {
+    const now = Date.now();
+    for (const [key, value] of this.adminCache.entries()) {
+      if (now - value.timestamp > this.ADMIN_CACHE_TTL) {
+        this.adminCache.delete(key);
+      }
+    }
+  }
+}
+
 // ==================== 主要函式實作 ====================
 
-export async function getGuildDetails(
+export async function getGuildDetailsWithAdmins(
   guildId: string,
 ): Promise<ActiveServerInfo | null> {
-  const cacheKey = `guild:details:${guildId}:v2`;
+  const cacheKey = `guild:details:${guildId}:v3`; // 更新版本號
 
   // 檢查是否有正在進行的請求
   const activeRequest = PrefetchManager.getActiveRequest(cacheKey);
@@ -686,29 +966,40 @@ export async function getGuildDetails(
 
   const promise = (async () => {
     try {
-      const data = await HttpClient.fetchGuildDetails(guildId);
-      if (!data) return null;
+      // 並行獲取基本資訊和管理員列表
+      const [guildData] = await Promise.all([
+        HttpClient.fetchGuildDetails(guildId),
+      ]);
+
+      if (!guildData) return null;
+
+      const admins = await GuildAdminManager.getGuildAdmins(guildId);
+
+      console.log(`🔍 Fetched ${admins} for guild ${guildId}`);
 
       const guildInfo: ActiveServerInfo = {
-        id: data.id,
-        name: data.name,
-        icon: Utils.getDiscordImageUrl('icon', data.id, data.icon),
-        banner: Utils.getDiscordImageUrl('banner', data.id, data.banner),
-        owner: data.owner_id,
-        memberCount: data.approximate_member_count ?? 0,
-        OnlineMemberCount: data.approximate_presence_count ?? 0,
-        admins: [],
+        id: guildData.id,
+        name: guildData.name,
+        icon: Utils.getDiscordImageUrl('icon', guildData.id, guildData.icon),
+        banner: Utils.getDiscordImageUrl(
+          'banner',
+          guildData.id,
+          guildData.banner,
+        ),
+        owner: guildData.owner_id,
+        memberCount: guildData.approximate_member_count ?? 0,
+        OnlineMemberCount: guildData.approximate_presence_count ?? 0,
+        admins: admins,
         isInServer: true,
         isPublished: false,
       };
 
       // 異步快取
       CacheManager.batchSet(cacheKey, guildInfo, LIMITS.CACHE_TTL);
-
       return guildInfo;
     } catch (error: unknown) {
       console.error(
-        `💥 Error fetching guild details for ${guildId}:`,
+        `💥 Error fetching guild details with admins for ${guildId}:`,
         Utils.getErrorMessage(error),
       );
       return null;
@@ -855,19 +1146,57 @@ async function processGuilds(
   };
 }
 
-export async function getBatchGuildDetails(
+export async function getBatchGuildAdmins(
+  guildIds: string[],
+): Promise<Map<string, string[]>> {
+  const results = new Map<string, string[]>();
+
+  await Promise.all(
+    guildIds.map(guildId =>
+      limit(async () => {
+        try {
+          const admins = await GuildAdminManager.getGuildAdmins(guildId);
+          results.set(guildId, admins);
+        } catch (error) {
+          console.error(`Failed to get admins for guild ${guildId}:`, error);
+          results.set(guildId, []);
+        }
+      }),
+    ),
+  );
+
+  return results;
+}
+
+export async function isUserGuildAdmin(
+  guildId: string,
+  userId: string,
+): Promise<boolean> {
+  try {
+    const admins = await GuildAdminManager.getGuildAdmins(guildId);
+    return admins.includes(userId);
+  } catch (error) {
+    console.error(
+      `Failed to check admin status for user ${userId} in guild ${guildId}:`,
+      error,
+    );
+    return false;
+  }
+}
+
+export async function getBatchGuildDetailsWithAdmins(
   guildIds: string[],
 ): Promise<Map<string, ActiveServerInfo>> {
   if (guildIds.length === 0) return new Map();
 
   const results = new Map<string, ActiveServerInfo>();
   const uniqueIds = [...new Set(guildIds)];
-  const cacheKeys = uniqueIds.map(id => `guild:details:${id}:v2`);
+  const cacheKeys = uniqueIds.map(id => `guild:details:${id}:v3`);
 
   // 批次檢查快取
   const cachedResults = await CacheManager.batchGet(cacheKeys);
   const uncachedIds = uniqueIds.filter(id => {
-    const cacheKey = `guild:details:${id}:v2`;
+    const cacheKey = `guild:details:${id}:v3`;
     const cached = cachedResults.get(cacheKey);
 
     if (cached && Utils.isValidActiveServerInfo(cached)) {
@@ -878,7 +1207,7 @@ export async function getBatchGuildDetails(
   });
 
   console.log(
-    `📋 Batch request: ${uniqueIds.length} total, ${results.size} cached, ${uncachedIds.length} to fetch`,
+    `📋 Batch request with admins: ${uniqueIds.length} total, ${results.size} cached, ${uncachedIds.length} to fetch`,
   );
 
   if (uncachedIds.length === 0) {
@@ -890,13 +1219,13 @@ export async function getBatchGuildDetails(
     uncachedIds.map(guildId =>
       detailLimit(async () => {
         try {
-          const details = await getGuildDetails(guildId);
+          const details = await getGuildDetailsWithAdmins(guildId);
           if (details) {
             results.set(guildId, details);
           }
         } catch (error: unknown) {
           console.error(
-            `💥 Failed to get details for guild ${guildId}:`,
+            `💥 Failed to get details with admins for guild ${guildId}:`,
             Utils.getErrorMessage(error),
           );
         }
