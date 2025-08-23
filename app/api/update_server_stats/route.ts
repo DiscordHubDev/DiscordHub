@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const BATCH_SIZE = 10; // 每批處理的伺服器數量
-const DELAY_BETWEEN_BATCHES = 2000; // 批次間延遲（毫秒）
+const BATCH_SIZE = 10;
+const DELAY_BETWEEN_BATCHES = 2000;
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -24,22 +24,102 @@ async function safeFetchWithRateLimit(url: string, options: RequestInit) {
   }
 }
 
+/**
+ * 取得伺服器 owner 的 Guild Member（含 user 物件）
+ * 需要機器人已在該 guild，且有 GUILD_MEMBERS 相關權限 / Intent
+ */
+async function fetchGuildOwnerMember(guildId: string, userId: string) {
+  return await safeFetchWithRateLimit(
+    `https://discord.com/api/guilds/${guildId}/members/${userId}`,
+    {
+      headers: { Authorization: `Bot ${BOT_TOKEN}` },
+    },
+  );
+}
+
+function buildUserFieldsFromDiscordUser(user: any) {
+  const avatarExt = user?.avatar?.startsWith?.('a_') ? 'gif' : 'png';
+  const bannerExt = user?.banner?.startsWith?.('a_') ? 'gif' : 'png';
+
+  const username = user?.global_name ?? user?.username ?? null;
+
+  const avatar = user?.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${avatarExt}`
+    : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+  const banner = user?.banner
+    ? `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${bannerExt}?size=4096`
+    : null;
+
+  return { username, avatar, banner };
+}
+
+async function ensureOwnerUserUpsert(ownerId: string, member?: any) {
+  const { username, avatar, banner } = buildUserFieldsFromDiscordUser(
+    member?.user ?? { id: ownerId },
+  );
+
+  const safeUsername = username ?? `user_${ownerId}`;
+  const safeAvatar = avatar ?? 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+  await prisma.user.upsert({
+    where: { id: ownerId },
+    create: {
+      id: ownerId,
+      username: safeUsername,
+      avatar: safeAvatar,
+      banner: banner ?? null,
+    },
+    update: {
+      ...(member?.user
+        ? {
+            username: safeUsername,
+            avatar: safeAvatar,
+            banner: banner ?? null,
+          }
+        : {}),
+    },
+  });
+}
+
 async function updateServerStats(guildId: string) {
+  console.log(`[Guild:${guildId}] 開始更新伺服器統計資料`);
+
   const data = await safeFetchWithRateLimit(
     `https://discord.com/api/guilds/${guildId}?with_counts=true`,
-    {
-      headers: {
-        Authorization: `Bot ${BOT_TOKEN}`,
-      },
-    },
+    { headers: { Authorization: `Bot ${BOT_TOKEN}` } },
   );
 
   if (!data) {
-    console.log(`Skipping guildId ${guildId} - no data received`);
+    console.warn(`[Guild:${guildId}] 沒有拿到 Discord API 回傳的資料，跳過`);
     return;
   }
 
-  const updateData = {
+  const ownerId: string | undefined = data.owner_id;
+  console.log(`[Guild:${guildId}] 擁有者 ID: ${ownerId ?? '無'}`);
+
+  let member: any = null;
+  if (ownerId) {
+    console.log(`[Guild:${guildId}] 嘗試抓取擁有者的 guild member`);
+    member = await fetchGuildOwnerMember(guildId, ownerId);
+
+    if (member) {
+      console.log(
+        `[Guild:${guildId}] 成功取得擁有者 guild member: ${member.user?.username}`,
+      );
+    } else {
+      console.warn(
+        `[Guild:${guildId}] 找不到擁有者的 guild member，將使用最小化 user 資料`,
+      );
+    }
+  }
+
+  if (ownerId) {
+    console.log(`[Guild:${guildId}] Upsert 擁有者 User 資料到資料庫`);
+    await ensureOwnerUserUpsert(ownerId, member);
+  }
+
+  const updateData: any = {
     ...(data.name != null && { name: data.name }),
     ...(data.icon != null && {
       icon: `https://cdn.discordapp.com/icons/${guildId}/${data.icon}.png`,
@@ -49,21 +129,27 @@ async function updateServerStats(guildId: string) {
     }),
     members: data.approximate_member_count,
     online: data.approximate_presence_count,
-    ownerId: data.owner_id,
+    ...(ownerId && { owner: { connect: { id: ownerId } } }),
   };
 
-  console.log('Updating server stats for guildId:', guildId);
-  console.log('Update data:', updateData);
+  console.log(`[Guild:${guildId}] 更新資料庫中的伺服器紀錄`, {
+    name: updateData.name,
+    members: updateData.members,
+    online: updateData.online,
+    hasOwner: !!ownerId,
+  });
 
   try {
     await prisma.server.update({
       where: { id: guildId },
       data: updateData,
     });
-    console.log(`Successfully updated guildId: ${guildId}`);
+    console.log(`[Guild:${guildId}] ✅ 更新成功`);
   } catch (error) {
-    console.error(`Failed to update guildId ${guildId}:`, error);
+    console.error(`[Guild:${guildId}] ❌ 更新失敗`, error);
   }
+
+  console.log(`[Guild:${guildId}] 完成一次更新流程`);
 }
 
 // 將陣列分割成指定大小的批次
@@ -101,8 +187,8 @@ export async function GET(request: NextRequest) {
       `Processing batch ${i + 1}/${batches.length} with ${batch.length} servers`,
     );
 
-    // 並行處理當前批次的所有伺服器
-    const batchPromises = batch.map(async guildId => {
+    for (let j = 0; j < batch.length; j++) {
+      const guildId = batch[j];
       try {
         await updateServerStats(guildId);
         successCount++;
@@ -111,16 +197,16 @@ export async function GET(request: NextRequest) {
         errorCount++;
       }
       processedCount++;
-    });
 
-    // 等待當前批次完成
-    await Promise.allSettled(batchPromises);
+      if (j < batch.length - 1) {
+        await sleep(300);
+      }
+    }
 
     console.log(
       `Batch ${i + 1} completed. Progress: ${processedCount}/${serverIds.length}`,
     );
 
-    // 在批次間添加延遲以避免 rate limiting
     if (i < batches.length - 1) {
       console.log(`Waiting ${DELAY_BETWEEN_BATCHES}ms before next batch...`);
       await sleep(DELAY_BETWEEN_BATCHES);
