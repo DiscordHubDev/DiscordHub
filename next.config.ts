@@ -2,23 +2,19 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    return [
-      {
-        source: '/servers-sitemap.xml',
-        destination: '/sitemap/servers',
-      },
-      {
-        source: '/bot-sitemap.xml',
-        destination: '/sitemap/bots',
-      },
-      {
-        source: '/api/get_bot_server_count',
-        destination: 'https://getbotserver.dawngs.top',
-      },
-    ];
-  },
-  experimental: {
-    esmExternals: false,
+    return {
+      beforeFiles: [
+        { source: '/servers-sitemap.xml', destination: '/sitemap/servers' },
+        { source: '/bot-sitemap.xml', destination: '/sitemap/bots' },
+        {
+          source: '/api/get_bot_server_count',
+          destination:
+            'https://getbotserver.dawngs.top/api/get_bot_server_count',
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if
@@ -38,7 +34,6 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  swcMinify: true,
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production'
@@ -46,3 +41,5 @@ const nextConfig: NextConfig = {
         : false,
   },
 };
+
+export default nextConfig;
