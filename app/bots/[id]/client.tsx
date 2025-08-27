@@ -69,30 +69,20 @@ export default function BotDetailClient({
     }
   }, [bot.id, bot.upvotes]);
 
-  const getBannerUrl = (size = 1024) => {
-    if (!bot.banner) return null;
-    return `${bot.banner}?size=${size}&format=webp`;
-  };
-
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
       {/* Banner */}
-      <div className="relative h-48 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
+      <div className="relative h-50 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
         {bot.banner ? (
-          <div className="relative h-48 md:h-64 lg:h-80 bg-[#36393f] overflow-hidden">
+          <div className="relative w-full h-full">
             <Image
-              src={getBannerUrl(1024) || ''}
+              src={bot.banner || ''}
               alt={`${bot.name} banner`}
               fill
-              priority
-              quality={90}
+              priority={true}
               className="object-cover"
-              sizes="(max-width: 768px) 768px, (max-width: 1200px) 1200px, 1920px"
-              placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSIzMDAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNDk0ZjU3O3N0b3Atb3BhY2l0eTowLjEiIC8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNzI4OWRhO3N0b3Atb3BhY2l0eTowLjA4IiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM2MjY2ZWM7c3RvcC1vcGFjaXR5OjAuMSIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJub2lzZSI+CiAgICAgIDxmZVR1cmJ1bGVuY2UgYmFzZUZyZXF1ZW5jeT0iMC4wMiIgc2VlZD0iMSIgLz4KICAgICAgPGZlQ29sb3JNYXRyaXggdmFsdWVzPSIwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwIDAgMCAwLjA1IDAiIC8+CiAgICAgIDxmZUNvbXBvc2l0ZSBpbjI9IlNvdXJjZUdyYXBoaWMiIG9wZXJhdG9yPSJvdmVyIiAvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZykiIGZpbHRlcj0idXJsKCNub2lzZSkiIC8+CiAgPGNpcmNsZSBjeD0iMjAlIiBjeT0iMzAlIiByPSI0MCIgZmlsbD0iIzVlNjVmMiIgb3BhY2l0eT0iMC4wMyIvPgogIDxjaXJjbGUgY3g9Ijc1JSIgY3k9IjIwJSIgcj0iNjAiIGZpbGw9IiM4YzU0ZmYiIG9wYWNpdHk9IjAuMDQiLz4KICA8Y2lyY2xlIGN4PSI2MCUiIGN5PSI4MCUiIHI9IjUwIiBmaWxsPSIjNzI4OWRhIiBvcGFjaXR5PSIwLjAzIi8+Cjwvc3ZnPg=="
-              unoptimized={false}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1e1f22]/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1e1f22] opacity-60" />
           </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-[#5865f2] to-[#8c54ff]" />
