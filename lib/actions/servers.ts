@@ -139,7 +139,7 @@ export async function insertServer(
       `User ${userId} is ${result.isOwner ? 'the owner' : 'an admin'} of server ${data.id}`,
     );
 
-    if (result && !isAdmin) {
+    if (!result && !isAdmin) {
       console.error(
         `User ${userId} is not the owner or admin of server ${data.id}`,
       );
