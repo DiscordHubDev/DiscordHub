@@ -5,7 +5,7 @@ import {
   getPublishedServerMap,
 } from './actions/servers';
 import { prisma } from './prisma';
-import { get } from 'http';
+import { Agent, AgentOptions } from 'https';
 
 // ==================== 常數定義 ====================
 const LIMITS = {
@@ -40,7 +40,9 @@ const ENDPOINTS_EXTENDED = {
     limit: number = 1000,
     after?: string,
   ) =>
-    `https://discord.com/api/guilds/${guildId}/members?limit=${limit}${after ? `&after=${after}` : ''}`,
+    `https://discord.com/api/guilds/${guildId}/members?limit=${limit}${
+      after ? `&after=${after}` : ''
+    }`,
   DISCORD_GUILD_ROLES: (guildId: string) =>
     `https://discord.com/api/guilds/${guildId}/roles`,
 } as const;
@@ -175,10 +177,7 @@ class PrefetchManager {
   private static readonly activeRequests = new Map<string, Promise<any>>();
   private static readonly prefetchQueue = new Set<string>();
 
-  static async smartPrefetch(
-    guildIds: string[],
-    userId: string,
-  ): Promise<void> {
+  static async smartPrefetch(guildIds: string[]): Promise<void> {
     const unprefetched = guildIds.filter(id => {
       const cacheKey = `guild:details:${id}:v2`;
       return !this.activeRequests.has(cacheKey) && !this.prefetchQueue.has(id);
@@ -332,18 +331,18 @@ class CacheManager {
 
 // ==================== 連線池管理器優化 ====================
 class ConnectionPool {
-  private static readonly config = {
+  private static readonly config: AgentOptions = {
     keepAlive: true,
-    maxSockets: 100, // 增加最大連線數
-    timeout: LIMITS.TIMEOUT,
-    keepAliveMsecs: 500, // 減少 keep-alive 時間
-    maxFreeSockets: 20, // 增加空閒連線池
-    scheduling: 'fifo', // 使用 FIFO 調度
+    maxSockets: 100,
+    keepAliveMsecs: 500,
+    maxFreeSockets: 20,
+    scheduling: 'fifo', // OK：型別正確
+    // 注意：AgentOptions 裡通常沒有 timeout，見下方說明
   };
 
   private static readonly agents = {
-    user: new (require('https').Agent)(this.config),
-    bot: new (require('https').Agent)(this.config),
+    user: new Agent(this.config),
+    bot: new Agent(this.config),
   };
 
   static getUserAgent() {
@@ -581,7 +580,9 @@ class RetryManager {
       : this.calculateDelay(retryCount);
 
     console.log(
-      `🔄 Rate limited. Retry ${retryCount + 1}/${LIMITS.MAX_RETRIES} after ${delay}ms`,
+      `🔄 Rate limited. Retry ${retryCount + 1}/${
+        LIMITS.MAX_RETRIES
+      } after ${delay}ms`,
     );
     await Utils.delay(delay);
     return this.smartFetchWithRetry(url, options, retryCount + 1, type);
@@ -615,7 +616,9 @@ class RetryManager {
   ): Promise<Response> {
     const delay = this.calculateDelay(retryCount);
     console.log(
-      `🔄 ${reason}. Retry ${retryCount + 1}/${LIMITS.MAX_RETRIES} after ${delay}ms`,
+      `🔄 ${reason}. Retry ${retryCount + 1}/${
+        LIMITS.MAX_RETRIES
+      } after ${delay}ms`,
     );
     await Utils.delay(delay);
     return this.smartFetchWithRetry(url, options, retryCount + 1, type);
@@ -1051,7 +1054,7 @@ export async function getUserGuildsWithBotStatus(
     // 啟動智能預取
     const activeGuildIds = guildIds.filter(id => botGuildIdSet.has(id));
     if (activeGuildIds.length > 0) {
-      PrefetchManager.smartPrefetch(activeGuildIds, userId);
+      PrefetchManager.smartPrefetch(activeGuildIds);
     }
 
     // 處理結果

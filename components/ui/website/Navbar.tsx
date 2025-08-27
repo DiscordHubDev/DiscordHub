@@ -25,7 +25,7 @@ type LinkItem = {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const pathname = usePathname();
 
   return (
@@ -147,7 +147,7 @@ function NavLinks({
   mobile?: boolean;
   session: any;
 }) {
-  let links: LinkItem[] = [
+  const links: LinkItem[] = [
     { href: '/', label: '伺服器列表' },
     { href: '/bots', label: '機器人列表' },
     { href: '/add-server', label: '新增伺服器' },

@@ -90,7 +90,7 @@ export default function VoteCard({
           )}
           <div className="flex items-center ml-4">
             <ArrowUp size={14} className="mr-1" />
-            <span>{votes.toLocaleString()} 票</span>
+            <span>{voteCount.toLocaleString()} 票</span>
           </div>
         </div>
       </CardContent>

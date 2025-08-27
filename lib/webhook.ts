@@ -34,15 +34,14 @@ export const sendWebhook = async (
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       console.error('Webhook 發送失敗:', response.statusText);
     } else {
+      console.log('Webhook 發送成功');
     }
   } catch (error) {
     console.error('發送 Webhook 時出錯:', error);
@@ -56,19 +55,19 @@ export const sendApprovedWebhook = async (app: BotType) => {
     .join('\n');
   const embed = {
     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新機器人發佈通知！`,
-    description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${app.prefix}**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\n> ${app.inviteUrl}\n➤網站連結：\n> https://dchubs.org/bots/${app.id || '無'}\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
+    description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${
+      app.prefix
+    }**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\n> ${
+      app.inviteUrl
+    }\n➤網站連結：\n> https://dchubs.org/bots/${app.id || '無'}\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
     color: 0x4285f4,
     footer: {
       text: '由 DiscordHubs 系統發送',
       icon_url:
         'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
     },
-    thumbnail: {
-      url: app.icon || '',
-    },
-    image: {
-      url: app.banner || '',
-    },
+    thumbnail: { url: app.icon || '' },
+    image: { url: app.banner || '' },
   };
 
   const webhookData = {
@@ -82,15 +81,12 @@ export const sendApprovedWebhook = async (app: BotType) => {
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(webhookData),
     });
 
     if (!response.ok) {
       console.error('Webhook 發送失敗:', response.statusText);
-    } else {
     }
   } catch (webhookError) {
     console.error('發送 Webhook 時出錯:', webhookError);
@@ -103,16 +99,16 @@ export const sendPendingWebhook = async (data: FormData, avatarUrl: string) => {
   const webhookUrl = process.env.PENDING_WEBHOOK_URL || '';
   const embed = {
     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
-    description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${data.botPrefix}**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
+    description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${
+      data.botPrefix
+    }**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
     color: 0x4285f4,
     footer: {
       text: '由 DiscordHubs 系統發送',
       icon_url:
         'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
     },
-    thumbnail: {
-      url: avatarUrl || '',
-    },
+    thumbnail: { url: avatarUrl || '' },
   };
   const webhookData = {
     content:
@@ -125,14 +121,11 @@ export const sendPendingWebhook = async (data: FormData, avatarUrl: string) => {
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(webhookData),
     });
     if (!response.ok) {
       console.error('Webhook 發送失敗:', response.statusText);
-    } else {
     }
   } catch (webhookError) {
     console.error('發送 Webhook 時出錯:', webhookError);
@@ -148,14 +141,14 @@ export const sendServerWebhook = async (
   const webhookUrl = process.env.SERVER_WEBHOOK_URL || '';
   const embed = {
     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
-    description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${data.inviteLink}**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
+    description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${
+      data.inviteLink
+    }**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join(
+      '\n',
+    )}\`\`\``,
     color: 0x4285f4,
-    thumbnail: {
-      url: activeServer?.icon || '',
-    },
-    image: {
-      url: activeServer?.banner || '',
-    },
+    thumbnail: { url: activeServer?.icon || '' },
+    image: { url: activeServer?.banner || '' },
     footer: {
       text: '由 DiscordHubs 系統發送',
       icon_url:
@@ -174,15 +167,12 @@ export const sendServerWebhook = async (
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(webhookData),
     });
 
     if (!response.ok) {
       console.error('Webhook 發送失敗:', response.statusText);
-    } else {
     }
   } catch (webhookError) {
     console.error('發送 Webhook 時出錯:', webhookError);

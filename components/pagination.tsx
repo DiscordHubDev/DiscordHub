@@ -77,7 +77,7 @@ export default function Pagination({
   };
 
   // 渲染頁碼按鈕
-  const renderPageButton = (page: number | string, index: number) => {
+  const renderPageButton = (page: number | string) => {
     const isEllipsis = typeof page === 'string';
 
     if (isEllipsis) {

@@ -72,7 +72,11 @@ export default function CategoryFilter({
             <span>{category.name}</span>
           </div>
           <div
-            className={`w-5 h-5 rounded border ${category.selected ? 'border-[#5865f2] bg-[#5865f2]/10' : 'border-gray-600'} flex items-center justify-center transition-colors`}
+            className={`w-5 h-5 rounded border ${
+              category.selected
+                ? 'border-[#5865f2] bg-[#5865f2]/10'
+                : 'border-gray-600'
+            } flex items-center justify-center transition-colors`}
           >
             {category.selected && (
               <Check size={14} className="text-[#5865f2]" />

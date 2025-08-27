@@ -72,7 +72,7 @@ export default async function HomePage() {
 
   const { activeServers, inactiveServers } = await getUserGuildsWithBotStatus(
     session.access_token,
-    session.discordProfile?.id!,
+    session.discordProfile?.id || '',
   );
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';

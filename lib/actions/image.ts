@@ -2,7 +2,7 @@
 'use server';
 
 import { v2 as cloudinary } from 'cloudinary';
-import { Screenshot, UploadedFile } from '../types';
+import { UploadedFile } from '../types';
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
   api_key: process.env.CLOUDINARY_API_KEY!,
@@ -16,15 +16,6 @@ type CloudinarySignature = {
   uploadPreset: string; // Cloudinary 的上傳 preset 名稱
   cloudName: string; // Cloudinary 的 cloud name
 };
-
-const isUploadedFileArray = (arr: unknown): arr is UploadedFile[] =>
-  Array.isArray(arr) &&
-  arr.every(
-    x =>
-      x &&
-      typeof (x as any).url === 'string' &&
-      typeof (x as any).public_id === 'string',
-  );
 
 export async function ScreenshotUpload(
   sig: CloudinarySignature,

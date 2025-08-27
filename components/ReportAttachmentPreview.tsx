@@ -59,7 +59,7 @@ export default function AttachmentPreview({
           {error ? (
             <span className="text-red-500">{error}</span>
           ) : (
-            (textContent ?? <span className="text-gray-400">載入中...</span>)
+            textContent ?? <span className="text-gray-400">載入中...</span>
           )}
         </div>
       )}

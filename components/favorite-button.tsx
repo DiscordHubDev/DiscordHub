@@ -54,7 +54,11 @@ export function FavoriteButton({
       disabled={loading}
       title={favorited ? '取消收藏' : '加入收藏'}
       className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-150 transform hover:scale-105
-        ${favorited ? 'bg-rose-500 hover:bg-rose-600' : 'bg-indigo-500 hover:bg-indigo-600'}
+        ${
+          favorited
+            ? 'bg-rose-500 hover:bg-rose-600'
+            : 'bg-indigo-500 hover:bg-indigo-600'
+        }
         text-white disabled:cursor-not-allowed `}
     >
       <Heart

@@ -9,8 +9,8 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Upload } from 'lucide-react';
-import { signIn, useSession } from 'next-auth/react';
+import { AlertCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { submitReport } from '@/lib/actions/report';

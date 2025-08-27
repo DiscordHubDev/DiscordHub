@@ -22,7 +22,9 @@ export default withAuth(
     let source: string | null = null;
     try {
       source = reqOrigin ?? (referer ? new URL(referer).origin : null);
-    } catch {}
+    } catch {
+      source = null;
+    }
     const isSameOrigin = !!source && source === req.nextUrl.origin;
     const allowedOrigin = isSameOrigin || ALLOWED_ORIGINS.has(source ?? '');
 

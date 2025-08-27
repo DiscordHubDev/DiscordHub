@@ -1,14 +1,5 @@
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  Calendar,
-  Mail,
-  Globe,
-  Twitter,
-  Github,
-  MessageSquare,
-  X,
-} from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';

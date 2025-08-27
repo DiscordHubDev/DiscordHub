@@ -57,11 +57,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  ReportInBoxType,
-  ReportSeverityType,
-  ReportStatus,
-} from '@/lib/prisma_type';
+import { ReportInBoxType, ReportSeverityType } from '@/lib/prisma_type';
 import AttachmentPreview from '../ReportAttachmentPreview';
 import { REPORT_STATUS_ENUM, REPORT_SEVERITY_ENUM } from '@/lib/enums';
 import { updateReport } from '@/lib/actions/report';
@@ -503,7 +499,11 @@ export default function ReportInbox({ reports: allReports }: ReportProps) {
                     </h3>
                     <Badge
                       className={`
-            ${selectedReport.status === 'pending' ? 'bg-[#FEE75C] text-black' : ''}
+            ${
+              selectedReport.status === 'pending'
+                ? 'bg-[#FEE75C] text-black'
+                : ''
+            }
             ${selectedReport.status === 'resolved' ? 'bg-[#57F287]' : ''}
             ${selectedReport.status === 'rejected' ? 'bg-[#ED4245]' : ''}
           `}

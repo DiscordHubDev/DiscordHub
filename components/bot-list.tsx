@@ -1,5 +1,5 @@
 import BotCard from './bot-card';
-import { BotType, PublicBot } from '@/lib/prisma_type';
+import { PublicBot } from '@/lib/prisma_type';
 import { BotListSkeleton } from './bot-skeleton';
 
 export default function BotList({

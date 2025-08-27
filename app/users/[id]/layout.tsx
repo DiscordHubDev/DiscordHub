@@ -1,4 +1,3 @@
-import { getUserById } from '@/lib/actions/user';
 import type { Metadata } from 'next';
 
 export const dynamicParams = true;

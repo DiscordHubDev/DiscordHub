@@ -3,9 +3,8 @@
 import type React from 'react';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import type { CategoryType } from '@/lib/types';
 import CategoryFilter from './category-filter';
 

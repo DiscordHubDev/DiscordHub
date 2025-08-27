@@ -1,12 +1,17 @@
 import { getAllServers } from '@/lib/actions/servers';
 import { ISitemapField, getServerSideSitemap } from 'next-sitemap';
-import { createPriorityCalculator } from "@/lib/utils";
+import { createPriorityCalculator } from '@/lib/utils';
 
 export async function GET() {
   const servers = await getAllServers();
-  const calcPriority = createPriorityCalculator({ voteWeight: 0.6, serverWeight: 0.4 }); // 可以不同配比
+  const calcPriority = createPriorityCalculator({
+    voteWeight: 0.6,
+    serverWeight: 0.4,
+  }); // 可以不同配比
 
-  const scores = servers.map(s => (s.upvotes ?? 0) * 0.6 + (s.members ?? 0) * 0.4);
+  const scores = servers.map(
+    s => (s.upvotes ?? 0) * 0.6 + (s.members ?? 0) * 0.4,
+  );
   const maxScore = Math.max(...scores, 1);
 
   const fields: ISitemapField[] = servers.map(server => ({
@@ -15,9 +20,9 @@ export async function GET() {
     changefreq: 'weekly',
     priority: calcPriority(
       { upvotes: server.upvotes, servers: server.members },
-      maxScore
+      maxScore,
     ),
   }));
 
-  return await getServerSideSitemap(fields);   
+  return await getServerSideSitemap(fields);
 }

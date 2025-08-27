@@ -187,14 +187,18 @@ const BotForm: React.FC<BotFormProps> = ({
 
       if (file.type === 'image/gif' && file.size > MAX_GIF_SIZE_BYTES) {
         toast.warn(
-          `動圖 ${file.name} 大於 ${MAX_GIF_SIZE_BYTES / (1024 * 1024)}MB，請傳送更小的動圖。`,
+          `動圖 ${file.name} 大於 ${
+            MAX_GIF_SIZE_BYTES / (1024 * 1024)
+          }MB，請傳送更小的動圖。`,
         );
         continue;
       }
 
       if (file.type !== 'image/gif' && file.size > MAX_IMAGE_SIZE_BYTES) {
         toast.warn(
-          `圖片 ${file.name} 大於 ${MAX_IMAGE_SIZE_BYTES / (1024 * 1024)}MB，請傳送更小的圖片。`,
+          `圖片 ${file.name} 大於 ${
+            MAX_IMAGE_SIZE_BYTES / (1024 * 1024)
+          }MB，請傳送更小的圖片。`,
         );
 
         continue;

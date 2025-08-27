@@ -19,20 +19,6 @@ import { fetchDiscordServerInfo, verifyServerOwnership } from '../discord';
 import { unstable_cache } from 'next/cache';
 import { Prisma } from '@prisma/client';
 
-const UpdateServerSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  description: z.string().max(300).optional(),
-  longDescription: z.string().max(5000).optional(),
-  tags: z.array(z.string()).max(25).optional(),
-  icon: z.string().url().nullable().optional(),
-  banner: z.string().url().nullable().optional(),
-  website: z.string().url().or(z.literal('')).nullable().optional(),
-  inviteUrl: z.string().url().optional(),
-  rules: z.array(z.any()).max(50).optional(),
-  features: z.array(z.string()).max(50).optional(),
-  screenshots: z.array(z.string().url()).max(5).optional(),
-});
-
 export async function updateServer(
   serverId: string,
   input: {
@@ -137,7 +123,9 @@ export async function insertServer(
 
     const isAdmin = admins.includes(userId) || false;
     console.log(
-      `User ${userId} is ${result.isOwner ? 'the owner' : 'an admin'} of server ${data.id}`,
+      `User ${userId} is ${
+        result.isOwner ? 'the owner' : 'an admin'
+      } of server ${data.id}`,
     );
 
     if (!result && !isAdmin) {

@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { MinimalServerInfo } from '@/lib/get-user-guild';
-import { getServerByGuildId } from '@/lib/actions/servers';
 import { AvatarFallbackClient } from '../AvatarFallbackClient';
 
 function useIsClient() {

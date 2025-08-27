@@ -5,7 +5,6 @@ import {
   ReportStatus,
   User,
   VoteType,
-  Bot,
 } from '@prisma/client';
 import { UploadedFile } from './types';
 

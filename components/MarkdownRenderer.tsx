@@ -80,7 +80,9 @@ const SafeIframe = ({ src, title, className, ...rest }: SafeIframeProps) => {
 
   return (
     <div
-      className={`aspect-video w-full my-4 rounded overflow-hidden border border-gray-600 ${className || ''}`}
+      className={`aspect-video w-full my-4 rounded overflow-hidden border border-gray-600 ${
+        className || ''
+      }`}
     >
       <iframe
         src={url.toString()}

@@ -142,7 +142,13 @@ export async function POST(req: NextRequest) {
             author: { name: user.username, icon_url: user.avatar },
             title: '❤️ | 感謝投票!',
             url: 'https://dchubs.org',
-            description: `感謝您的支持與投票！您的每一票都是讓${type === 'server' ? '伺服器' : '機器人'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${type === 'bot' ? 'bots' : 'servers'}/${target.id}) 投票一次，讓更多人發現我們的${type === 'server' ? '伺服器' : '機器人'}吧！✨`,
+            description: `感謝您的支持與投票！您的每一票都是讓${
+              type === 'server' ? '伺服器' : '機器人'
+            }變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${
+              type === 'bot' ? 'bots' : 'servers'
+            }/${target.id}) 投票一次，讓更多人發現我們的${
+              type === 'server' ? '伺服器' : '機器人'
+            }吧！✨`,
             color: Math.floor(Math.random() * 0xffffff),
             footer: {
               text: 'Powered by DcHubs Vote System',

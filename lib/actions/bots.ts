@@ -112,7 +112,7 @@ export async function updateBot(
   const isAdmin = hasAdministratorPermission(
     rpcData.install_params
       ? rpcData.install_params.permissions
-      : (extractPermissionsFromInviteUrl(formData.botInvite) ?? '0'),
+      : extractPermissionsFromInviteUrl(formData.botInvite) ?? '0',
   );
 
   const info = await fetchUserInfo(id);

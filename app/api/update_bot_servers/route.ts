@@ -129,7 +129,9 @@ export async function GET(request: NextRequest) {
     for (let i = 0; i < bots.length; i += BATCH_SIZE) {
       const batch = bots.slice(i, i + BATCH_SIZE);
       console.log(
-        `🔄 處理第 ${Math.floor(i / BATCH_SIZE) + 1} 批 (${batch.length} 個 bots)`,
+        `🔄 處理第 ${Math.floor(i / BATCH_SIZE) + 1} 批 (${
+          batch.length
+        } 個 bots)`,
       );
 
       // 為每個 bot 添加不同的延遲，避免完全同時發送
@@ -146,7 +148,9 @@ export async function GET(request: NextRequest) {
       updatedBots.push(...successfulResults);
 
       console.log(
-        `✅ 第 ${Math.floor(i / BATCH_SIZE) + 1} 批完成，成功 ${successfulResults.length}/${batch.length} 個`,
+        `✅ 第 ${Math.floor(i / BATCH_SIZE) + 1} 批完成，成功 ${
+          successfulResults.length
+        }/${batch.length} 個`,
       );
 
       // 如果不是最後一批，則等待一段時間再處理下一批

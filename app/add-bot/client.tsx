@@ -79,7 +79,7 @@ const AddBotPageClient = () => {
     const isAdmin = hasAdministratorPermission(
       rpcData.install_params
         ? rpcData.install_params.permissions
-        : (extractPermissionsFromInviteUrl(data.botInvite) ?? '0'),
+        : extractPermissionsFromInviteUrl(data.botInvite) ?? '0',
     );
 
     const commandPayload = data.commands.map(cmd => ({

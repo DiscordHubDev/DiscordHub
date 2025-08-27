@@ -380,8 +380,8 @@ export default function BotServerManagement({
                       {selectedItem &&
                         formatDate(
                           selectedItem.type === 'bot'
-                            ? (selectedItem.approvedAt?.toString() ?? '')
-                            : (selectedItem.createdAt?.toString() ?? ''),
+                            ? selectedItem.approvedAt?.toString() ?? ''
+                            : selectedItem.createdAt?.toString() ?? '',
                         )}
                     </span>
                   </div>

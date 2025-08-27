@@ -3,26 +3,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   BookOpen,
-  Bot,
-  Settings2,
   LifeBuoy,
   Send,
   SquareTerminal,
   ShieldPlus,
   Home,
   Inbox,
-  Search,
   Sparkles,
-  Menu,
-  Blocks,
-  BookUser,
-  BookAIcon,
   BotIcon,
-  BookImage,
-  BookOpenIcon,
   BookText,
-  BookPlusIcon,
-  BookCheck,
   BookCheckIcon,
 } from 'lucide-react';
 
@@ -32,8 +21,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarInput,
   SidebarRail,
@@ -44,7 +31,6 @@ import { NavSecondary } from './nav-secondary';
 import { useSession } from 'next-auth/react';
 import { NavItem } from './nav-item';
 import { Separator } from '@radix-ui/react-separator';
-import { Label } from '@radix-ui/react-dropdown-menu';
 import { Switch } from './ui/switch';
 import { useInbox } from '@/hooks/use-inbox';
 import { InboxSidebar } from './mail/inbox-sidebar';
@@ -229,7 +215,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const keyword = search.toLowerCase().trim();
 
     return mails.filter(mail => {
-      const isUnread = !Boolean(mail.read); // 如果 mail.read 為 false、null、undefined 都算未讀
+      const isUnread = !mail.read; // 如果 mail.read 為 false、null、undefined 都算未讀
       const matchesUnread = !onlyUnread || isUnread;
 
       const matchesSearch =

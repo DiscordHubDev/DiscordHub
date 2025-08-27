@@ -1,4 +1,3 @@
-import NextAuth, { DefaultSession } from 'next-auth';
 import { DiscordProfile } from 'next-auth/providers/discord';
 
 import { Profile } from 'next-auth';

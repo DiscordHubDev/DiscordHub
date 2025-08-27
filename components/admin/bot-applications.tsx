@@ -114,7 +114,11 @@ export default function BotApplications({
               : `${app.name} 的申請未被接受`,
             content: isApproved
               ? `您好！我們已審查您提交的機器人「${app.name}」，並已核准上架。感謝您的耐心等待，祝您的機器人越來越好！`
-              : `您好，我們已審查您提交的機器人「${app.name}」，很遺憾，未能通過審核。\n\n拒絕原因：${rejectionReason || '未提供原因'}。\n\n若有疑問，歡迎再次申請。`,
+              : `您好，我們已審查您提交的機器人「${
+                  app.name
+                }」，很遺憾，未能通過審核。\n\n拒絕原因：${
+                  rejectionReason || '未提供原因'
+                }。\n\n若有疑問，歡迎再次申請。`,
             priority: isApproved ? 'success' : 'warning',
             userIds: app.developers.map(dev => dev.id),
           }),
@@ -144,8 +148,9 @@ export default function BotApplications({
       app =>
         app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.developers.some(dev =>
-          dev.username?.toLowerCase().includes(searchQuery.toLowerCase()),
+        app.developers.some(
+          dev =>
+            dev.username?.toLowerCase().includes(searchQuery.toLowerCase()),
         ),
     )
     .map(app => ({

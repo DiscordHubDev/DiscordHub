@@ -184,7 +184,9 @@ export async function GET(request: NextRequest) {
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
     console.log(
-      `Processing batch ${i + 1}/${batches.length} with ${batch.length} servers`,
+      `Processing batch ${i + 1}/${batches.length} with ${
+        batch.length
+      } servers`,
     );
 
     for (let j = 0; j < batch.length; j++) {
@@ -204,7 +206,9 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(
-      `Batch ${i + 1} completed. Progress: ${processedCount}/${serverIds.length}`,
+      `Batch ${i + 1} completed. Progress: ${processedCount}/${
+        serverIds.length
+      }`,
     );
 
     if (i < batches.length - 1) {

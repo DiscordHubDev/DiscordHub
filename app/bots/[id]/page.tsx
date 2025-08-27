@@ -31,7 +31,9 @@ export async function generateMetadata({
 
     if (!bot) return {};
 
-    const metaTitle = `${bot.name} - ${bot.tags.slice(0, 2).join(' / ')} Discord 機器人 | DiscordHubs`;
+    const metaTitle = `${bot.name} - ${bot.tags
+      .slice(0, 2)
+      .join(' / ')} Discord 機器人 | DiscordHubs`;
     const metaDescription = bot.description;
     const canonicalUrl = `https://dchubs.org/bots/${bot.id}`;
 
