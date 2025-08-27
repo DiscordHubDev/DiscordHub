@@ -16,12 +16,12 @@ export function useInbox() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: mailId }),
     });
-    mutate();
+    await mutate();
   };
 
   const deleteMail = async (mailId: string) => {
     await fetch(`/api/inbox?id=${mailId}`, { method: 'DELETE' });
-    mutate();
+    await mutate();
   };
 
   return {

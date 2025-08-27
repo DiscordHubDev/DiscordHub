@@ -84,6 +84,7 @@ export async function getBotListChunked(): Promise<
         orderBy: {
           servers: 'desc',
         },
+        cacheStrategy: { ttl: 20 },
       }),
     ),
   );
@@ -173,6 +174,7 @@ export async function getAllBots(): Promise<PublicBot[]> {
     where: { status: 'approved' },
     orderBy: { createdAt: 'desc' }, // 或 upvotes: 'desc'
     select: publicBotSelect,
+    cacheStrategy: { ttl: 120 },
   });
 }
 
@@ -223,6 +225,7 @@ export async function getBot(id: string) {
         },
       },
     },
+    cacheStrategy: { ttl: 30 },
   });
 }
 
@@ -266,6 +269,7 @@ export async function getPendingBots() {
     orderBy: {
       upvotes: 'desc',
     },
+    cacheStrategy: { ttl: 30 },
   });
 
   return bots;
@@ -319,6 +323,7 @@ export const getAllBotsAction = unstable_cache(
     return prisma.bot.findMany({
       orderBy: { servers: 'desc' },
       select: publicBotSelect,
+      cacheStrategy: { ttl: 120 },
     });
   },
   ['bots', 'all'],
@@ -351,6 +356,7 @@ export async function getBotsByCategoryAction(
           skip,
           take: limit,
           select: publicBotSelect,
+          cacheStrategy: { ttl: 120 },
         }),
         prisma.bot.count({ where }),
       ]);
@@ -364,7 +370,7 @@ export async function getBotsByCategoryAction(
       };
     },
     key,
-    { revalidate: 120 }, // 2分鐘快取
+    { revalidate: 120 },
   )();
 }
 
