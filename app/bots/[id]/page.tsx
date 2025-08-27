@@ -25,61 +25,86 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const bot = await getBot(id);
+  try {
+    const { id } = await params;
+    const bot = await getBot(id);
 
-  if (!bot) return {};
+    if (!bot) return {};
 
-  const metaTitle = `${bot.name} - ${bot.tags.slice(0, 2).join(' / ')} Discord 機器人 | DiscordHubs`;
-  const metaDescription = bot.description;
-  const canonicalUrl = `https://dchubs.org/bots/${bot.id}`;
-  const isDefaultIcon =
-    !bot.icon || bot.icon === 'https://cdn.discordapp.com/embed/avatars/0.png';
-  const hasCustomIcon = Boolean(bot.icon) && !isDefaultIcon;
-  const hasBanner = Boolean(bot.banner);
+    const metaTitle = `${bot.name} - ${bot.tags.slice(0, 2).join(' / ')} Discord 機器人 | DiscordHubs`;
+    const metaDescription = bot.description;
+    const canonicalUrl = `https://dchubs.org/bots/${bot.id}`;
 
-  let previewImage: string | undefined;
-  let twitterCard: 'summary' | 'summary_large_image' = 'summary';
+    // 檢查是否為預設圖示
+    const isDefaultIcon =
+      !bot.icon ||
+      bot.icon === 'https://cdn.discordapp.com/embed/avatars/0.png';
+    const hasCustomIcon = Boolean(bot.icon) && !isDefaultIcon;
+    const hasBanner = Boolean(bot.banner);
 
-  if (hasCustomIcon) {
-    previewImage = bot.icon!;
-    twitterCard = 'summary';
-  } else if (hasBanner) {
-    previewImage = bot.banner!;
-    twitterCard = 'summary_large_image';
+    let previewImage: string | undefined;
+    let twitterCard: 'summary' | 'summary_large_image' = 'summary';
+
+    if (hasCustomIcon) {
+      previewImage = bot.icon!;
+      twitterCard = 'summary';
+    } else if (hasBanner) {
+      previewImage = bot.banner!;
+      twitterCard = 'summary_large_image';
+    }
+
+    // 單獨定義 openGraph images 避免內聯問題
+    const openGraphImages = previewImage
+      ? [
+          {
+            url: previewImage,
+            width: twitterCard === 'summary_large_image' ? 1200 : 80,
+            height: twitterCard === 'summary_large_image' ? 630 : 80,
+            alt: `${bot.name} 的預覽圖`,
+          },
+        ]
+      : undefined;
+
+    console.log('Bot metadata debug:', {
+      botId: bot.id,
+      botName: bot.name,
+      hasIcon: Boolean(bot.icon),
+      iconUrl: bot.icon,
+      isDefaultIcon,
+      hasCustomIcon,
+      previewImage,
+      twitterCard,
+    });
+
+    return {
+      title: metaTitle,
+      description: metaDescription,
+      icons: {
+        icon: [
+          { url: '/favicon.ico' },
+          { url: '/icon.png', type: 'image/png' },
+        ],
+      },
+      alternates: {
+        canonical: canonicalUrl,
+      },
+      openGraph: {
+        title: metaTitle,
+        description: metaDescription,
+        url: canonicalUrl,
+        images: openGraphImages,
+      },
+      twitter: {
+        card: twitterCard,
+        title: metaTitle,
+        description: metaDescription,
+        images: previewImage ? [previewImage] : undefined,
+      },
+    };
+  } catch (error) {
+    console.error('Error generating bot metadata:', error);
+    return {};
   }
-
-  return {
-    title: metaTitle,
-    description: metaDescription,
-    icons: {
-      icon: [{ url: '/favicon.ico' }, { url: '/icon.png', type: 'image/png' }],
-    },
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      title: metaTitle,
-      description: metaDescription,
-      url: canonicalUrl,
-      images: previewImage
-        ? [
-            {
-              url: previewImage,
-              width: twitterCard === 'summary_large_image' ? 1200 : 80,
-              height: twitterCard === 'summary_large_image' ? 630 : 80,
-              alt: `${bot.name} 的預覽圖`,
-            },
-          ]
-        : undefined,
-    },
-    twitter: {
-      card: twitterCard,
-      title: metaTitle,
-      description: metaDescription,
-      images: previewImage ? [previewImage] : undefined,
-    },
-  };
 }
 
 export default async function BotDetailPage({
