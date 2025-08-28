@@ -185,12 +185,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isMobile = useIsMobile();
 
-  const { toggleSidebar, openMobile, setOpenMobile } = useSidebar();
+  const { toggleSidebar, setOpenMobile } = useSidebar();
 
   useEffect(() => {
-    if (isMobile) {
-      setOpenMobile(false); // 如果是手機，且 sidebar 有打開，就關掉
-    }
+    if (isMobile) setOpenMobile(true);
   }, [isMobile, setOpenMobile]);
 
   useEffect(() => {
