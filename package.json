@@ -61,6 +61,7 @@
     "react-toastify": "^11.0.5",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
+    "sharp": "^0.34.3",
     "sweetalert2": "^11.22.0",
     "sweetalert2-react-content": "^5.1.0",
     "swr": "^2.3.3",

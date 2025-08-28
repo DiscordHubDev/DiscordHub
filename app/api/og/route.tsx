@@ -1,29 +1,69 @@
 import { NextRequest } from 'next/server';
 import { Renderer, type OutputFormat } from '@takumi-rs/core';
 import { fromJsx } from '@takumi-rs/helpers/jsx';
+import sharp from 'sharp';
 
 export const runtime = 'nodejs';
 
 const renderer = new Renderer({});
 
-// 調試版本 - 添加詳細日志
-async function toDataUrl(url: string): Promise<string> {
+async function smartImageProcessor(url: string): Promise<string> {
   try {
+    console.log('Smart processing image:', url);
+
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.status}`);
     }
 
-    const blob = await response.blob();
-    const buffer = await blob.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString('base64');
-    const mimeType = blob.type || 'image/jpeg';
+    const contentType = response.headers.get('content-type') || '';
+    const buffer = await response.arrayBuffer();
 
-    return `data:${mimeType};base64,${base64}`;
+    console.log('Image content type:', contentType);
+
+    // 如果是 GIF，使用 Sharp 轉換第一幀為 PNG
+    if (contentType.includes('gif')) {
+      console.log('Detected GIF, converting to static PNG');
+
+      const staticBuffer = await sharp(Buffer.from(buffer))
+        .png()
+        .resize(1200, 630, {
+          fit: 'inside',
+          withoutEnlargement: true,
+          background: { r: 255, g: 255, b: 255, alpha: 1 }, // 白色背景
+        })
+        .toBuffer();
+
+      const base64 = staticBuffer.toString('base64');
+      return `data:image/png;base64,${base64}`;
+    }
+    // 如果是 WebP 或其他現代格式，也轉換為 PNG 確保兼容性
+    else if (contentType.includes('webp') || contentType.includes('avif')) {
+      console.log('Converting modern format to PNG');
+
+      const processedBuffer = await sharp(Buffer.from(buffer))
+        .png()
+        .resize(1200, 630, { fit: 'inside', withoutEnlargement: true })
+        .toBuffer();
+
+      const base64 = processedBuffer.toString('base64');
+      return `data:image/png;base64,${base64}`;
+    }
+    // 標準格式直接轉換
+    else {
+      const base64 = Buffer.from(buffer).toString('base64');
+      const mimeType = contentType || 'image/jpeg';
+      return `data:${mimeType};base64,${base64}`;
+    }
   } catch (error) {
-    console.error('Error converting image to data URL:', error);
+    console.error('Smart image processing failed:', error);
     throw error;
   }
+}
+
+// 替換原來的 toDataUrl 函數
+async function toDataUrl(url: string): Promise<string> {
+  return await smartImageProcessor(url);
 }
 
 async function OgCard({
