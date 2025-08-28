@@ -15,6 +15,38 @@ export type PriorityInput = {
   servers?: number;
 };
 
+// build og url function
+function parsePositiveInt(v: number, min = 50, max = 4096) {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return v;
+  return Math.min(Math.max(Math.floor(n), min), max);
+}
+
+export function buildOgUrl(opts: {
+  previewImage?: string;
+  twitterCard?: 'summary' | 'summary_large_image';
+}) {
+  const { previewImage, twitterCard = 'summary_large_image' } = opts;
+
+  const isLarge = twitterCard === 'summary_large_image';
+  const defaults = isLarge
+    ? { width: 1200, height: 630 }
+    : { width: 80, height: 80 };
+
+  const width = parsePositiveInt(defaults.width);
+  const height = parsePositiveInt(defaults.height);
+
+  const img = previewImage;
+
+  const sp = new URLSearchParams();
+  sp.set('width', String(width));
+  sp.set('height', String(height));
+  if (img) sp.set('img', img);
+
+  const ogUrl = `/api/og?${sp.toString()}`;
+  return { ogUrl, width, height, img };
+}
+
 // server cache
 
 export const getCachedAllServers = unstable_cache(

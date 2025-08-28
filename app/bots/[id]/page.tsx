@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 import BotDetailClient from './client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { getCachedAllBots, getCachedBot } from '@/lib/utils';
+import { buildOgUrl, getCachedAllBots, getCachedBot } from '@/lib/utils';
 
 export const revalidate = 60;
 
@@ -55,28 +55,10 @@ export async function generateMetadata({
       twitterCard = 'summary_large_image';
     }
 
-    // 單獨定義 openGraph images 避免內聯問題
-    const openGraphImages = previewImage
-      ? [
-          {
-            url: previewImage,
-            width: twitterCard === 'summary_large_image' ? 1200 : 80,
-            height: twitterCard === 'summary_large_image' ? 630 : 80,
-            alt: `${bot.name} 的預覽圖`,
-          },
-        ]
-      : undefined;
-
-    console.log('Bot metadata debug:', {
-      botId: bot.id,
-      botName: bot.name,
-      hasIcon: Boolean(bot.icon),
-      iconUrl: bot.icon,
-      isDefaultIcon,
-      hasCustomIcon,
+    const ogUrl = buildOgUrl({
       previewImage,
       twitterCard,
-    });
+    }).ogUrl;
 
     return {
       title: metaTitle,
@@ -94,13 +76,13 @@ export async function generateMetadata({
         title: metaTitle,
         description: metaDescription,
         url: canonicalUrl,
-        images: openGraphImages,
+        images: [ogUrl],
       },
       twitter: {
         card: twitterCard,
         title: metaTitle,
         description: metaDescription,
-        images: previewImage ? [previewImage] : undefined,
+        images: [ogUrl],
       },
     };
   } catch (error) {
@@ -118,10 +100,9 @@ export default async function BotDetailPage({
   const session = await getServerSession(authOptions);
   const userId = session?.discordProfile?.id;
 
-  // 使用快取函數並行執行查詢
   const [bot, allBots] = await Promise.all([
     getCachedBot(id),
-    getCachedAllBots(), // 考慮是否真的需要所有 bots，或者可以只獲取相關的幾個
+    getCachedAllBots(),
   ]);
 
   if (!bot) {

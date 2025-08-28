@@ -46,7 +46,7 @@ export function NavItem({
         };
 
         return (
-          <SidebarMenuItem key={item.title}>
+          <SidebarMenuItem className="text-nowrap" key={item.title}>
             <SidebarMenuButton
               isActive={item.isActive}
               onClick={handleClick}

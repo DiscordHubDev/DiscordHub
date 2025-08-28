@@ -29,8 +29,16 @@ const nextConfig: NextConfig = {
   },
   productionBrowserSourceMaps: false,
   webpack: (config, { dev, isServer }) => {
+    config.module.rules.push({
+      test: /\.node$/,
+      type: 'asset/resource',
+    });
     if (!dev && !isServer) {
       config.devtool = false;
+    }
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('@takumi-rs/core');
     }
     return config;
   },

@@ -33,6 +33,8 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/typography": "^0.5.16",
+    "@takumi-rs/core": "^0.27.6",
+    "@takumi-rs/helpers": "^0.27.6",
     "@types/bull": "^4.10.4",
     "@vercel/og": "^0.6.8",
     "bull": "^4.16.5",

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/authOptions';
 import { getServerSession } from 'next-auth';
 import { Metadata } from 'next';
 import {
+  buildOgUrl,
   getCachedAllServers,
   getCachedServerByGuildId,
   getCachedServerWithFavorited,
@@ -58,16 +59,10 @@ export async function generateMetadata({
       twitterCard = 'summary_large_image';
     }
 
-    const openGraphImages = previewImage
-      ? [
-          {
-            url: previewImage,
-            width: twitterCard === 'summary_large_image' ? 1200 : 80,
-            height: twitterCard === 'summary_large_image' ? 630 : 80,
-            alt: `${server.name} 的預覽圖`,
-          },
-        ]
-      : undefined;
+    const ogUrl = buildOgUrl({
+      previewImage,
+      twitterCard,
+    }).ogUrl;
 
     return {
       title: metaTitle,
@@ -85,13 +80,13 @@ export async function generateMetadata({
         title: metaTitle,
         description: metaDescription,
         url: canonicalUrl,
-        images: openGraphImages,
+        images: [ogUrl],
       },
       twitter: {
         card: twitterCard,
         title: metaTitle,
         description: metaDescription,
-        images: previewImage ? [previewImage] : undefined,
+        images: [ogUrl],
       },
     };
   } catch (error) {
