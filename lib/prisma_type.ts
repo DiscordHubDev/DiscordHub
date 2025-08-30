@@ -94,6 +94,7 @@ export const publicBotSelect = Prisma.validator<Prisma.BotSelect>()({
   features: true,
   screenshots: true,
   pin: true,
+  pinExpiry: true,
   createdAt: true,
   developers: { select: publicUserSelect },
   commands: { select: publicCommandSelect },
@@ -253,6 +254,7 @@ export const publicServerSelect = Prisma.validator<Prisma.ServerSelect>()({
   website: true,
   inviteUrl: true,
   pin: true,
+  pinExpiry: true,
   owner: {
     select: {
       username: true,

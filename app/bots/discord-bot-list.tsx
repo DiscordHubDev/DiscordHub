@@ -49,7 +49,12 @@ const sortBotsByCategory = (
   const botsCopy = [...bots];
   if (category === 'popular') {
     return botsCopy.sort((a, b) =>
-      a.pin !== b.pin ? (a.pin ? -1 : 1) : b.servers - a.servers,
+      a.pin !== b.pin
+        ? a.pin
+          ? -1
+          : 1
+        : (b.pinExpiry ? +new Date(b.pinExpiry) : 0) -
+          (a.pinExpiry ? +new Date(a.pinExpiry) : 0),
     );
   }
   if (category === 'new') {

@@ -40,7 +40,12 @@ const sortServersByCategory = (
   const serversCopy = [...servers];
   if (category === 'popular') {
     return serversCopy.sort((a, b) =>
-      a.pin !== b.pin ? (a.pin ? -1 : 1) : b.members - a.members,
+      a.pin !== b.pin
+        ? a.pin
+          ? -1
+          : 1
+        : (b.pinExpiry ? +new Date(b.pinExpiry) : 0) -
+          (a.pinExpiry ? +new Date(a.pinExpiry) : 0),
     );
   }
   if (category === 'new') {
