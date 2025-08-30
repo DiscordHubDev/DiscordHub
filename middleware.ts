@@ -157,13 +157,13 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-  // Content Security Policy
+  // Content Security Policy - 修改為允許 Discord widget
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self';",
+    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-src 'self' https://discord.com https://*.discord.com;",
   );
 
-  // 防止點擊劫持
+  // 防止點擊劫持 - 修改為允許特定來源
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
 
   return response;
