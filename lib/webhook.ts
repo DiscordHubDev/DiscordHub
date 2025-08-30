@@ -57,9 +57,13 @@ export const sendApprovedWebhook = async (app: BotType) => {
     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新機器人發佈通知！`,
     description: `➤機器人名稱：**${app.name}**\n➤機器人前綴：**${
       app.prefix
-    }**\n➤簡短描述：\`\`\`${app.description}\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\n> ${
+    }**\n➤簡短描述：\`\`\`${
+      app.description
+    }\`\`\`\n➤開發者：\`\`\`${developerNames}\`\`\`\n➤邀請鏈結：\n> ${
       app.inviteUrl
-    }\n➤網站連結：\n> https://dchubs.org/bots/${app.id || '無'}\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
+    }\n➤網站連結：\n> https://dchubs.org/bots/${
+      app.id || '無'
+    }\n➤類別：\`\`\`${app.tags.join('\n')}\`\`\``,
     color: 0x4285f4,
     footer: {
       text: '由 DiscordHubs 系統發送',
@@ -101,7 +105,9 @@ export const sendPendingWebhook = async (data: FormData, avatarUrl: string) => {
     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新審核機器人！`,
     description: `➤機器人名稱：**${data.botName}**\n➤機器人前綴：**${
       data.botPrefix
-    }**\n➤簡短描述：\`\`\`${data.botDescription}\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
+    }**\n➤簡短描述：\`\`\`${
+      data.botDescription
+    }\`\`\`\n➤類別：\`\`\`${data.tags.join('\n')}\`\`\``,
     color: 0x4285f4,
     footer: {
       text: '由 DiscordHubs 系統發送',
@@ -141,11 +147,13 @@ export const sendServerWebhook = async (
   const webhookUrl = process.env.SERVER_WEBHOOK_URL || '';
   const embed = {
     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 新發佈的伺服器！`,
-    description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${data.shortDescription}\`\`\`\n➤邀請連結：\n> **${
+    description: `➤伺服器名稱：**${data.serverName}**\n➤簡短描述：\n\`\`\`${
+      data.shortDescription
+    }\`\`\`\n➤邀請連結：\n> **${
       data.inviteLink
-    }**\n➤網站連結：\n> **https://dchubs.org/servers/${activeServer?.id || '無'}**\n➤類別：\n\`\`\`${data.tags.join(
-      '\n',
-    )}\`\`\``,
+    }**\n➤網站連結：\n> **https://dchubs.org/servers/${
+      activeServer?.id || '無'
+    }**\n➤類別：\n\`\`\`${data.tags.join('\n')}\`\`\``,
     color: 0x4285f4,
     thumbnail: { url: activeServer?.icon || '' },
     image: { url: activeServer?.banner || '' },
