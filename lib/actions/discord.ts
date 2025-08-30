@@ -1,77 +1,71 @@
 'use server';
 
-import { getRedis } from '@/lib/redis';
 import { UserProfile } from '../types';
+import { unstable_cache } from 'next/cache';
 
-type DiscordUserCache = {
-  username: string;
-  global_name: string;
-  avatar_url: string | null;
-  banner_url: string | null;
-  accent_color: string | null;
-  updatedAt: string; // ISO
-};
+const getCacheTag = (userId: string) => `discord-user-${userId}`;
 
-const CACHE_KEY = (userId: string) => `dc:user:${userId}`;
+const getCachedDiscordUser = unstable_cache(
+  async (userId: string) => {
+    console.log(`🔄 Discord user ${userId} cache miss, fetching from API.`);
+    const userData = await fetchDiscordUserOnce(userId);
 
-/**
- * 永遠快取版本：
- * 1) 先讀 Redis；命中就直接回傳
- * 2) 未命中時，若 allowNetwork=true 才打一次 Discord，並永久寫入 Redis（不設 TTL）
- * 3) 後續一律只讀快取；要更新請手動 invalidate
- */
+    if (!userData) return null;
+
+    return {
+      ...userData,
+      updatedAt: new Date().toISOString(),
+    } as UserProfile;
+  },
+  // keyParts: 用於生成緩存鍵的參數
+  ['discord-user'],
+  {
+    revalidate: 1200, // 20 分鐘後重新驗證
+    tags: [], // 動態標籤在呼叫時設定
+  },
+);
+
 export async function getDiscordMember(
   userId: string,
   options?: { allowNetwork?: boolean },
 ): Promise<UserProfile | null> {
   if (!/^\d{5,}$/.test(userId)) throw new Error('Invalid userId');
 
-  const redis = getRedis();
-  await redis.connect().catch(() => {}); // lazy connect
+  const allowNetwork = options?.allowNetwork ?? true;
 
-  const key = CACHE_KEY(userId);
-  const cachedStr = await redis.get(key);
-  if (cachedStr) {
-    try {
-      return JSON.parse(cachedStr) as UserProfile;
-    } catch {
-      // 破損就刪
-      await redis.del(key);
-    }
+  if (!allowNetwork) {
+    // 如果不允許網路請求，我們無法從 unstable_cache 中僅讀取緩存
+    // 這是 unstable_cache 的限制，它會在緩存未命中時自動執行函數
+    // 在這種情況下，我們只能返回 null 或者拋出錯誤
+    console.warn(
+      `Network disabled for userId ${userId}, cannot check cache without potential network request`,
+    );
+    return null;
   }
 
-  const allowNetwork = options?.allowNetwork ?? true;
-  if (!allowNetwork) return null;
+  try {
+    // 使用動態標籤的方式：重新包裝 getCachedDiscordUser 以包含用戶特定的標籤
+    const cachedUserWithTag = unstable_cache(
+      () => getCachedDiscordUser(userId),
+      [`discord-user-${userId}`],
+      {
+        tags: [getCacheTag(userId)],
+        revalidate: 1200,
+      },
+    );
 
-  const botToken = process.env.BOT_TOKEN;
-  if (!botToken) throw new Error('Server misconfigured: BOT_TOKEN missing.');
-
-  const fresh = await fetchDiscordUserOnce(userId, botToken);
-  if (!fresh) return null;
-
-  const payload: UserProfile = {
-    ...fresh,
-    updatedAt: new Date().toISOString(),
-  };
-
-  console.log(`🔄 Discord user ${userId} cache miss, fetched from API.`);
-
-  // 永久快取：不設 TTL
-  await redis.set(key, JSON.stringify(payload));
-
-  return payload;
-}
-
-export async function invalidateDiscordMemberCache(userId: string) {
-  const redis = getRedis();
-  await redis.connect().catch(() => {});
-  await redis.del(CACHE_KEY(userId));
+    return await cachedUserWithTag();
+  } catch (error) {
+    console.error(`Failed to get Discord user ${userId}:`, error);
+    return null;
+  }
 }
 
 // === Internal ===
 
-async function fetchDiscordUserOnce(userId: string, botToken: string) {
+async function fetchDiscordUserOnce(userId: string) {
   const endpoint = `https://discord.com/api/v10/users/${userId}`;
+  const botToken = process.env.BOT_TOKEN!;
 
   // 工具：避免外洩 token、讀取 header、擷取 body 內容
   const maskToken = (t: string) => (t ? `${t.slice(0, 8)}…[redacted]` : '');
