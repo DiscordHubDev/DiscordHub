@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     if (existing.pin && existing.pinExpiry && existing.pinExpiry > new Date()) {
       return NextResponse.json({
-        message: `${type} already pinned`,
+        message: `${type} 已置頂過`,
         pinned: true,
         pinExpiry: existing.pinExpiry,
       });
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
           });
 
     return NextResponse.json({
-      message: `${type} (${item_id}) pinned successfully`,
+      message: `${type} (${item_id}) 置頂成功`,
       pinned: false,
       pinExpiry: expiry,
       post: updated,
