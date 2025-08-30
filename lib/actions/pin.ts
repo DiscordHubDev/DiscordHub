@@ -3,7 +3,7 @@
 import { VoteType } from '@/lib/prisma_type';
 import { getUser } from '../get-user';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export async function Pin(itemId: string, itemType: string) {
   const user = await getUser();
