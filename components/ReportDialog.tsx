@@ -77,7 +77,6 @@ export function ReportDialog({
         type,
         severity,
         attachments: attachments,
-        reportedById: userId,
       });
 
       toast.success('檢舉已提交！');
@@ -95,7 +94,7 @@ export function ReportDialog({
       <DialogTrigger asChild>
         <Button
           size="lg"
-          className="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 transition-all duration-150 transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-red-400"
+          className="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 transition-all duration-150 transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-red-400 cursor-pointer"
         >
           <AlertCircle className="h-5 w-5" />
           檢舉
@@ -181,7 +180,7 @@ export function ReportDialog({
 
           <Button
             onClick={handleSubmit}
-            className="w-full bg-red-600 hover:bg-red-800 text-white"
+            className="w-full bg-red-600 hover:bg-red-800 text-white cursor-pointer"
           >
             送出檢舉
           </Button>

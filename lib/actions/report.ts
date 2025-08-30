@@ -19,11 +19,21 @@ type Params = {
 
 export async function submitReport(formData: z.infer<typeof reportSchema>) {
   const data = reportSchema.parse(formData);
+  const session = await getServerSession(authOptions);
+  const userId = session?.discordProfile?.id;
+
+  if (!userId) return;
+  const { reportedById, ...reportData } = data;
 
   await prisma.report.create({
     data: {
-      ...data,
-      attachments: data.attachments ?? [],
+      ...reportData,
+      attachments: reportData.attachments ?? [],
+      reportedBy: {
+        connect: {
+          id: userId,
+        },
+      },
     },
   });
 }
