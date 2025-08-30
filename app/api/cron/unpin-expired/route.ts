@@ -4,18 +4,16 @@ import { PrismaClient, VoteType } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
-  // 驗證是否為 cron job 請求
-  const authHeader = req.headers.get('authorization');
-  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
-
-  if (!authHeader || authHeader !== expectedAuth) {
+  // 驗證請求來源
+  if (
+    req.headers.get('Authorization') !== `Bearer ${process.env.API_CRON_TOKEN}`
+  ) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   const { type }: { type: VoteType } = await req.json();
 
   try {
-    // 找到所有已過期的置頂文章，並取消置頂
     const updated =
       type === 'server'
         ? await prisma.server.updateMany({
