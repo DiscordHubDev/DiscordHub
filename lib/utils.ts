@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { UserProfile } from './types';
+import { DiscordBotRPCInfo, UserProfile } from './types';
 import { unstable_cache } from 'next/cache';
 import { getAllBots, getBot, getUserVotesForBots } from './actions/bots';
 import {
@@ -144,6 +144,37 @@ export function getCookie(name: string): string | undefined {
     ?.split('=')[1];
   return value ? decodeURIComponent(value) : undefined;
 }
+
+export const fetchBotInfo = async (client_id: string) => {
+  try {
+    const res = await fetch('/api/proxy/rpc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(
+        errorData.error ||
+          `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`,
+      );
+    }
+
+    const rpcData: DiscordBotRPCInfo = await res.json();
+
+    // 確保在客戶端執行
+    if (typeof window !== 'undefined') {
+      const info = await fetchUserInfo(client_id);
+      return { rpcData, info };
+    }
+
+    return { rpcData };
+  } catch (error) {
+    console.error('Bot info fetch failed:', error);
+    throw error;
+  }
+};
 
 export async function getBotGuildIds(): Promise<string[]> {
   const token = process.env.BOT_TOKEN;

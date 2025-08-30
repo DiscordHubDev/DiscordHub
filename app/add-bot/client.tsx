@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { signIn, useSession } from 'next-auth/react';
 import {
   extractPermissionsFromInviteUrl,
+  fetchBotInfo,
   fetchUserInfo,
   hasAdministratorPermission,
 } from '@/lib/utils';
@@ -23,37 +24,6 @@ const AddBotPageClient = () => {
     signIn('discord');
     return;
   }
-
-  const fetchBotInfo = async (client_id: string) => {
-    try {
-      const res = await fetch('/api/proxy/rpc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.error ||
-            `找不到此 Bot 或 Discord API 錯誤 (status: ${res.status})`,
-        );
-      }
-
-      const rpcData: DiscordBotRPCInfo = await res.json();
-
-      // 確保在客戶端執行
-      if (typeof window !== 'undefined') {
-        const info = await fetchUserInfo(client_id);
-        return { rpcData, info };
-      }
-
-      return { rpcData };
-    } catch (error) {
-      console.error('Bot info fetch failed:', error);
-      throw error;
-    }
-  };
 
   const handleCreate = async (
     data: BotFormData,
