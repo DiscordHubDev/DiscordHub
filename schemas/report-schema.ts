@@ -17,6 +17,6 @@ export const reportSchema = z.object({
   severity: z
     .enum(['severe', 'moderate', 'low', 'untagged'])
     .default('untagged'),
-  reportedById: z.string(),
+  reportedById: z.string().optional(),
   attachments: z.array(UploadedFileSchema).optional(),
 });
