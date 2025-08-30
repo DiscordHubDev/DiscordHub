@@ -14,7 +14,6 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { VoteType } from '@/lib/prisma_type';
 import { useRouter } from 'next/navigation';
-import { GetUserBySession } from '@/lib/actions/user';
 import { useSession } from 'next-auth/react';
 import { useError } from '@/context/ErrorContext';
 import { Pin } from '@/lib/actions/pin';
@@ -211,13 +210,6 @@ export default function PinButton({
     setIsPining(true);
 
     const pin = await Pin(id, type.toUpperCase() as VoteType);
-    const user = await GetUserBySession(session);
-
-    if (!user) {
-      showError('請先登入！');
-      setIsPining(false);
-      return;
-    }
 
     if (!pin.success) {
       if (pin.error === 'COOLDOWN') {
@@ -269,7 +261,6 @@ export default function PinButton({
       </Button> */}
       <Button
         onClick={hasPinned ? undefined : handlePin}
-        disabled={hasPinned || isPining}
         className={cn(
           className,
           hasPinned || isPining

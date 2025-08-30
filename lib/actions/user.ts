@@ -128,7 +128,7 @@ export const getCachedUser = unstable_cache(
     return await getUserById(id);
   },
   ['get-user'],
-  { revalidate: 120 },
+  { revalidate: 60 },
 );
 
 export async function getUserById(id: string): Promise<UserType | null> {
@@ -143,6 +143,7 @@ export async function getUserById(id: string): Promise<UserType | null> {
       developedBots: true,
       adminIn: true,
     },
+    cacheStrategy: { ttl: 60 },
   });
 
   return user;

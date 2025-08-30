@@ -36,6 +36,7 @@ import {
 } from './ui/tooltip';
 import { FaCheck } from 'react-icons/fa6';
 import { getCachedUser } from '@/lib/actions/user';
+import PinButton from './pin-button';
 
 type ServerCardData = {
   id: string;
@@ -75,7 +76,7 @@ function ServersTab({
           {managedServers.map(server => (
             <Card
               key={server.id}
-              className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200"
+              className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200 flex flex-col h-full"
             >
               <Link href={`/servers/${server.id}`} className="block">
                 <CardHeader className="pb-2">
@@ -118,7 +119,7 @@ function ServersTab({
               </Link>
 
               {isOwner && (
-                <CardFooter>
+                <CardFooter className="mt-auto flex flex-col gap-3">
                   <Button
                     variant="outline"
                     size="sm"
@@ -127,6 +128,12 @@ function ServersTab({
                   >
                     管理伺服器
                   </Button>
+                  <PinButton
+                    variant="outline"
+                    id={server.id}
+                    type="server"
+                    className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
+                  />
                 </CardFooter>
               )}
             </Card>
@@ -181,7 +188,7 @@ function BotsTab({
             .filter(bot => bot.status !== 'rejected')
             .map(bot => (
               <Card
-                className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200"
+                className="bg-[#2b2d31] border-[#1e1f22] hover:border-[#5865f2] transition-all duration-200 flex flex-col h-full"
                 key={bot.id}
               >
                 <Link href={`/bots/${bot.id}`} className="block">
@@ -251,7 +258,7 @@ function BotsTab({
                 </Link>
 
                 {isOwner && (
-                  <CardFooter>
+                  <CardFooter className="mt-auto flex flex-col gap-3">
                     <Button
                       variant="outline"
                       size="sm"
@@ -260,6 +267,12 @@ function BotsTab({
                     >
                       管理機器人
                     </Button>
+                    <PinButton
+                      variant="outline"
+                      id={bot.id}
+                      type="bot"
+                      className="w-full border-[#5865f2] text-white hover:bg-[#5865f2] hover:text-[#5865f2] cursor-pointer"
+                    />
                   </CardFooter>
                 )}
               </Card>
@@ -427,9 +440,11 @@ export default function UserProfile({ id }: { id?: string }) {
     data: viewedUser,
     isLoading,
     error,
-  } = useSWR<UserType>(userId ? ['user-profile', userId] : null, fetcher, {
-    dedupingInterval: 60000,
-    revalidateOnFocus: false,
+  } = useSWR(userId ? ['user-profile', userId] : null, fetcher, {
+    revalidateOnFocus: false, // 切回分頁不再打
+    revalidateOnReconnect: false, // 連線恢復不再打
+    revalidateIfStale: false, // 既有快取就不在掛載時重打
+    dedupingInterval: 50000, // 仍保留併發去重
   });
 
   const isOwner = !id || session?.discordProfile?.id === id;
