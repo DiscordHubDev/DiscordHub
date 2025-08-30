@@ -243,12 +243,18 @@ export async function refreshAccessToken(token: any) {
     const refreshedTokens = await response.json();
 
     if (!response.ok) {
-      console.error(
-        'Failed to refresh token: Discord responded with error',
-        refreshedTokens,
-      );
+      console.error('Failed to refresh token: Discord responded with error', {
+        status: response.status,
+        statusText: response.statusText,
+        error: refreshedTokens,
+      });
 
-      if (refreshedTokens.error === 'invalid_grant') {
+      // 处理各种错误类型
+      if (
+        refreshedTokens.error === 'invalid_grant' ||
+        refreshedTokens.error === 'invalid_client' ||
+        response.status === 401
+      ) {
         return {
           ...token,
           accessToken: null,
@@ -258,14 +264,17 @@ export async function refreshAccessToken(token: any) {
         };
       }
 
-      throw new Error('Unexpected error from Discord while refreshing token');
+      throw new Error(
+        `Discord API error: ${refreshedTokens.error || 'Unknown error'}`,
+      );
     }
 
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
-      refreshToken: refreshedTokens.refresh_token, // 更新為新 refresh token
+      refreshToken: refreshedTokens.refresh_token || token.refreshToken, // 保留原 token 如果没有新的
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+      error: undefined, // 清除错误状态
     };
   } catch (error) {
     console.error('Exception while refreshing access token:', error);

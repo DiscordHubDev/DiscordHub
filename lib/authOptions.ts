@@ -64,9 +64,16 @@ export const authOptions: NextAuthOptions = {
 
       if (
         typeof token.accessTokenExpires === 'number' &&
-        now < token.accessTokenExpires
+        now < token.accessTokenExpires - 60000
       ) {
         return token;
+      }
+
+      if (!token.refreshToken) {
+        return {
+          ...token,
+          error: 'NoRefreshToken',
+        };
       }
 
       return await refreshAccessToken(token);
