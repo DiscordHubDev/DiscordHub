@@ -305,9 +305,7 @@ export default withAuth(
 export const config = {
   matcher: [
     '/admin/:path*',
-    // 匹配所有 API 路由進行安全檢查
-    '/api/:path*',
-    // 匹配需要保護的靜態資源
-    '/((?!_next/static|_next/image|favicon.ico|public/).)*',
+    '/api/((?!update_server_stats|update_bot_servers|check_servers|auth|pin|vote_api|inbox/).)*',
+    '/((?!_next/static|_next/image|favicon.ico/).)*',
   ],
 };
