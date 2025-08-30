@@ -223,8 +223,16 @@ export async function fetchUserInfo(id: string): Promise<UserProfile> {
 
 export async function refreshAccessToken(token: any) {
   try {
-    const url = 'https://discord.com/api/oauth2/token';
+    // 检查是否有 refresh token
+    if (!token.refreshToken) {
+      console.log('No refresh token available');
+      return {
+        ...token,
+        error: 'NoRefreshToken',
+      };
+    }
 
+    const url = 'https://discord.com/api/oauth2/token';
     const params = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID!,
       client_secret: process.env.DISCORD_CLIENT_SECRET!,
@@ -243,18 +251,15 @@ export async function refreshAccessToken(token: any) {
     const refreshedTokens = await response.json();
 
     if (!response.ok) {
-      console.error('Failed to refresh token: Discord responded with error', {
+      console.error('Failed to refresh token:', {
         status: response.status,
         statusText: response.statusText,
         error: refreshedTokens,
       });
 
-      // 处理各种错误类型
-      if (
-        refreshedTokens.error === 'invalid_grant' ||
-        refreshedTokens.error === 'invalid_client' ||
-        response.status === 401
-      ) {
+      // invalid_grant 表示 refresh token 无效，需要重新登录
+      if (refreshedTokens.error === 'invalid_grant') {
+        console.log('Refresh token invalid, user needs to re-authenticate');
         return {
           ...token,
           accessToken: null,
@@ -264,15 +269,18 @@ export async function refreshAccessToken(token: any) {
         };
       }
 
-      throw new Error(
-        `Discord API error: ${refreshedTokens.error || 'Unknown error'}`,
-      );
+      // 其他错误也标记为需要重新认证
+      return {
+        ...token,
+        error: 'RefreshAccessTokenError',
+      };
     }
 
+    console.log('Token refreshed successfully');
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
-      refreshToken: refreshedTokens.refresh_token || token.refreshToken, // 保留原 token 如果没有新的
+      refreshToken: refreshedTokens.refresh_token || token.refreshToken,
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
       error: undefined, // 清除错误状态
     };

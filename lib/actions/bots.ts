@@ -323,7 +323,7 @@ export const getAllBotsAction = unstable_cache(
     return prisma.bot.findMany({
       orderBy: { servers: 'desc' },
       select: publicBotSelect,
-      cacheStrategy: { ttl: 120 },
+      cacheStrategy: { ttl: 30 },
     });
   },
   ['bots', 'all'],

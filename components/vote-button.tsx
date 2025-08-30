@@ -44,7 +44,7 @@ async function sendDataToWebServerOrDiscord(
   if (csrfToken) headers.set('x-csrf-token', csrfToken);
 
   try {
-    const res = await fetch('/api/proxy/vote_api', {
+    const res = await fetch('/api/vote_api', {
       method: 'POST',
       headers,
       credentials: 'include',

@@ -59,7 +59,7 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session || !session.discordProfile) {
     return redirect('/api/auth/signin/discord?callbackUrl=/profile');
   }
 

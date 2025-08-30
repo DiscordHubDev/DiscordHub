@@ -44,6 +44,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     jwt: async ({ token, account, profile }) => {
       const now = Date.now();
+      const bufferTime = 5 * 60 * 1000;
 
       if (profile && account?.provider === 'discord') {
         const discordProfile = profile as JWTDiscordProfile;
@@ -64,7 +65,7 @@ export const authOptions: NextAuthOptions = {
 
       if (
         typeof token.accessTokenExpires === 'number' &&
-        now < token.accessTokenExpires - 60000
+        now < token.accessTokenExpires - bufferTime
       ) {
         return token;
       }

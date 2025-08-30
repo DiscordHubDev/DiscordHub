@@ -150,16 +150,6 @@ export function DiscordUser(session?: Session): DiscordUser {
     };
   }
 
-  if (session.user) {
-    return {
-      display_name: session.discordProfile?.global_name ?? 'Unknown',
-      username: session.discordProfile?.username ?? 'Unknown',
-      avatar:
-        session.discordProfile?.image ??
-        'https://cdn.discordapp.com/embed/avatars/0.png',
-    };
-  }
-
   return {
     display_name: '未登入',
     username: '未登入',
