@@ -93,6 +93,7 @@ export const publicBotSelect = Prisma.validator<Prisma.BotSelect>()({
   longDescription: true,
   features: true,
   screenshots: true,
+  pin: true,
   createdAt: true,
   developers: { select: publicUserSelect },
   commands: { select: publicCommandSelect },

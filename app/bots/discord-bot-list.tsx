@@ -48,7 +48,9 @@ const sortBotsByCategory = (
 ): PublicBot[] => {
   const botsCopy = [...bots];
   if (category === 'popular') {
-    return botsCopy.sort((a, b) => b.servers - a.servers);
+    return botsCopy.sort((a, b) =>
+      a.pin !== b.pin ? (a.pin ? -1 : 1) : b.servers - a.servers,
+    );
   }
   if (category === 'new') {
     return botsCopy.sort(

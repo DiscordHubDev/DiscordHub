@@ -1,7 +1,8 @@
-import { getUser } from '@/lib/get-user';
 import { redirect } from 'next/navigation';
 import UserProfile from '@/components/UserProfile';
 import { Metadata } from 'next';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 
 const keywords = [
   '新增 Discord 伺服器',
@@ -57,9 +58,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const user = await getUser();
-
-  if (!user) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
     return redirect('/api/auth/signin/discord?callbackUrl=/profile');
   }
 
