@@ -1,4 +1,4 @@
-import { Users, ArrowUp, Clock, AlertTriangle } from 'lucide-react';
+import { Users, ArrowUp, Clock, AlertTriangle, Pin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FaCheck } from 'react-icons/fa';
@@ -150,7 +150,7 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 0px"
-                priority={false}
+                priority={bot.pin}
               />
             </div>
           )}
@@ -166,7 +166,7 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                     fill
                     className="object-cover"
                     sizes="64px"
-                    priority={false}
+                    priority={bot.pin}
                   />
                 </div>
               </div>
@@ -184,7 +184,12 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold">{bot.name}</h3>
+                  <h3 className="text-lg font-bold">
+                    {bot.name}{' '}
+                    {bot.pin && (
+                      <Pin size={18} className="ml-2 text-gray-400" />
+                    )}
+                  </h3>
                   {showBadges && (
                     <>
                       {bot.verified && <VerifiedBadge />}
@@ -197,8 +202,13 @@ const BotCard = memo(({ bot }: BotCardProps) => {
               <div className="flex-grow">
                 {/* Bot Name and Invite Button (desktop) */}
                 <div className="hidden md:flex md:flex-row md:items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-xl font-bold">{bot.name}</h3>
+                  <div className="flex flex-row items-center space-x-3">
+                    <h3 className="text-xl font-bold flex items-center">
+                      {bot.name}
+                      {bot.pin && (
+                        <Pin size={18} className="ml-2 text-gray-400" />
+                      )}
+                    </h3>
                     {showBadges && (
                       <>
                         {bot.verified && <VerifiedBadge />}
