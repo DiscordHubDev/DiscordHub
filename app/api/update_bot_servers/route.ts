@@ -1,6 +1,7 @@
 import { getBotListChunked } from '@/lib/actions/bots';
 import { getDiscordMember } from '@/lib/actions/discord';
 import { prisma } from '@/lib/prisma';
+import { fetchBotInfo } from '@/lib/utils';
 import { NextRequest, NextResponse } from 'next/server';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -9,11 +10,17 @@ interface BotInfo {
   global_name: string | null;
   avatar_url: string | null;
   banner_url: string | null;
+  verified?: boolean;
 }
 
-async function fetchBotInfo(botId: string): Promise<BotInfo | null> {
+async function fetchUpdatedBotInfo(botId: string): Promise<BotInfo | null> {
   try {
-    const data = await getDiscordMember(botId);
+    const data = await fetchBotInfo(botId);
+    if (!data.info) {
+      return null;
+    }
+    const rpc = data.rpcData;
+    const info = data.info;
 
     if (!data) {
       console.error(`❌ 無法取得 ${botId} 的資訊`);
@@ -21,16 +28,17 @@ async function fetchBotInfo(botId: string): Promise<BotInfo | null> {
     }
 
     const global_name =
-      typeof data.global_name === 'string' ? data.global_name : null;
+      typeof info.global_name === 'string' ? info.global_name : null;
     const avatar_url =
-      typeof data.avatar_url === 'string' ? data.avatar_url : null;
+      typeof info.avatar_url === 'string' ? info.avatar_url : null;
     const banner_url =
-      typeof data.banner_url === 'string' ? data.banner_url : null;
+      typeof info.banner_url === 'string' ? info.banner_url : null;
 
     return {
       global_name,
       avatar_url,
       banner_url,
+      verified: rpc?.is_verified || false,
     };
   } catch (error) {
     console.error(`❌ ${botId} 發生錯誤：`, error);
@@ -73,7 +81,7 @@ async function processBotData(bot: any) {
 
   // 先並行發起兩個請求
   const serverCountPromise = fetchBotServerCount(bot.id);
-  const infoPromise = fetchBotInfo(bot.id);
+  const infoPromise = fetchUpdatedBotInfo(bot.id);
 
   // 等待 server count 請求完成（這個比較慢）
   const updatedServerCount = await serverCountPromise;
@@ -97,6 +105,7 @@ async function processBotData(bot: any) {
       name: info?.global_name ?? bot.name,
       icon: info?.avatar_url ?? bot.icon,
       banner: info?.banner_url ?? bot.banner,
+      verified: info?.verified ?? bot.verified,
     },
   });
 
