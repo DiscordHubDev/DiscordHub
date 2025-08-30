@@ -341,7 +341,7 @@ export default function ServerDetailClientPage({
                 type="server"
                 initialVotes={voteCount}
                 onVote={handleServerVoteClick}
-                className="w-full bg-[#5865f2] hover:bg-[#4752c4]"
+                className="w-full bg-[#5865f2] hover:bg-[#4752c4] cursor-pointer"
               />
               <p className="text-gray-400 text-xs mt-2 text-center">
                 每 12 小時可投一次票

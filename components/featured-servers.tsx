@@ -93,7 +93,7 @@ export default function FeaturedServers({ servers }: FeaturedServersProps) {
               <div className="p-4 pt-0 mt-auto">
                 <Button
                   size="sm"
-                  className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                  className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
                 >
                   加入伺服器
                 </Button>
