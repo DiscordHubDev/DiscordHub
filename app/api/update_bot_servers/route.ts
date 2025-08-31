@@ -1,5 +1,4 @@
 import { getBotListChunked } from '@/lib/actions/bots';
-import { getDiscordMember } from '@/lib/actions/discord';
 import { prisma } from '@/lib/prisma';
 import { fetchBotInfo } from '@/lib/utils';
 import { NextRequest, NextResponse } from 'next/server';

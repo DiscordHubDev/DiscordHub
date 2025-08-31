@@ -10,6 +10,8 @@ import {
 } from './actions/servers';
 import { getDiscordMember } from './actions/discord';
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
 export type PriorityInput = {
   upvotes?: number;
   servers?: number;
@@ -147,7 +149,7 @@ export function getCookie(name: string): string | undefined {
 
 export const fetchBotInfo = async (client_id: string) => {
   try {
-    const res = await fetch('/api/rpc', {
+    const res = await fetch(`${baseUrl}/api/proxy/rpc`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id }),
