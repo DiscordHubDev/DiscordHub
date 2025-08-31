@@ -55,7 +55,7 @@ export default function BotApplications({
 
   const handleFetchBotServerCount = async (botId: string) => {
     try {
-      const response = await fetch('/api/get_bot_server_count', {
+      const response = await fetch('/get_bot_server_count', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
