@@ -220,7 +220,7 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                     <Button
                       size="sm"
                       onClick={handleInviteButtonClick}
-                      className="bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                      className="bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
                     >
                       邀請機器人
                     </Button>
@@ -245,7 +245,7 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                 <div className="mt-4 md:hidden">
                   <Button
                     size="sm"
-                    className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white"
+                    className="w-full bg-[#5865f2] hover:bg-[#4752c4] text-white cursor-pointer"
                     onClick={handleInviteButtonClick}
                   >
                     邀請機器人

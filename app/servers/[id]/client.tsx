@@ -145,7 +145,7 @@ export default function ServerDetailClientPage({
           <Button
             size="lg"
             onClick={handleInviteButtonClick}
-            className="w-full md:w-auto bg-[#5865f2] hover:bg-[#4752c4] text-white transition-all duration-150 transform hover:scale-105"
+            className="w-full md:w-auto bg-[#5865f2] hover:bg-[#4752c4] text-white transition-all duration-150 transform hover:scale-105 cursor-pointer"
           >
             加入伺服器
           </Button>
