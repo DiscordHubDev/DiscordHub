@@ -147,7 +147,7 @@ export function getCookie(name: string): string | undefined {
 
 export const fetchBotInfo = async (client_id: string) => {
   try {
-    const res = await fetch('/api/proxy/rpc', {
+    const res = await fetch('/api/rpc', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id }),
