@@ -105,6 +105,7 @@ const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
                         width={64}
                         height={64}
                         className="object-cover"
+                        style={{ width: '64px', height: '64px' }}
                         priority={server.pin} // 合作伺服器優先載入
                       />
                     ) : (
@@ -127,6 +128,7 @@ const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
                         width={40}
                         height={40}
                         className="object-cover"
+                        style={{ width: '40px', height: '40px' }}
                         priority={server.pin} // 合作伺服器優先載入
                       />
                     ) : (
