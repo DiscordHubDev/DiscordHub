@@ -434,7 +434,7 @@ export default function BotDetailClient({
                             <th className="py-3 px-4 text-gray-300">描述</th>
                             <th className="py-3 px-4 text-gray-300">用法</th>
                             {bot.commands.some(cmd => cmd.category) && (
-                              <th className="py-3 px-4 text-gray-300">分類</th>
+                              <th className="py-3 px-2 text-gray-300">分類</th>
                             )}
                           </tr>
                         </thead>
@@ -454,11 +454,11 @@ export default function BotDetailClient({
                                 {command.usage}
                               </td>
                               {bot.commands.some(cmd => cmd.category) && (
-                                <td className="py-3 px-4 text-gray-300">
+                                <td className="py-3 px-4 text-gray-300 text-nowrap">
                                   {command.category && (
                                     <Badge
                                       variant="outline"
-                                      className="bg-[#36393f]/50 text-gray-300 border-[#5865f2]"
+                                      className="bg-[#36393f]/50 text-gray-300 border-[#5865f2] rounded-2xl px-2 py-1 text-xs"
                                     >
                                       {command.category}
                                     </Badge>
