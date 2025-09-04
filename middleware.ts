@@ -1,18 +1,22 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 // 配置常數
 const allowedIds = ['549056425943629825', '857502876108193812'];
 const ALLOWED_ORIGINS = new Set([
   'https://dchubs.org',
   'https://www.dchubs.org',
-  'http://localhost:3000',
 ]);
+
+// NextAuth JWT 配置
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
 // Rate Limiting 配置
 const RATE_LIMIT_CONFIG = {
   api: { requests: 60, window: 60 * 1000 }, // 每分鐘 60 次
-  // 嚴格限制（懷疑惡意行為時）
+  user_api: { requests: 150, window: 60 * 1000 }, // 用戶 API 限制更嚴格
+  external_api: { requests: 150, window: 60 * 1000 }, // 外部 Bearer API 限制
   strict: { requests: 5, window: 60 * 1000 }, // 每分鐘 5 次
 };
 
@@ -50,15 +54,50 @@ function getClientIP(req: NextRequest): string {
   );
 }
 
+// 從請求中提取 Bearer token
+function extractBearerToken(req: NextRequest): string | null {
+  const authorization = req.headers.get('authorization');
+
+  if (!authorization) {
+    return null;
+  }
+
+  // 檢查是否為 Bearer token 格式
+  const bearerMatch = authorization.match(/^Bearer\s+(.+)$/);
+  if (!bearerMatch) {
+    return null;
+  }
+
+  return bearerMatch[1];
+}
+
+// 驗證 NextAuth JWT Token
+async function verifyNextAuthToken(
+  req: NextRequest,
+  token: string,
+): Promise<any | null> {
+  try {
+    const decoded = await getToken({
+      req: req,
+      secret: NEXTAUTH_SECRET,
+      raw: false,
+    });
+
+    return decoded;
+  } catch (error) {
+    console.warn('NextAuth JWT verification failed:', error);
+    return null;
+  }
+}
+
 // Rate Limiting 檢查
 function checkRateLimit(
-  ip: string,
+  identifier: string, // 可以是 IP 或者 userId
   endpoint: string,
   config: { requests: number; window: number },
 ): { allowed: boolean; remaining: number; resetTime: number } {
-  const key = `${ip}:${endpoint}`;
+  const key = `${identifier}:${endpoint}`;
   const now = Date.now();
-  const windowStart = now - config.window;
 
   let data = rateLimitStore.get(key);
 
@@ -75,9 +114,9 @@ function checkRateLimit(
     data.violations++;
     rateLimitStore.set(key, data);
 
-    // 如果違規次數過多，加入可疑 IP 列表
-    if (data.violations >= 3) {
-      suspiciousIPs.add(ip);
+    // 如果違規次數過多，加入可疑 IP 列表（僅對 IP 地址）
+    if (data.violations >= 3 && identifier.includes('.')) {
+      suspiciousIPs.add(identifier);
     }
 
     return {
@@ -107,7 +146,12 @@ function detectSuspiciousActivity(req: NextRequest, ip: string): boolean {
     return true;
   }
 
-  // 檢查可疑的 User Agent
+  // 對於 API 端點，允許程式化訪問的 User Agent
+  if (pathname.startsWith('/api/v1/user')) {
+    return false;
+  }
+
+  // 檢查可疑的 User Agent（僅對非 API 端點）
   const suspiciousUserAgents = [
     'python-requests',
     'curl/',
@@ -141,8 +185,12 @@ function detectSuspiciousActivity(req: NextRequest, ip: string): boolean {
     return true;
   }
 
-  // 檢查是否缺少必要的標頭
-  if (!req.headers.get('accept') && !req.headers.get('user-agent')) {
+  // 檢查是否缺少必要的標頭（對 API 端點放寬要求）
+  if (
+    !pathname.startsWith('/api') &&
+    !req.headers.get('accept') &&
+    !req.headers.get('user-agent')
+  ) {
     return true;
   }
 
@@ -180,9 +228,29 @@ function createRateLimitResponse(resetTime: number): NextResponse {
   return addSecurityHeaders(response);
 }
 
+// 創建未授權響應
+function createUnauthorizedResponse(
+  message: string = 'Unauthorized',
+): NextResponse {
+  const response = new NextResponse(
+    JSON.stringify({
+      error: message,
+      code: 'UNAUTHORIZED',
+      timestamp: new Date().toISOString(),
+    }),
+    {
+      status: 401,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+  return addSecurityHeaders(response);
+}
+
 // 主要中間件函數
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req) {
     const { token } = req.nextauth;
     const { pathname, origin } = req.nextUrl;
     const method = req.method.toUpperCase();
@@ -203,6 +271,120 @@ export default withAuth(
       );
       return new NextResponse('Forbidden', { status: 403 });
     }
+
+    // ========== /api/v1/user NextAuth JWT 驗證 ==========
+    if (pathname.startsWith('/api/v1/user')) {
+      let authenticatedUser: any = null;
+      let authSource: 'bearer' | 'nextauth' = 'nextauth';
+
+      // 首先嘗試 Bearer token 驗證
+      const bearerToken = extractBearerToken(req);
+      if (bearerToken) {
+        authenticatedUser = await verifyNextAuthToken(req, bearerToken);
+        authSource = 'bearer';
+
+        if (!authenticatedUser) {
+          console.warn(
+            `Invalid Bearer token from IP: ${ip}, Path: ${pathname}`,
+          );
+          return createUnauthorizedResponse(
+            'Invalid or expired NextAuth JWT token',
+          );
+        }
+      }
+      // 如果沒有 Bearer token，使用當前的 NextAuth session token
+      else if (token && token.discordProfile?.id) {
+        authenticatedUser = token;
+        authSource = 'nextauth';
+      }
+      // 都沒有的話，拒絕訪問
+      else {
+        console.warn(
+          `No valid authentication from IP: ${ip}, Path: ${pathname}`,
+        );
+        return createUnauthorizedResponse(
+          'Authentication required: provide NextAuth Bearer token or login',
+        );
+      }
+
+      // 驗證必要的用戶信息
+      if (!authenticatedUser.discordProfile?.id) {
+        console.warn(
+          `Invalid token structure from IP: ${ip}, Path: ${pathname}`,
+        );
+        return createUnauthorizedResponse('Invalid token structure');
+      }
+
+      // 記錄 API 訪問
+      console.log(
+        `User API access [${authSource}]: ${
+          authenticatedUser.discordProfile.id
+        } (${
+          authenticatedUser.discordProfile.username || authenticatedUser.name
+        }) -> ${pathname}`,
+      );
+
+      // 將用戶信息添加到請求標頭，供後續 API 使用
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set(
+        'x-user-id',
+        authenticatedUser.sub || authenticatedUser.discordProfile.id,
+      );
+      requestHeaders.set('x-discord-id', authenticatedUser.discordProfile.id);
+      requestHeaders.set(
+        'x-username',
+        authenticatedUser.discordProfile.username ||
+          authenticatedUser.name ||
+          '',
+      );
+      requestHeaders.set('x-email', authenticatedUser.email || '');
+      requestHeaders.set('x-auth-source', authSource);
+
+      // 使用用戶 ID 進行 rate limiting（而不是 IP）
+      const rateLimitIdentifier = `user:${authenticatedUser.discordProfile.id}`;
+      const rateLimitConfig =
+        authSource === 'bearer'
+          ? RATE_LIMIT_CONFIG.external_api
+          : RATE_LIMIT_CONFIG.user_api;
+
+      const rateLimit = checkRateLimit(
+        rateLimitIdentifier,
+        'user_api',
+        rateLimitConfig,
+      );
+
+      if (!rateLimit.allowed) {
+        console.warn(
+          `Rate limit exceeded for user: ${authenticatedUser.discordProfile.id}, Auth: ${authSource}`,
+        );
+        return createRateLimitResponse(rateLimit.resetTime);
+      }
+
+      // 創建響應並繼續處理
+      const response = NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+
+      addSecurityHeaders(response);
+
+      // 添加 rate limit 資訊到響應標頭
+      response.headers.set(
+        'X-RateLimit-Remaining',
+        rateLimit.remaining.toString(),
+      );
+      response.headers.set(
+        'X-RateLimit-Reset',
+        Math.ceil(rateLimit.resetTime / 1000).toString(),
+      );
+      response.headers.set('X-Auth-Source', authSource);
+      response.headers.set('X-User-ID', authenticatedUser.discordProfile.id);
+
+      return response;
+    }
+
+    // ========== 原有邏輯處理其他路徑 ==========
 
     // 根據路徑類型選擇 rate limit 配置
     let rateLimitConfig = RATE_LIMIT_CONFIG.api;
@@ -242,14 +424,22 @@ export default withAuth(
     const isSameOrigin = !!source && source === req.nextUrl.origin;
     const allowedOrigin = isSameOrigin || ALLOWED_ORIGINS.has(source ?? '');
 
-    // CSRF 保護：狀態變更請求必須來自允許的來源
-    if (isStateChanging && !allowedOrigin) {
+    // CSRF 保護：狀態變更請求必須來自允許的來源（但對 API Bearer token 豁免）
+    if (
+      isStateChanging &&
+      !allowedOrigin &&
+      !pathname.startsWith('/api/v1/user')
+    ) {
       console.warn(`CSRF attempt detected from IP: ${ip}, Origin: ${source}`);
       return new NextResponse('Forbidden (CSRF: bad origin)', { status: 403 });
     }
 
     // 額外的 API 安全檢查
-    if (pathname.startsWith('/api') && isStateChanging) {
+    if (
+      pathname.startsWith('/api') &&
+      isStateChanging &&
+      !pathname.startsWith('/api/v1/user')
+    ) {
       // 檢查 Content-Type
       const contentType = req.headers.get('content-type');
       if (
@@ -297,7 +487,14 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        // 對於 /api/v1/user 路徑，允許通過（會在 middleware 中進行驗證）
+        if (req.nextUrl.pathname.startsWith('/api/v1/user')) {
+          return true; // 讓自定義驗證邏輯處理
+        }
+        // 其他路徑保持原有邏輯
+        return !!token;
+      },
     },
   },
 );
@@ -305,6 +502,9 @@ export default withAuth(
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/api/v1/user/:path*', // 包含所有 /api/v1/user 路徑
+    '/api/pin/:path*',
+    '/api/vote_api/:path*',
     '/api/((?!update_server_stats|update_bot_servers|check_servers|auth|pin|vote_api|inbox/).)*',
     '/((?!_next/static|_next/image|favicon.ico/).)*',
   ],

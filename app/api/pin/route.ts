@@ -27,7 +27,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (existing.pin && existing.pinExpiry && existing.pinExpiry > new Date()) {
+    // 使用 UTC 時間進行比較
+    const nowUTC = new Date();
+    if (existing.pin && existing.pinExpiry && existing.pinExpiry > nowUTC) {
       return NextResponse.json({
         message: `${type} 已置頂過`,
         pinned: true,
@@ -35,8 +37,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 尚未 pin 或已過期，則設定 pin 與期限
-    const expiry = new Date(Date.now() + 12 * 60 * 60 * 1000);
+    // 設定 12 小時後的 UTC 時間作為過期時間
+    const expiryUTC = new Date(Date.now() + 12 * 60 * 60 * 1000);
 
     const updated =
       type === 'server'
@@ -44,21 +46,21 @@ export async function POST(request: NextRequest) {
             where: { id: item_id },
             data: {
               pin: true,
-              pinExpiry: expiry,
+              pinExpiry: expiryUTC,
             },
           })
         : await prisma.bot.update({
             where: { id: item_id },
             data: {
               pin: true,
-              pinExpiry: expiry,
+              pinExpiry: expiryUTC,
             },
           });
 
     return NextResponse.json({
       message: `${type} (${item_id}) 置頂成功`,
       pinned: false,
-      pinExpiry: expiry,
+      pinExpiry: expiryUTC,
       post: updated,
     });
   } catch (error) {
