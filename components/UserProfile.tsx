@@ -581,6 +581,14 @@ export default function UserProfile({ id }: { id?: string }) {
 
           {isOwner && (
             <TabsContent value="settings" className="mt-6">
+              <div className="mt-6 items-center">
+                <div className="bg-[#2b2d31] rounded-lg p-6">
+                  <h2 className="text-xl font-bold mb-6">API 設置</h2>
+                  <div className="flex justify-center">
+                    <Button className="discord">建立 API Key (開發中)</Button>
+                  </div>
+                </div>
+              </div>
               <SettingsTab user={viewedUser} />
             </TabsContent>
           )}

@@ -16,7 +16,6 @@ import {
 import { Menu } from 'lucide-react';
 import Image from 'next/image';
 
-// 定义 LinkItem 类型，允许存在 onClick 属性
 type LinkItem = {
   href: string;
   label: string;

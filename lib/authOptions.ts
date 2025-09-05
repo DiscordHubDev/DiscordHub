@@ -2,7 +2,33 @@ import { NextAuthOptions } from 'next-auth';
 import { JWTDiscordProfile, NewDiscordProfile } from '@/app/types/next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import { upsertUserFromSession } from '@/lib/actions/user';
-import { refreshAccessToken } from '@/lib/utils';
+import { DiscordToken, refreshAccessToken } from '@/lib/utils';
+import { JWT } from 'next-auth/jwt';
+
+function getBaseUrl() {
+  // NEXTAUTH_URL 是官方建議，若沒設再 fallback 到 VERCEL_URL 或 localhost
+  if (process.env.NEXTAUTH_URL)
+    return process.env.NEXTAUTH_URL.replace(/\/$/, '');
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return 'http://localhost:3000';
+}
+
+async function refreshAccessTokenViaAPI(
+  token: DiscordToken,
+): Promise<DiscordToken> {
+  const res = await fetch(`${getBaseUrl()}/api/v1/user/guest/refresh_token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ token }),
+  });
+
+  // API 會回完整的 DiscordToken（含 error / accessTokenExpires）
+  if (!res.ok) {
+    throw new Error(`Refresh failed with status ${res.status}`);
+  }
+  return (await res.json()) as DiscordToken;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -44,14 +70,14 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     jwt: async ({ token, account, profile }) => {
       const now = Date.now();
-      const bufferTime = 5 * 60 * 1000;
+      const bufferTime = 5 * 60 * 1000; // 5 分鐘
 
       if (profile && account?.provider === 'discord') {
         const discordProfile = profile as JWTDiscordProfile;
 
         token.discordProfile = discordProfile;
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
+        token.accessToken = account.access_token ?? undefined;
+        token.refreshToken = account.refresh_token ?? null;
 
         if (typeof account.expires_in === 'number') {
           token.accessTokenExpires = now + account.expires_in * 1000;
@@ -63,6 +89,7 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
+      // 若 access token 還沒接近過期，就直接用
       if (
         typeof token.accessTokenExpires === 'number' &&
         now < token.accessTokenExpires - bufferTime
@@ -70,6 +97,7 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
+      // 沒有 refresh token，無法刷新
       if (!token.refreshToken) {
         return {
           ...token,
@@ -77,8 +105,18 @@ export const authOptions: NextAuthOptions = {
         };
       }
 
-      return await refreshAccessToken(token);
+      // 透過你新的 API 刷新
+      try {
+        const updated = await refreshAccessTokenViaAPI(token as DiscordToken);
+        return updated as JWT;
+      } catch (e) {
+        return {
+          ...token,
+          error: 'RefreshAccessTokenError',
+        };
+      }
     },
+
     async session({ session, token }) {
       if (token && token.discordProfile) {
         session.access_token = token.accessToken;

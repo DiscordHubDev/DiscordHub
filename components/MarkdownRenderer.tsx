@@ -338,7 +338,7 @@ export default function MarkdownRenderer({ content }: Props) {
             // 處理引用
             blockquote: {
               component: ({ children }) => (
-                <blockquote className="border-l-4 border-blue-400 pl-4 my-4 italic text-gray-300 bg-gray-800 py-2">
+                <blockquote className="border-l-4 border-gray-400 pl-4 my-4 text-gray-300 py-1">
                   {children}
                 </blockquote>
               ),

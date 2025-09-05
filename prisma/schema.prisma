@@ -35,8 +35,26 @@ model User {
 
   adminIn    Server[]   @relation("ServerAdmins")
 
+  apiKey       ApiKey?
+
   // 新增索引
   @@index([joinedAt])
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String @unique
+  key       String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  lastUsed  DateTime @default(now())
+  expiresAt DateTime?
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([key])
+  @@index([userId])
 }
 
 enum EmailPriority {

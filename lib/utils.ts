@@ -223,7 +223,18 @@ export async function fetchUserInfo(id: string): Promise<UserProfile> {
   }
 }
 
-export async function refreshAccessToken(token: any) {
+export interface DiscordToken {
+  accessToken: string | undefined;
+  refreshToken: string | null;
+  accessTokenExpires: number; // 毫秒时间戳
+  error?: string;
+  [key: string]: any; // 保留扩展字段（例如 NextAuth 默认附加的东西）
+}
+
+// 刷新 accessToken 方法
+export async function refreshAccessToken(
+  token: DiscordToken,
+): Promise<DiscordToken> {
   try {
     // 检查是否有 refresh token
     if (!token.refreshToken) {
@@ -264,14 +275,13 @@ export async function refreshAccessToken(token: any) {
         console.log('Refresh token invalid, user needs to re-authenticate');
         return {
           ...token,
-          accessToken: null,
+          accessToken: undefined,
           refreshToken: null,
           accessTokenExpires: 0,
           error: 'RefreshAccessTokenError',
         };
       }
 
-      // 其他错误也标记为需要重新认证
       return {
         ...token,
         error: 'RefreshAccessTokenError',
