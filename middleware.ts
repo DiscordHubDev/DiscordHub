@@ -506,6 +506,5 @@ export const config = {
     '/api/pin/:path*',
     '/api/vote_api/:path*',
     '/api/((?!update_server_stats|update_bot_servers|check_servers|auth|pin|vote_api|inbox/).)*',
-    '/((?!_next/static|_next/image|favicon.ico/).)*',
   ],
 };
