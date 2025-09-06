@@ -75,6 +75,7 @@ export const publicCommandSelect = Prisma.validator<Prisma.BotCommandSelect>()({
 
 // ⛔ 不要把 secret / VoteNotificationURL 寫進來
 export const publicBotSelect = Prisma.validator<Prisma.BotSelect>()({
+  status: true,
   id: true,
   name: true,
   icon: true,

@@ -2,8 +2,23 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { VoteType } from '@prisma/client';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
+    // 驗證請求來源
+    if (
+      request.headers.get('authorization') !==
+      `Bearer ${process.env.API_CRON_TOKEN}`
+    ) {
+      return NextResponse.json(
+        {
+          message: 'Pin Unauthorized',
+        },
+        { status: 401 },
+      );
+    }
+
     const { type, item_id }: { type: VoteType; item_id: string } =
       await request.json();
 
