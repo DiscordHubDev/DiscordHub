@@ -114,7 +114,7 @@ export const CommandListField = () => {
             category: '',
           })
         }
-        className="bg-[#5865f2] hover:bg-[#4752c4] w-full text-white"
+        className="bg-[#5865f2] hover:bg-[#4752c4] w-full text-white cursor-pointer"
       >
         <Plus size={16} className="mr-2" />
         添加指令

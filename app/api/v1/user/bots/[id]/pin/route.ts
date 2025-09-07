@@ -39,6 +39,7 @@ export async function POST(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.API_CRON_TOKEN}`,
     },
     body: JSON.stringify({
       item_id: id,

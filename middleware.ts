@@ -503,8 +503,7 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/api/v1/user/:path*', // 包含所有 /api/v1/user 路徑
-    '/api/pin/:path*',
     '/api/vote_api/:path*',
-    '/api/((?!update_server_stats|update_bot_servers|check_servers|auth|pin|vote_api|inbox/).)*',
+    '/api/((?!update_server_stats|update_bot_servers|check_servers|auth|vote_api|inbox/).)*',
   ],
 };

@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import { refreshAccessToken, DiscordToken } from '@/lib/utils'; // 這裡的 DiscordToken、refreshAccessToken 就是你上一則定義的
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
