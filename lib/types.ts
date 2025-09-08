@@ -34,13 +34,6 @@ export type Screenshot = {
   public_id: string;
 };
 
-interface BotCommand {
-  name: string;
-  description: string;
-  usage: string;
-  category?: string;
-}
-
 export type Mail = {
   id: string;
   name: string;

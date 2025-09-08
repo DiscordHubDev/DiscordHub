@@ -80,6 +80,7 @@ export default function BotDetailClient({
               alt={`${bot.name} banner`}
               fill
               priority={true}
+              unoptimized
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#1e1f22] opacity-60" />

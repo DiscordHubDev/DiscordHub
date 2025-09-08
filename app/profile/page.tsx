@@ -3,6 +3,7 @@ import UserProfile from '@/components/UserProfile';
 import { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
+import { prisma } from '@/lib/prisma';
 
 const keywords = [
   '新增 Discord 伺服器',
@@ -59,9 +60,20 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
+
   if (!session || !session.discordProfile) {
     return redirect('/api/auth/signin/discord?callbackUrl=/profile');
   }
+  const tokensData = await prisma.apiToken.findFirst({
+    where: { userId: session?.discordProfile?.id },
+  });
 
-  return <UserProfile />;
+  const tokens = tokensData
+    ? {
+        accessToken: tokensData.accessToken,
+        refreshToken: tokensData.refreshToken,
+      }
+    : undefined;
+
+  return <UserProfile tokens={tokens} />;
 }

@@ -87,6 +87,7 @@ const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
                 className="object-cover"
                 priority={server.pin}
                 sizes="(max-width: 768px) 100vw, 0px"
+                unoptimized
                 onError={() => setBannerError(true)}
               />
             </div>
@@ -106,6 +107,7 @@ const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
                         height={64}
                         className="object-cover"
                         style={{ width: '64px', height: '64px' }}
+                        unoptimized
                         priority={server.pin} // 合作伺服器優先載入
                       />
                     ) : (
@@ -129,6 +131,7 @@ const ServerCard = memo(function ServerCard({ server }: ServerCardProps) {
                         height={40}
                         className="object-cover"
                         style={{ width: '40px', height: '40px' }}
+                        unoptimized
                         priority={server.pin} // 合作伺服器優先載入
                       />
                     ) : (

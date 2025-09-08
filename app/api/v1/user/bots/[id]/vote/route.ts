@@ -9,30 +9,32 @@ export async function POST(
 ): Promise<Response> {
   const { id } = await params;
 
-  const server = await prisma.server.findUnique({
-    where: { id },
-    select: { admins: true },
-    cacheStrategy: { ttl: 120 },
+  const bot = await prisma.bot.findUnique({
+    where: { id, status: 'approved' },
+    select: { developers: true },
   });
 
-  if (!server) {
-    return new Response(JSON.stringify({ message: '機器人不存在' }), {
-      status: 404,
-    });
+  if (!bot) {
+    return new Response(
+      JSON.stringify({ message: '機器人不存在', success: false }),
+      {
+        status: 404,
+      },
+    );
   }
 
-  const admins = server.admins.find(a => a.id === req.headers.get('x-user-id'));
+  const dev = bot.developers.find(d => d.id === req.headers.get('x-user-id'));
 
-  if (!admins) {
+  if (!dev) {
     return new Response(
-      JSON.stringify({ message: '你並非此伺服器的管理員', success: false }),
+      JSON.stringify({ message: '你並非此機器人的開發者', success: false }),
       {
         status: 403,
       },
     );
   }
 
-  const res = await fetch(`${baseUrl}/api/pin`, {
+  const res = await fetch(`${baseUrl}/api/vote_api`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -40,7 +42,7 @@ export async function POST(
     },
     body: JSON.stringify({
       item_id: id,
-      type: 'server',
+      type: 'bot',
     }),
   });
 

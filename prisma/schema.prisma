@@ -310,3 +310,9 @@ enum VoteType {
 model Administrators {
   id String @id
 }
+
+model ApiToken {
+  userId   String   @id
+  accessToken  String   @unique
+  refreshToken String   @unique
+}

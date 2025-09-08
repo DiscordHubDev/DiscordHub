@@ -12,13 +12,15 @@ export async function POST(
   const server = await prisma.server.findUnique({
     where: { id },
     select: { admins: true },
-    cacheStrategy: { ttl: 120 },
   });
 
   if (!server) {
-    return new Response(JSON.stringify({ message: '機器人不存在' }), {
-      status: 404,
-    });
+    return new Response(
+      JSON.stringify({ message: '伺服器不存在', success: false }),
+      {
+        status: 404,
+      },
+    );
   }
 
   const admins = server.admins.find(a => a.id === req.headers.get('x-user-id'));
@@ -32,7 +34,7 @@ export async function POST(
     );
   }
 
-  const res = await fetch(`${baseUrl}/api/pin`, {
+  const res = await fetch(`${baseUrl}/api/vote_api`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

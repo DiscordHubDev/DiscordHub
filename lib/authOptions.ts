@@ -2,7 +2,7 @@ import { NextAuthOptions } from 'next-auth';
 import { JWTDiscordProfile, NewDiscordProfile } from '@/app/types/next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import { upsertUserFromSession } from '@/lib/actions/user';
-import { DiscordToken, refreshAccessToken } from '@/lib/utils';
+import { DiscordToken } from '@/lib/utils';
 import { JWT } from 'next-auth/jwt';
 
 function getBaseUrl() {
@@ -13,14 +13,25 @@ function getBaseUrl() {
   return 'http://localhost:3000';
 }
 
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID ?? '';
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET ?? '';
+
 async function refreshAccessTokenViaAPI(
   token: DiscordToken,
 ): Promise<DiscordToken> {
-  const res = await fetch(`${getBaseUrl()}/api/v1/user/guest/refresh_token`, {
+  const res = await fetch('https://discord.com/api/v10/oauth2/token', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization:
+        'Basic ' +
+        Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64'),
+    },
     cache: 'no-store',
-    body: JSON.stringify({ token }),
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: token.refreshToken || '',
+    }),
   });
 
   // API 會回完整的 DiscordToken（含 error / accessTokenExpires）

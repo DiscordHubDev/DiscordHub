@@ -120,12 +120,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 4) 目标查询
   const target = await getTargetById(type, targetId);
   if (!target)
     return NextResponse.json({ error: 'Unknown target' }, { status: 404 });
 
-  // 5) 没有设置 webhook/url 直接成功
   if (!target.url) {
     return NextResponse.json({ success: true, skipped: true });
   }

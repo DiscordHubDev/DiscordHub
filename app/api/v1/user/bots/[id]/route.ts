@@ -1,9 +1,7 @@
-import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { NextRequest } from 'next/server';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
-export async function POST(
+export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
@@ -34,21 +32,7 @@ export async function POST(
     );
   }
 
-  const res = await fetch(`${baseUrl}/api/pin`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.API_CRON_TOKEN}`,
-    },
-    body: JSON.stringify({
-      item_id: id,
-      type: 'bot',
-    }),
-  });
-
-  const data = await res.json();
-
-  return new Response(JSON.stringify(data), {
-    status: res.status,
+  return new Response(JSON.stringify({ bot }), {
+    status: 200,
   });
 }

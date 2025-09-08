@@ -150,6 +150,7 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 0px"
+                unoptimized
                 priority={bot.pin}
               />
             </div>
@@ -166,6 +167,7 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                     fill
                     className="object-cover"
                     sizes="64px"
+                    unoptimized
                     priority={bot.pin}
                   />
                 </div>
@@ -180,6 +182,7 @@ const BotCard = memo(({ bot }: BotCardProps) => {
                     fill
                     className="object-cover"
                     sizes="40px"
+                    unoptimized
                     priority={false}
                   />
                 </div>
