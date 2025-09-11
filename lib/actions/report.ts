@@ -14,7 +14,6 @@ import { authOptions } from '@/lib/authOptions';
 type Params = {
   reportId: string;
   status?: ReportStatus;
-  severity?: ReportSeverity;
 };
 
 export async function submitReport(formData: z.infer<typeof reportSchema>) {
@@ -55,13 +54,12 @@ export async function getReports(): Promise<ReportInBoxType[]> {
   }));
 }
 
-export async function updateReport({ reportId, status, severity }: Params) {
+export async function updateReport({ reportId, status }: Params) {
   try {
     const updated = await prisma.report.update({
       where: { id: reportId },
       data: {
         ...(status && { status }),
-        ...(severity && { severity }),
       },
     });
 

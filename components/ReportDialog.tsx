@@ -31,7 +31,6 @@ export function ReportDialog({
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<UploadedFile[]>([]);
-  const severity = 'untagged'; // 可改為下拉選單支援
 
   const [subjectError, setSubjectError] = useState('');
   const [contentError, setContentError] = useState('');
@@ -75,7 +74,6 @@ export function ReportDialog({
         itemId,
         itemName,
         type,
-        severity,
         attachments: attachments,
       });
 
