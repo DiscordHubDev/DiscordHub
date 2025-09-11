@@ -1,7 +1,9 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { GetbaseUrl } from '@/lib/utils';
+import { getCsrfToken } from 'next-auth/react';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = GetbaseUrl();
 
 export async function POST(
   req: NextRequest,
@@ -12,7 +14,6 @@ export async function POST(
   const server = await prisma.server.findUnique({
     where: { id },
     select: { admins: true },
-    cacheStrategy: { ttl: 120 },
   });
 
   if (!server) {
@@ -32,14 +33,14 @@ export async function POST(
     );
   }
 
-  const res = await fetch(`${baseUrl}/api/pin`, {
+  const res = await fetch(`${baseUrl}/api/pin?itemId=${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${process.env.API_CRON_TOKEN}`,
+      'x-csrf-token': (await getCsrfToken()) || '',
     },
     body: JSON.stringify({
-      item_id: id,
       type: 'server',
     }),
   });

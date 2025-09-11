@@ -270,15 +270,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           id: '',
         }
       : {
-          display_name:
-            session?.discordProfile?.global_name ??
-            session?.discordProfile?.username ??
-            '未登入',
-          username: session?.discordProfile?.username ?? '未登入',
+          display_name: session?.user?.image
+            ? session?.discordProfile?.global_name ??
+              session?.discordProfile?.username ??
+              '未登入'
+            : '未登入',
+
+          username: session?.user?.image
+            ? session?.discordProfile?.username ?? '未設定'
+            : '未登入',
+
           avatar:
             session?.user?.image ??
             'https://cdn.discordapp.com/embed/avatars/0.png',
-          id: session?.discordProfile?.id,
+
+          id: session?.user?.image ? session?.discordProfile?.id : undefined,
         };
 
   const filterednavSecondary = data.navSecondary.filter(item => {

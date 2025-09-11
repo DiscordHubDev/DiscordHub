@@ -143,7 +143,6 @@ export async function getUserById(id: string): Promise<UserType | null> {
       developedBots: true,
       adminIn: true,
     },
-    cacheStrategy: { ttl: 60 },
   });
 
   return user;

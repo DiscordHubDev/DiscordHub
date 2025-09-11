@@ -60,20 +60,8 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
+  if (!session?.discordProfile)
+    redirect('/api/auth/signin/discord?callbackUrl=/profile');
 
-  if (!session || !session.discordProfile) {
-    return redirect('/api/auth/signin/discord?callbackUrl=/profile');
-  }
-  const tokensData = await prisma.apiToken.findFirst({
-    where: { userId: session?.discordProfile?.id },
-  });
-
-  const tokens = tokensData
-    ? {
-        accessToken: tokensData.accessToken,
-        refreshToken: tokensData.refreshToken,
-      }
-    : undefined;
-
-  return <UserProfile tokens={tokens} />;
+  return <UserProfile id={session.discordProfile.id} />;
 }

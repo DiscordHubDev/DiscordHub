@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { GetbaseUrl } from '@/lib/utils';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = GetbaseUrl();
 
 export async function POST(
   req: NextRequest,

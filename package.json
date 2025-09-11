@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
-    "postinstall": "prisma generate --no-engine",
+    "postinstall": "prisma generate",
     "build": "next build && next-sitemap",
     "start": "next start",
     "lint:check": "next lint",

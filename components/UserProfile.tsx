@@ -40,6 +40,7 @@ import { getCachedUser } from '@/lib/actions/user';
 import PinButton from './pin-button';
 import { toast } from 'react-toastify';
 import { SignJWT } from '@/lib/actions/sign-jwt';
+import { APIKeyButton } from './token-display';
 
 type ServerCardData = {
   id: string;
@@ -49,82 +50,6 @@ type ServerCardData = {
   tags: string[];
   members: number;
 };
-
-function APIKeyButton({
-  accessToken,
-  onCreate,
-  onRegenerate,
-}: {
-  accessToken?: string;
-  onCreate: () => void;
-  onRegenerate: () => void;
-}) {
-  return (
-    <div className="flex justify-center mt-4">
-      {accessToken ? (
-        <Button
-          className="discord text-white cursor-pointer"
-          onClick={onRegenerate}
-        >
-          <RefreshCw size={16} className="mr-2" />
-          重新建立 API Key
-        </Button>
-      ) : (
-        <Button className="discord" onClick={onCreate}>
-          <Plus size={16} className="mr-2" />
-          建立 API Key
-        </Button>
-      )}
-    </div>
-  );
-}
-
-function TokenDisplay({
-  accessToken,
-  refreshToken,
-}: {
-  accessToken?: string;
-  refreshToken?: string;
-}) {
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} 已複製成功！`);
-  };
-
-  return (
-    <div className="flex flex-col items-start space-y-6">
-      {/* Access Token */}
-      {accessToken ? (
-        <div>
-          <p className="text-gray-200 mb-2">存取令牌：</p>
-          <div
-            className="p-3 bg-gray-800 rounded-md font-mono text-sm text-gray-100 break-all cursor-pointer hover:bg-gray-700 transition"
-            onClick={() => copyToClipboard(accessToken, '存取令牌')}
-          >
-            {accessToken}
-          </div>
-        </div>
-      ) : (
-        <p className="text-gray-400">
-          點擊下方按鈕以建立新的 API Key 並自動複製。
-        </p>
-      )}
-
-      {/* Refresh Token */}
-      {refreshToken && (
-        <div>
-          <p className="text-gray-200 mb-2">重整令牌：</p>
-          <div
-            className="p-3 bg-gray-800 rounded-md font-mono text-sm text-gray-100 break-all cursor-pointer hover:bg-gray-700 transition"
-            onClick={() => copyToClipboard(refreshToken, '重整令牌')}
-          >
-            {refreshToken}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* -------------------- 子元件：Servers -------------------- */
 function ServersTab({
@@ -504,22 +429,10 @@ function SettingsTab({ user }: { user: UserType }) {
 }
 
 /* ==================== 父元件 ==================== */
-export default function UserProfile({
-  id,
-  tokens,
-}: {
-  id?: string;
-  tokens?: {
-    accessToken: string | null;
-    refreshToken: string | null;
-  };
-}) {
+export default function UserProfile({ id }: { id?: string }) {
   const { data: session } = useSession();
   const router = useRouter();
   const userId = id || session?.discordProfile?.id;
-
-  const [accessToken, setAccessToken] = useState(tokens?.accessToken || '');
-  const [refreshToken, setRefreshToken] = useState(tokens?.refreshToken || '');
 
   const fetcher = async ([_, id]: [string, string]) => {
     const user = await getCachedUser(id);
@@ -538,7 +451,7 @@ export default function UserProfile({
     dedupingInterval: 50000, // 仍保留併發去重
   });
 
-  const isOwner = !id || session?.discordProfile?.id === id;
+  const isOwner = session?.discordProfile?.id === id;
 
   const managedServers = useMemo<ServerCardData[]>(
     () =>
@@ -608,16 +521,6 @@ export default function UserProfile({
     );
   }
 
-  const CreateAPIKeyClick = async () => {
-    if (session && session.discordProfile) {
-      const Tokens = await SignJWT(session.discordProfile.id);
-      setAccessToken(Tokens.accessToken);
-      setRefreshToken(Tokens.refreshToken);
-      navigator.clipboard.writeText(Tokens.accessToken);
-      toast.success('API Key 已建立並複製到剪貼簿！');
-    }
-  };
-
   // ✅ 不再有 renderXxxTab 的 useCallback；以子元件 + TabsContent 呈現
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -686,16 +589,8 @@ export default function UserProfile({
                 <div className="bg-[#2b2d31] rounded-lg p-6">
                   <h2 className="text-xl font-bold mb-6">API 設置</h2>
                   <div className="flex justify-center">
-                    <TokenDisplay
-                      accessToken={accessToken}
-                      refreshToken={refreshToken}
-                    />
+                    <APIKeyButton id={session.discordProfile?.id!} />
                   </div>
-                  <APIKeyButton
-                    accessToken={accessToken}
-                    onCreate={CreateAPIKeyClick}
-                    onRegenerate={CreateAPIKeyClick}
-                  />
                 </div>
               </div>
               <SettingsTab user={viewedUser} />

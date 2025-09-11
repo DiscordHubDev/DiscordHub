@@ -10,7 +10,12 @@ import {
 } from './actions/servers';
 import { getDiscordMember } from './actions/discord';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+export const GetbaseUrl = function getBaseUrl() {
+  if (process.env.NEXTAUTH_URL)
+    return process.env.NEXTAUTH_URL.replace(/\/$/, '');
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return 'http://localhost:3000';
+};
 
 export type PriorityInput = {
   upvotes?: number;
@@ -148,8 +153,9 @@ export function getCookie(name: string): string | undefined {
 }
 
 export const fetchBotInfo = async (client_id: string) => {
+  const baseUrl = GetbaseUrl();
   try {
-    const res = await fetch(`/api/proxy/rpc`, {
+    const res = await fetch(`${baseUrl}/api/proxy/rpc`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id }),

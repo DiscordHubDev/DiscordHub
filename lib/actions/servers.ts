@@ -45,7 +45,6 @@ export async function updateServer(
       id: serverId,
       OR: [{ ownerId: userId }, { admins: { some: { id: userId } } }],
     },
-    cacheStrategy: { ttl: 120 },
   });
 
   if (!server) {
@@ -271,7 +270,6 @@ export const getAllServersAction = unstable_cache(
     const servers = await prisma.server.findMany({
       orderBy: { members: 'desc' },
       select: publicServerSelect,
-      cacheStrategy: { ttl: 120 },
     });
 
     return servers;
@@ -301,7 +299,6 @@ export async function getServersByCategoryAction(
           skip,
           take: limit,
           select: publicServerSelect,
-          cacheStrategy: { ttl: 120 },
         }),
         prisma.server.count({ where }),
       ]);
@@ -344,7 +341,6 @@ export const getServerWithFavoritedByGuildId = async (
         select: { id: true },
       },
     },
-    cacheStrategy: { ttl: 60 },
   });
 
   return server;
@@ -367,7 +363,6 @@ export async function getPublishedServerMap(
       prisma.server.findMany({
         where: { id: { in: chunk } },
         select: { id: true },
-        cacheStrategy: { ttl: 120 },
       }),
     ),
   );
@@ -385,7 +380,6 @@ export async function getAllServerIdsChunked(): Promise<string[]> {
         skip: i * CHUNK_SIZE,
         take: CHUNK_SIZE,
         select: { id: true },
-        cacheStrategy: { ttl: 120 },
       }),
     ),
   );
@@ -458,7 +452,6 @@ export const UserGetServerByGuildId = async (
         rules: true,
         features: true,
       },
-      cacheStrategy: { ttl: 60 },
     });
 
     if (!server) {
@@ -518,7 +511,6 @@ export const getServerByGuildId = async (
         rules: true,
         features: true,
       },
-      cacheStrategy: { ttl: 60 },
     });
 
     if (!server) {

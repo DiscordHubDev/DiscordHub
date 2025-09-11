@@ -1,3 +1,4 @@
+import { GetbaseUrl } from '@/lib/utils';
 import { Metadata } from 'next';
 import { ReactNode } from 'react';
 
@@ -62,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function PrivacyLayout({ children }: { children: ReactNode }) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+  const baseUrl = GetbaseUrl();
 
   const jsonLd = {
     '@context': 'https://schema.org',

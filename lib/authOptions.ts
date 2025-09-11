@@ -5,14 +5,6 @@ import { upsertUserFromSession } from '@/lib/actions/user';
 import { DiscordToken } from '@/lib/utils';
 import { JWT } from 'next-auth/jwt';
 
-function getBaseUrl() {
-  // NEXTAUTH_URL 是官方建議，若沒設再 fallback 到 VERCEL_URL 或 localhost
-  if (process.env.NEXTAUTH_URL)
-    return process.env.NEXTAUTH_URL.replace(/\/$/, '');
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return 'http://localhost:3000';
-}
-
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID ?? '';
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET ?? '';
 

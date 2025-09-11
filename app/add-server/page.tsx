@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/authOptions';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { Metadata } from 'next';
+import { GetbaseUrl } from '@/lib/utils';
 
 const keywords = [
   '新增 Discord 伺服器',
@@ -75,7 +76,7 @@ export default async function HomePage() {
     session.discordProfile?.id || '',
   );
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+  const baseUrl = GetbaseUrl();
 
   const jsonLd = {
     '@context': 'https://schema.org',

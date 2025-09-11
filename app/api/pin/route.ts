@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { VoteType } from '@prisma/client';
+import { getServerSession } from 'next-auth';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession();
   try {
     // 驗證請求來源
     if (
@@ -19,8 +20,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { type, item_id }: { type: VoteType; item_id: string } =
-      await request.json();
+    const type = await request.json();
+
+    const item_id = request.nextUrl.searchParams.get('itemId');
+
+    if (!session?.user || !item_id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     if (!item_id) {
       return NextResponse.json(

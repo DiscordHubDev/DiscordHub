@@ -1,3 +1,4 @@
+import { GetbaseUrl } from '@/lib/utils';
 import { ScrollText, ChevronRight } from 'lucide-react';
 import { Metadata } from 'next';
 
@@ -64,7 +65,7 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dchubs.org';
+  const baseUrl = GetbaseUrl();
 
   const jsonLd = {
     '@context': 'https://schema.org',
