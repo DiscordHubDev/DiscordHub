@@ -3,11 +3,7 @@
 import { useState, useRef } from 'react';
 import { UploadedFile } from '@/lib/types';
 import { toast } from 'react-toastify';
-import {
-  deleteCloudinaryImage,
-  getCloudinarySignature,
-  ScreenshotUpload,
-} from '@/lib/actions/image';
+import { deleteCloudinaryImage, ScreenshotUpload } from '@/lib/actions/image';
 import ScreenshotGrid from './form/bot-form/ScreenshotGrid';
 import { Upload } from 'lucide-react';
 import { useError } from '@/context/ErrorContext';
@@ -35,9 +31,7 @@ export function AttachmentUploader({ value, onChange, max = 5 }: Props) {
     setUploading(true);
 
     try {
-      const sig = await getCloudinarySignature();
-
-      const result = await ScreenshotUpload(sig, fileArray);
+      const result = await ScreenshotUpload(fileArray);
       onChange([...value, ...result]);
 
       if (result.length < fileArray.length) {

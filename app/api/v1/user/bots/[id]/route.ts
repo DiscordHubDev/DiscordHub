@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { publicBotSelect } from '@/lib/prisma_type';
 import { NextRequest } from 'next/server';
 
 export async function GET(
@@ -9,7 +10,7 @@ export async function GET(
 
   const bot = await prisma.bot.findUnique({
     where: { id },
-    select: { developers: true },
+    select: publicBotSelect,
   });
 
   if (!bot) {

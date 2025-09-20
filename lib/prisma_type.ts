@@ -15,7 +15,9 @@ export type UserType = Prisma.UserGetPayload<{
     favoriteServers: true;
     favoriteBots: true;
     ownedServers: true;
-    developedBots: true;
+    developedBots: {
+      include: { developers: true }; // <── 這裡把 developers 包進來
+    };
     adminIn: true;
   };
 }>;

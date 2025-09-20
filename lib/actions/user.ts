@@ -21,7 +21,9 @@ export async function GetUserBySession(session: Session) {
       favoriteServers: true,
       favoriteBots: true,
       ownedServers: true,
-      developedBots: true,
+      developedBots: {
+        include: { developers: true },
+      },
       adminIn: true,
     },
   });
@@ -54,7 +56,9 @@ export async function upsertUserFromSession(profile: JWTDiscordProfile) {
       favoriteServers: true,
       favoriteBots: true,
       ownedServers: true,
-      developedBots: true,
+      developedBots: {
+        include: { developers: true },
+      },
       adminIn: true,
     },
   });
@@ -140,7 +144,9 @@ export async function getUserById(id: string): Promise<UserType | null> {
       favoriteServers: true,
       favoriteBots: true,
       ownedServers: true,
-      developedBots: true,
+      developedBots: {
+        include: { developers: true },
+      },
       adminIn: true,
     },
   });

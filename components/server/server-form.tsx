@@ -22,11 +22,7 @@ import {
   FormLabel,
 } from '@/components/ui/form';
 import { ActiveServerInfo } from '@/lib/get-user-guild';
-import {
-  deleteCloudinaryImage,
-  getCloudinarySignature,
-  ScreenshotUpload,
-} from '@/lib/actions/image';
+import { deleteCloudinaryImage, ScreenshotUpload } from '@/lib/actions/image';
 import ScreenshotGrid from '../form/bot-form/ScreenshotGrid';
 import { EditServerType } from '@/lib/prisma_type';
 import { RulesField } from '../form/server-form/RulesField';
@@ -184,10 +180,8 @@ export default function ServerFormPage({
 
     setUploading(true);
 
-    const sig = await getCloudinarySignature();
-
     try {
-      const result = await ScreenshotUpload(sig, fileArray);
+      const result = await ScreenshotUpload(fileArray);
 
       setPreviews(prev => [...prev, ...result]);
 

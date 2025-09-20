@@ -11,8 +11,8 @@ import {
 import { getDiscordMember } from './actions/discord';
 
 export const GetbaseUrl = function getBaseUrl() {
-  if (process.env.NEXTAUTH_URL)
-    return process.env.NEXTAUTH_URL.replace(/\/$/, '');
+  if (process.env.NEXT_PUBLIC_SITE_URL)
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return 'http://localhost:3000';
 };
@@ -21,6 +21,33 @@ export type PriorityInput = {
   upvotes?: number;
   servers?: number;
 };
+
+// 對 token 做 HMAC-SHA256（Edge 可用 Web Crypto）
+export async function hmacSha256Hex(
+  message: string,
+  secret: string,
+): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return toHex(sig);
+}
+
+function toHex(buf: ArrayBuffer | Uint8Array): string {
+  const view = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
+  let out = '';
+  for (let i = 0; i < view.length; i++) {
+    const h = view[i].toString(16).padStart(2, '0');
+    out += h;
+  }
+  return out;
+}
 
 // build og url function
 function parsePositiveInt(v: number, min = 50, max = 4096) {

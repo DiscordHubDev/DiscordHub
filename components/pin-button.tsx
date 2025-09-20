@@ -21,71 +21,6 @@ import { checkPinCooldown } from '@/lib/actions/check-pin-cooldown';
 import { useCooldownController } from '@/hooks/use-cooldown';
 import { cn } from '@/lib/utils';
 
-// async function sendDataToWebServerOrDiscord(
-//   type: string,
-//   user: UserType,
-//   server?: ServerType,
-//   bot?: BotWithFavorites,
-// ) {
-//   const target = server ?? bot;
-
-//   if (!target?.VoteNotificationURL) return;
-
-//   const url = target.VoteNotificationURL;
-//   const isDiscordWebhook = url.startsWith('https://discord.com/api/webhooks/');
-
-//   const payload = isDiscordWebhook
-//     ? {
-//         content: `<@${user.id}>`,
-//         embeds: [
-//           {
-//             author: {
-//               name: user.username,
-//               icon_url: user.avatar,
-//             },
-//             title: '❤️ | 感謝投票!',
-//             url: 'https://dchubs.org',
-//             description: `感謝您的支持與投票！您的每一票都是讓${bot ? '機器人' : '伺服器'}變得更好的動力。\n\n請記得每 12 小時可以再回來 [DcHubs](https://dchubs.org/${bot ? 'bots' : 'servers'}/${target.id}) 投票一次，讓更多人發現我們的${bot ? '機器人' : '伺服器'}吧！✨`,
-//             color: getRandomEmbedColor(),
-//             footer: {
-//               text: 'Powered by DcHubs Vote System',
-//               icon_url:
-//                 'https://images-ext-1.discordapp.net/external/UPq4fK1TpfNlL5xKNkZwqO02wPJoX-yd9IKkk5UnyP8/%3Fsize%3D512%26format%3Dwebp/https/cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?format=webp',
-//             },
-//           },
-//         ],
-//       }
-//     : {
-//         userId: user.id,
-//         username: user.username,
-//         userAvatar: user.avatar,
-//         votedAt: new Date().toISOString(),
-//         itemId: target.id,
-//         itemType: type,
-//         itemName: target.name,
-//       };
-
-//   const headers: Record<string, string> = {
-//     'Content-Type': 'application/json',
-//   };
-
-//   if (!isDiscordWebhook && target.secret) {
-//     headers['x-api-secret'] = target.secret;
-//   }
-
-//   const res = await fetch(url, {
-//     method: 'POST',
-//     headers,
-//     body: JSON.stringify(payload),
-//   });
-
-//   if (!res.ok) {
-//     return null;
-//   }
-
-//   return res.status === 204 ? null : await res.json().catch(() => null);
-// }
-
 interface PinButtonProps {
   id: string;
   type: 'server' | 'bot';
@@ -98,6 +33,10 @@ interface PinButtonProps {
     | 'ghost'
     | 'link'
     | 'destructive';
+  // 必需的安全參數
+  itemName: string; // 項目名稱
+  ownerId?: string; // 擁有者ID
+  devs?: string[]; // 可選的開發者ID列表
 }
 
 export default function PinButton({
@@ -106,6 +45,9 @@ export default function PinButton({
   className,
   size = 'default',
   variant = 'default',
+  itemName,
+  ownerId,
+  devs,
 }: PinButtonProps) {
   const [hasPinned, setHasPinned] = useState(false);
   const [isPining, setIsPining] = useState(false);
@@ -116,13 +58,37 @@ export default function PinButton({
   const { data: session } = useSession();
   const { showError } = useError();
 
+  // 如果未登入，不顯示按鈕
   if (!session) {
-    return;
+    return null;
   }
+
+  // 只有擁有者才能看到置頂按鈕
+  const userId = session?.discordProfile?.id ?? '';
+
+  console.log(`${type}`, userId, ownerId, devs);
+
+  if (
+    (type === 'bot' && !devs?.includes(userId)) ||
+    (type !== 'bot' && userId !== ownerId)
+  ) {
+    return null;
+  }
+
+  // 生成安全令牌
+  const generateSecurityToken = (
+    id: string,
+    type: string,
+    userId: string,
+  ): string => {
+    const timestamp = Math.floor(Date.now() / (1000 * 60 * 5));
+    const data = `${id}-${type.toLowerCase()}-${userId}-${timestamp}`;
+    return btoa(data);
+  };
 
   useEffect(() => {
     const fetchCooldown = async () => {
-      // 先檢查 localStorage 是否有緩存的冷卻時間
+      // 先檢查 localStorage 緩存
       const cacheKey = `pin_cooldown_${id}_${type}`;
       const cachedData = localStorage.getItem(cacheKey);
 
@@ -134,14 +100,13 @@ export default function PinButton({
           setHasPinned(true);
           start(remaining);
           console.log('Cached cooldown seconds:', remaining);
-          return; // 不需要查詢資料庫
+          return;
         } else {
-          // 冷卻時間已過，清除緩存
           localStorage.removeItem(cacheKey);
         }
       }
 
-      // 只有在沒有有效緩存時才查詢資料庫
+      // 查詢數據庫
       const result = await checkPinCooldown(id, type as VoteType);
 
       if (result.cooldown > 0) {
@@ -149,7 +114,6 @@ export default function PinButton({
         start(result.cooldown);
         console.log('Initial cooldown seconds:', result.cooldown);
 
-        // 緩存結束時間
         const endTime = Date.now() + result.cooldown * 1000;
         localStorage.setItem(cacheKey, JSON.stringify({ endTime }));
       }
@@ -158,86 +122,120 @@ export default function PinButton({
     fetchCooldown();
   }, [id, type, start]);
 
-  // // 發送 Discord Webhook
-  // const sendWebhook = async (
-  //   user: UserType,
-  //   server?: ServerType,
-  //   bot?: BotWithFavorites,
-  // ) => {
-  //   const target = (server ?? bot)!;
-  //   const webhookUrl =
-  //     'https://discord.com/api/webhooks/1362078586860867715/e101LoJweqQpUb425i-xDhT6ZUv42SNOr1OnoOQihEBZ_muBShUO10RZlAvOWh3QR7Fq';
-  //   const username = user?.username;
-  //   const userid = user?.id;
-  //   const voteItem = type === 'server' ? '伺服器' : '機器人';
-  //   const embed = {
-  //     title: `<:pixel_symbol_exclamation_invert:1361299311131885600> | 投票系統`,
-  //     description: `➤用戶：**${username}**\n➤用戶ID：**${userid}**\n> ➤對**${voteItem}**：**${target.name}** 進行了投票\n> ➤${voteItem}ID：**${id}**`,
-  //     color: 0x4285f4,
-  //   };
-
-  //   const data = {
-  //     embeds: [embed],
-  //     username: 'DcHubs投票通知',
-  //     avatar_url:
-  //       'https://cdn.discordapp.com/icons/1297055626014490695/365d960f0a44f9a0c2de4672b0bcdcc0.webp?size=512&format=webp',
-  //   };
-  //   try {
-  //     const response = await fetch(webhookUrl, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(data),
-  //     });
-
-  //     if (!response.ok) {
-  //       console.error('Webhook 發送失敗:', response.statusText);
-  //     } else {
-  //     }
-  //   } catch (error) {
-  //     console.error('發送 Webhook 時出錯:', error);
-  //   }
-  // };
-
-  // 處理投票
+  // 處理置頂操作
   const handlePin = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    if (hasPinned) return;
+    if (hasPinned || !session?.discordProfile?.id) return;
 
-    setIsPining(true);
-
-    const pin = await Pin(id, type.toUpperCase() as VoteType);
-
-    if (!pin.success) {
-      if (pin.error === 'COOLDOWN') {
-        const remainingSec = pin.remaining
-          ? Math.ceil(pin.remaining / 1000)
-          : 0;
-
-        console.log('remaining', remainingSec);
-
-        setHasPinned(true);
-        start(remainingSec); // ✅ 啟動倒數
-      }
-
-      if (pin.error === 'NOT_LOGGED_IN') {
-        showError('請先登入！');
-      }
-
-      setIsPining(false);
+    // 前端安全驗證
+    if (!id || !type || !itemName) {
+      showError('缺少必要參數！');
       return;
     }
 
-    // ✅ Pin 成功，啟動 12 小時倒數
-    start(43200);
-    setHasPinned(true);
-    setShowDialog(true);
-    setIsPining(false);
+    // 驗證 ID 格式
+    if (!/^\d{17,19}$/.test(id)) {
+      showError('無效的項目 ID！');
+      return;
+    }
 
-    router.refresh();
+    // 確認是擁有者
+    if (
+      session?.discordProfile?.id !== ownerId &&
+      type === 'bot' &&
+      devs &&
+      devs.includes(session?.discordProfile?.id ?? '')
+    ) {
+      showError('您只能為自己的項目置頂！');
+      return;
+    }
+
+    setIsPining(true);
+
+    try {
+      // 生成安全參數
+      const securityToken = generateSecurityToken(
+        id,
+        type,
+        session?.discordProfile?.id,
+      );
+      const timestamp = Date.now();
+
+      // 調用 Pin 函數
+      const pin = await Pin(id, type.toUpperCase() as VoteType, {
+        securityToken,
+        itemName,
+        timestamp,
+      });
+
+      if (!pin.success) {
+        let errorMessage = '置頂失敗！';
+
+        switch (pin.error) {
+          case 'COOLDOWN':
+            const remainingSec = pin.remaining
+              ? Math.ceil(pin.remaining / 1000)
+              : 0;
+            setHasPinned(true);
+            start(remainingSec);
+            errorMessage = `置頂冷卻中，還需等待 ${Math.floor(
+              remainingSec / 3600,
+            )} 小時`;
+            break;
+          case 'NOT_LOGGED_IN':
+            errorMessage = '請先登入！';
+            break;
+          case 'NOT_OWNER':
+            errorMessage = `您只能為自己的${
+              type === 'server' ? '伺服器' : '機器人'
+            }置頂！`;
+            break;
+          case 'INVALID_ID_FORMAT':
+            errorMessage = '無效的項目 ID 格式！';
+            break;
+          case 'SECURITY_VIOLATION':
+            errorMessage = '安全驗證失敗，請重新整理頁面！';
+            break;
+          case 'ITEM_NAME_MISMATCH':
+            errorMessage = '不匹配，請重新整理頁面！';
+            break;
+          case 'REQUEST_EXPIRED':
+            errorMessage = '請求已過期，請重新操作！';
+            break;
+          case 'NOT_FOUND':
+            errorMessage = '找不到該項目！';
+            break;
+          case 'SERVER_ERROR':
+            errorMessage = '伺服器出現重大錯誤，請聯絡網站管理員！';
+            break;
+          default:
+            errorMessage = `置頂失敗：${pin.error}`;
+        }
+
+        showError(errorMessage);
+        setIsPining(false);
+        return;
+      }
+
+      // 置頂成功
+      start(43200); // 12小時冷卻
+      setHasPinned(true);
+      setShowDialog(true);
+
+      // 緩存冷卻時間
+      const cacheKey = `pin_cooldown_${id}_${type}`;
+      const endTime = Date.now() + 43200 * 1000;
+      localStorage.setItem(cacheKey, JSON.stringify({ endTime }));
+
+      router.refresh();
+    } catch (error) {
+      console.error('Pin operation error:', error);
+      showError('置頂操作發生錯誤，請稍後再試！');
+    } finally {
+      setIsPining(false);
+    }
   };
 
   // 格式化冷卻時間
@@ -253,14 +251,9 @@ export default function PinButton({
 
   return (
     <>
-      {/* <Button onClick={sendWebhook} className="mb-2" variant="secondary">
-        測試
-      </Button> */}
-      {/* <Button onClick={sendWebhook} className="mb-2" variant="secondary">
-        測試
-      </Button> */}
       <Button
         onClick={hasPinned ? undefined : handlePin}
+        disabled={hasPinned || isPining}
         className={cn(
           className,
           hasPinned || isPining
@@ -269,6 +262,11 @@ export default function PinButton({
         )}
         size={size}
         variant={variant}
+        title={
+          hasPinned
+            ? `冷卻時間：${formatCooldown(remaining ?? 0)}`
+            : '置頂您的項目'
+        }
       >
         {isPining ? (
           <div className="flex items-center">
@@ -298,8 +296,8 @@ export default function PinButton({
           <DialogHeader>
             <DialogTitle>置頂成功！</DialogTitle>
             <DialogDescription className="text-gray-400">
-              您已成功為這個
-              {type === 'server' ? '伺服器' : '機器人'}置頂。
+              您已成功為您的{type === 'server' ? '伺服器' : '機器人'}「
+              {itemName}」置頂。
             </DialogDescription>
           </DialogHeader>
 
@@ -313,7 +311,7 @@ export default function PinButton({
               className="h-2 bg-[#36393f]"
             />
             <p className="text-gray-400 text-sm mt-2">
-              您需要等待 12 小時後才能再次置頂。
+              您需要等待 12 小時後才能再次置頂此項目。
             </p>
           </div>
 
@@ -321,7 +319,7 @@ export default function PinButton({
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <ArrowUp size={18} className="text-[#5865f2] mr-2" />
-                <span className="font-medium">置頂</span>
+                <span className="font-medium">置頂 - {itemName}</span>
               </div>
             </div>
           </div>

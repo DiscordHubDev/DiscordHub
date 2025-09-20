@@ -29,8 +29,8 @@ export function APIKeyButton({ id }: Props) {
   const handleCreateOrRegen = async () => {
     try {
       const tokens = await createOrRegenerateApiKey();
-      setApiKey(tokens); // 一次性顯示
-      setShowWarning(true); // 顯示警語
+      setApiKey(tokens);
+      setShowWarning(true);
       await navigator.clipboard.writeText(tokens.accessToken);
       toast.success('存取令牌已建立並複製到剪貼簿！');
       setHasToken(true);

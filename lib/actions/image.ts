@@ -9,18 +9,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-type CloudinarySignature = {
-  timestamp: number; // UNIX timestamp (秒)
-  signature: string; // 由 api_secret 簽出來的字串
-  apiKey: string; // Cloudinary 的 API key（可以公開）
-  uploadPreset: string; // Cloudinary 的上傳 preset 名稱
-  cloudName: string; // Cloudinary 的 cloud name
-};
-
 export async function ScreenshotUpload(
-  sig: CloudinarySignature,
   fileArray: File[],
 ): Promise<UploadedFile[]> {
+  const sig = await getCloudinarySignature();
   const images = fileArray.filter(f => f.type?.startsWith('image/'));
   if (images.length === 0) return [];
 

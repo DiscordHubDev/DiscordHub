@@ -21,7 +21,6 @@ function getExpiresIn(): ExpiresIn {
   return (process.env.JWT_EXPIRES_IN as ExpiresIn) ?? '5h';
 }
 
-// ❗ Edge/Web Crypto 需要 Uint8Array，而不是 Node 的 Buffer 或字串
 function getKeyFromEnv(name: string): Uint8Array {
   return new TextEncoder().encode(getEnv(name));
 }

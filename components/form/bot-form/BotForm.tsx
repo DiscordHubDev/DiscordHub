@@ -11,11 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  deleteCloudinaryImage,
-  getCloudinarySignature,
-  ScreenshotUpload,
-} from '@/lib/actions/image';
+import { deleteCloudinaryImage, ScreenshotUpload } from '@/lib/actions/image';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Upload, Info, X } from 'lucide-react';
@@ -212,10 +208,8 @@ const BotForm: React.FC<BotFormProps> = ({
 
     setUploading(true);
 
-    const sig = await getCloudinarySignature();
-
     try {
-      const result = await ScreenshotUpload(sig, fileArray);
+      const result = await ScreenshotUpload(fileArray);
       setPreviews(prev => [...prev, ...result]);
 
       if (result.length < fileArray.length) {
@@ -273,7 +267,7 @@ const BotForm: React.FC<BotFormProps> = ({
       const botId = extractBotIdFromInviteLink(data.botInvite);
       const avatarUrl = await getBotAvatarUrl(botId);
       if (mode !== 'edit') {
-        await sendPendingWebhook(data, avatarUrl);
+        // await sendPendingWebhook(data, avatarUrl);
       }
       setSuccess(true);
       localStorage.removeItem('desc');

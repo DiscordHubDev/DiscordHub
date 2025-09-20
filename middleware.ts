@@ -333,7 +333,7 @@ export default withAuth(
     if (
       isStateChanging &&
       !allowedOrigin &&
-      (!pathname.startsWith('/api/v1/user') || !pathname.startsWith('/api/pin'))
+      !pathname.startsWith('/api/v1/user')
     ) {
       console.warn(`CSRF attempt from IP: ${ip}, Origin: ${source}`);
       return new NextResponse('Forbidden (CSRF)', { status: 403 });

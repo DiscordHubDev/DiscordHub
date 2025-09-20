@@ -14,6 +14,7 @@ import { authOptions } from '@/lib/authOptions';
 type Params = {
   reportId: string;
   status?: ReportStatus;
+  severity?: ReportSeverity;
 };
 
 export async function submitReport(formData: z.infer<typeof reportSchema>) {
