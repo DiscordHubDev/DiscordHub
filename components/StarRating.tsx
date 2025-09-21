@@ -1,5 +1,6 @@
 'use client';
-import React, { useId } from 'react';
+import { useSession } from 'next-auth/react';
+import React, { useId, useState } from 'react';
 
 type StarRatingProps = {
   value: number; // 0 ~ 滿，可 0.5
@@ -28,21 +29,61 @@ export const StarRating: React.FC<StarRatingProps> = ({
   ariaLabel = 'Rating',
   className,
 }) => {
+  const { data: session } = useSession();
+  const [hoverValue, setHoverValue] = useState<number | null>(null);
+
+  // 移除可能導致組件不渲染的 session 檢查
+  // if (
+  //   session?.discordProfile?.id &&
+  //   session?.error === 'RefreshAccessTokenError'
+  // ) {
+  //   return null;
+  // }
+
   const safeValue = Math.max(0, Math.min(value ?? 0, max));
+  const displayValue = hoverValue !== null ? hoverValue : safeValue;
   const stars = Array.from({ length: max }, (_, i) => i);
+
+  const calculateRating = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+
+    // 計算每個星星的位置
+    for (let i = 0; i < max; i++) {
+      const starStart = i * (size + gap);
+      const starEnd = starStart + size;
+
+      if (x >= starStart && x <= starEnd) {
+        const starX = x - starStart;
+        const fraction = starX <= size / 2 ? 0.5 : 1;
+        return i + fraction;
+      }
+    }
+
+    // 如果點擊在間隙中，找到最近的星星
+    const totalWidth = max * size + (max - 1) * gap;
+    if (x <= 0) return 0;
+    if (x >= totalWidth) return max;
+
+    const starIndex = Math.floor(x / (size + gap));
+    return Math.min(max, starIndex + 1);
+  };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!interactive || !onChange) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const totalWidth = max * size + (max - 1) * gap;
-    const clamped = Math.max(0, Math.min(x, totalWidth));
-    const unit = size + gap;
-    const idx = Math.floor(clamped / unit);
-    const withinStarX = clamped - idx * unit;
-    const fraction = withinStarX <= size / 2 ? 0.5 : 1;
-    const computed = Math.min(max, idx + fraction);
-    onChange(computed);
+    const newRating = calculateRating(e);
+    onChange(newRating);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!interactive) return;
+    const newRating = calculateRating(e);
+    setHoverValue(newRating);
+  };
+
+  const handleMouseLeave = () => {
+    if (!interactive) return;
+    setHoverValue(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -79,16 +120,19 @@ export const StarRating: React.FC<StarRatingProps> = ({
       aria-valuenow={interactive ? Number(safeValue.toFixed(1)) : undefined}
       tabIndex={interactive ? 0 : -1}
       onClick={handleClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       onKeyDown={handleKeyDown}
     >
       {stars.map(i => {
         const starIndex = i + 1;
         let fillPercent = 0;
-        if (safeValue >= starIndex) {
+        if (displayValue >= starIndex) {
           fillPercent = 100;
-        } else if (safeValue > i && safeValue < starIndex) {
-          fillPercent = (safeValue - i) * 100; // 半星
+        } else if (displayValue > i && displayValue < starIndex) {
+          fillPercent = (displayValue - i) * 100; // 半星
         }
+
         return (
           <Star
             key={i}
@@ -98,6 +142,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
             emptyColor={emptyColor}
             backgroundColor={backgroundColor}
             fillPercent={fillPercent}
+            isHovering={hoverValue !== null}
           />
         );
       })}
@@ -112,6 +157,7 @@ function Star({
   emptyColor,
   backgroundColor,
   fillPercent,
+  isHovering = false,
 }: {
   index: number;
   size: number;
@@ -119,6 +165,7 @@ function Star({
   emptyColor: string;
   backgroundColor: string;
   fillPercent: number; // 0~100
+  isHovering?: boolean;
 }) {
   const id = useId();
   const starPath =
@@ -132,7 +179,11 @@ function Star({
       height={size}
       viewBox="0 0 24 24"
       aria-hidden="true"
-      style={{ display: 'block' }}
+      style={{
+        display: 'block',
+        transition: isHovering ? 'transform 0.1s ease' : 'none',
+        transform: isHovering && fillPercent > 0 ? 'scale(1.05)' : 'scale(1)',
+      }}
     >
       <defs>
         <clipPath id={clipId}>

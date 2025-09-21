@@ -10,6 +10,7 @@ import {
   Globe,
   Terminal,
   AlertTriangle,
+  Star,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
@@ -32,12 +33,26 @@ import { useEffect, useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
 import DOMPurify from 'isomorphic-dompurify';
 import Image from 'next/image';
+import StarRating from '@/components/StarRating';
+import { useSession } from 'next-auth/react';
+import { rateBot } from '@/lib/actions/rating';
 
 type BotDetailProps = {
   allBots: PublicBot[];
   bot: PublicBot;
   isFavorited: boolean;
 };
+
+interface Review {
+  id: string;
+  createdAt: Date;
+  botId: string | null;
+  rating: number;
+  vote: number;
+  comment: string | null;
+  userId: string;
+  serverId: string | null;
+}
 
 export default function BotDetailClient({
   bot,
@@ -48,26 +63,77 @@ export default function BotDetailClient({
     window.open(bot.inviteUrl!, '_blank', 'noopener,noreferrer');
   };
 
+  const { data: session } = useSession();
+
+  const calculateAvgRating = (reviewList: Review[]): number => {
+    return reviewList.length
+      ? reviewList.reduce((sum: number, r: Review) => sum + r.rating, 0) /
+          reviewList.length
+      : 0;
+  };
+
+  const [reviews, setReviews] = useState<Review[]>(bot.Review ?? []);
+  const [userrating, setUserrating] = useState<number>(0);
+  const [rating, setRating] = useState<number>(calculateAvgRating(reviews));
+
+  useEffect(() => {
+    if (session?.discordProfile) {
+      const userId = session.discordProfile.id;
+      const user_rating = reviews.find(r => r.userId === userId);
+
+      if (user_rating) {
+        setUserrating(user_rating.rating);
+      }
+    }
+
+    // 当 reviews 改变时重新计算平均评分
+    setRating(calculateAvgRating(reviews));
+  }, [reviews, session?.discordProfile]);
+
+  const handleRatingChange = (value: number) => {
+    if (session?.discordProfile) {
+      const userId = session.discordProfile.id;
+      const botId = bot.id;
+
+      setUserrating(value);
+      rateBot(userId, botId, value);
+
+      setReviews(prevReviews => {
+        const existingReviewIndex = prevReviews.findIndex(
+          r => r.userId === userId,
+        );
+
+        if (existingReviewIndex !== -1) {
+          // 更新现有评分
+          const updatedReviews = [...prevReviews];
+          updatedReviews[existingReviewIndex] = {
+            ...updatedReviews[existingReviewIndex],
+            rating: value,
+          };
+          return updatedReviews;
+        } else {
+          // 添加新评分
+          const newReview: Review = {
+            id: `temp-${userId}-${botId}`,
+            createdAt: new Date(),
+            botId: botId,
+            rating: value,
+            vote: 0,
+            comment: null,
+            userId: userId,
+            serverId: null,
+          };
+          return [...prevReviews, newReview];
+        }
+      });
+    }
+  };
+
   const [voteCount, setVoteCount] = useState<number>(bot.upvotes);
 
   const handleBotVoteClick = (newVoteCount: number) => {
     setVoteCount(newVoteCount);
-
-    const cacheKey = `bot_votes_${bot.id}`;
-    localStorage.setItem(cacheKey, newVoteCount.toString());
   };
-
-  useEffect(() => {
-    const cacheKey = `bot_votes_${bot.id}`;
-    const cachedVotes = localStorage.getItem(cacheKey);
-
-    if (cachedVotes) {
-      const votes = parseInt(cachedVotes, 10);
-      if (votes > bot.upvotes) {
-        setVoteCount(votes);
-      }
-    }
-  }, [bot.id, bot.upvotes]);
 
   return (
     <div className="min-h-screen bg-[#1e1f22] text-white">
@@ -279,6 +345,34 @@ export default function BotDetailClient({
                     </a>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* 評分 */}
+            <div className="bg-[#2b2d31] rounded-lg p-5 mb-6">
+              <h3 className="text-lg font-semibold mb-4">評分此機器人</h3>
+              <p className="text-gray-300 text-sm mb-4">
+                想要支持這個機器人嗎？來參與評分，讓更多人知道這台機器人的好！
+              </p>
+              <div className="bg-[#36393f] p-4 rounded-lg mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">當前評分</span>
+                  <div className="flex items-center text-[#5865f2]">
+                    <Star size={16} className="mr-1" />
+                    <span className="font-bold">{rating.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <StarRating
+                  value={userrating}
+                  max={5}
+                  size={32}
+                  interactive={true}
+                  onChange={handleRatingChange}
+                  fillColor="#FFD700"
+                  emptyColor="#D1D5DB"
+                />
               </div>
             </div>
 

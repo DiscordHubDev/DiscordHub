@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, ArrowUp, Clock, Globe } from 'lucide-react';
+import { Users, ArrowUp, Clock, Globe, Star } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import Link from 'next/link';
@@ -17,6 +17,20 @@ import { useEffect, useState } from 'react';
 import { AvatarFallbackClient } from '@/components/AvatarFallbackClient';
 import DOMPurify from 'isomorphic-dompurify';
 import Image from 'next/image';
+import StarRating from '@/components/StarRating';
+import { useSession } from 'next-auth/react';
+import { rateServer } from '@/lib/actions/rating';
+
+interface Review {
+  id: string;
+  createdAt: Date;
+  botId: string | null;
+  rating: number;
+  vote: number;
+  comment: string | null;
+  userId: string;
+  serverId: string | null;
+}
 
 type ServerDetailPageProps = {
   allServers: PublicServer[];
@@ -31,6 +45,72 @@ export default function ServerDetailClientPage({
 }: ServerDetailPageProps) {
   const handleInviteButtonClick = () => {
     window.open(server.inviteUrl!, '_blank', 'noopener,noreferrer');
+  };
+
+  const calculateAvgRating = (reviewList: Review[]): number => {
+    return reviewList.length
+      ? reviewList.reduce((sum: number, r: Review) => sum + r.rating, 0) /
+          reviewList.length
+      : 0;
+  };
+
+  const { data: session } = useSession();
+
+  const [reviews, setReviews] = useState<Review[]>(server.Review ?? []);
+  const [userrating, setUserrating] = useState<number>(0);
+  const [rating, setRating] = useState<number>(calculateAvgRating(reviews));
+
+  useEffect(() => {
+    if (session?.discordProfile) {
+      const userId = session.discordProfile.id;
+      const user_rating = reviews.find(r => r.userId === userId);
+
+      if (user_rating) {
+        setUserrating(user_rating.rating);
+      }
+    }
+
+    // 当 reviews 改变时重新计算平均评分
+    setRating(calculateAvgRating(reviews));
+  }, [reviews, session?.discordProfile]);
+
+  const handleRatingChange = (value: number) => {
+    if (session?.discordProfile) {
+      const userId = session.discordProfile.id;
+      const serverId = server.id;
+
+      setUserrating(value);
+      rateServer(userId, serverId, value);
+
+      setReviews(prevReviews => {
+        const existingReviewIndex = prevReviews.findIndex(
+          r => r.userId === userId,
+        );
+
+        if (existingReviewIndex !== -1) {
+          // 更新现有评分
+          const updatedReviews = [...prevReviews];
+          updatedReviews[existingReviewIndex] = {
+            ...updatedReviews[existingReviewIndex],
+            rating: value,
+          };
+          return updatedReviews;
+        } else {
+          // 添加新评分
+          const newReview: Review = {
+            id: `temp-${userId}-${serverId}`,
+            createdAt: new Date(),
+            serverId: serverId,
+            rating: value,
+            vote: 0,
+            comment: null,
+            botId: null,
+            userId: userId,
+          };
+          return [...prevReviews, newReview];
+        }
+      });
+    }
   };
 
   const [voteCount, setVoteCount] = useState<number>(server.upvotes);
@@ -319,6 +399,35 @@ export default function ServerDetailClientPage({
                 )}
               </div>
             </div>
+
+            {/* 評分 */}
+            <div className="bg-[#2b2d31] rounded-lg p-5 mb-6">
+              <h3 className="text-lg font-semibold mb-4">評分此機器人</h3>
+              <p className="text-gray-300 text-sm mb-4">
+                想要支持這個機器人嗎？來參與評分，讓更多人知道這台機器人的好！
+              </p>
+              <div className="bg-[#36393f] p-4 rounded-lg mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">當前評分</span>
+                  <div className="flex items-center text-[#5865f2]">
+                    <Star size={16} className="mr-1" />
+                    <span className="font-bold">{rating.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <StarRating
+                  value={userrating}
+                  max={5}
+                  size={32}
+                  interactive={true}
+                  onChange={handleRatingChange}
+                  fillColor="#FFD700"
+                  emptyColor="#D1D5DB"
+                />
+              </div>
+            </div>
+
             {/* 投票卡片 */}
             <div className="bg-[#2b2d31] rounded-lg p-5 mb-6">
               <h3 className="text-lg font-semibold mb-4">支持此伺服器</h3>

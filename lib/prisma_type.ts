@@ -99,6 +99,7 @@ export const publicBotSelect = Prisma.validator<Prisma.BotSelect>()({
   pin: true,
   pinExpiry: true,
   createdAt: true,
+  Review: true,
   developers: { select: publicUserSelect },
   commands: { select: publicCommandSelect },
   favoritedBy: {
@@ -257,6 +258,7 @@ export const publicServerSelect = Prisma.validator<Prisma.ServerSelect>()({
   website: true,
   inviteUrl: true,
   pin: true,
+  Review: true,
   pinExpiry: true,
   owner: {
     select: {
@@ -294,6 +296,7 @@ export type ReportInBoxType = Omit<ReportRawType, 'attachments'> & {
 export type ServerWithMinimalFavorited = Prisma.ServerGetPayload<{
   include: {
     owner: true;
+    Review: true;
     favoritedBy: {
       select: { id: true };
     };

@@ -336,6 +336,7 @@ export const getServerWithFavoritedByGuildId = async (
     where: { id: guildId },
     include: {
       owner: true,
+      Review: true,
       favoritedBy: {
         where: { id: userId },
         select: { id: true },

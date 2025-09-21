@@ -193,36 +193,7 @@ export async function getBot(id: string) {
       id: id,
       status: 'approved',
     },
-    include: {
-      developers: {
-        select: {
-          id: true,
-          username: true,
-          avatar: true,
-          banner: true,
-          banner_color: true,
-          bio: true,
-          joinedAt: true,
-          social: true,
-        },
-      },
-      commands: {
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          usage: true,
-          category: true,
-        },
-      },
-      favoritedBy: {
-        select: {
-          id: true,
-          username: true,
-          avatar: true,
-        },
-      },
-    },
+    select: publicBotSelect,
   });
 }
 

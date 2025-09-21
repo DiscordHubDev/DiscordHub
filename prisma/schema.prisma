@@ -210,7 +210,7 @@ model BotCommand {
 
 model Review {
   id        String   @id @default(cuid())
-  rating    Int
+  rating    Float @default(0)
   vote      Int
   comment   String?
   createdAt DateTime @default(now())
@@ -230,6 +230,11 @@ model Review {
   @@index([rating])
   @@index([botId, rating]) // 複合索引：機器人評分查詢
   @@index([serverId, rating]) // 複合索引：伺服器評分查詢
+  // ✅ 確保一個 user 只能對同一個 bot 評一次
+  @@unique([userId, botId], name: "userId_botId")
+
+  // ✅ 確保一個 user 只能對同一個 server 評一次
+  @@unique([userId, serverId], name: "userId_serverId")
 }
 
 model Report {
