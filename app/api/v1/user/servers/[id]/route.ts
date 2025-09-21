@@ -78,7 +78,7 @@ export async function GET(
     );
   }
 
-  return new Response(JSON.stringify({ server }), {
+  return new Response(JSON.stringify({ server }, null, 2), {
     status: 200,
   });
 }

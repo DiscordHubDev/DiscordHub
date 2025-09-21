@@ -99,7 +99,7 @@ export const getCachedServerWithFavorited = unstable_cache(
   async (userId: string | undefined, id: string) =>
     getServerWithFavoritedByGuildId(userId, id),
   ['servers', 'with-favorited'],
-  { revalidate: 60 },
+  { revalidate: 10 },
 );
 
 // bot cache
@@ -122,7 +122,7 @@ export const getCachedBot = unstable_cache(
   },
   ['bot-detail'], // 快取鍵前綴
   {
-    revalidate: 60, // 1 分鐘後重新驗證
+    revalidate: 10, // 1 分鐘後重新驗證
     tags: ['bots', 'bot-detail'], // 標籤
   },
 );
