@@ -49,7 +49,7 @@ export async function POST(
 
   const data = await res.json();
 
-  return new Response(JSON.stringify(data), {
+  return new Response(JSON.stringify(data, null, 2), {
     status: res.status,
   });
 }

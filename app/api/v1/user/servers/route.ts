@@ -43,32 +43,36 @@ const ServerAPISelect = {
   },
 };
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<Response> {
-  const { id } = await params;
-
-  const server = await prisma.server.findUnique({
-    where: { id },
-    select: ServerAPISelect,
+export async function GET(req: NextRequest): Promise<Response> {
+  const userId = req.headers.get('x-user-id');
+  const data = await prisma.user.findUnique({
+    where: {
+      id: userId || '',
+    },
+    select: {
+      ownedServers: {
+        select: ServerAPISelect,
+      },
+    },
   });
 
-  if (!server) {
+  const servers = data?.ownedServers;
+
+  if (!servers) {
     return new Response(
-      JSON.stringify({ message: '伺服器不存在', success: false }),
+      JSON.stringify({ message: '沒有任何伺服器', success: false }),
       {
         status: 404,
       },
     );
   }
 
-  const admins = server.admins.find(a => a.id === req.headers.get('x-user-id'));
+  const admins = servers.find(s => s.admins.find(dev => dev.id === userId));
 
   if (!admins) {
     return new Response(
       JSON.stringify(
-        { message: '你並非此伺服器的管理員', success: false },
+        { message: '你並非此機器人的開發者', success: false },
         null,
         2,
       ),
@@ -78,7 +82,7 @@ export async function GET(
     );
   }
 
-  return new Response(JSON.stringify({ server }), {
+  return new Response(JSON.stringify(servers, null, 2), {
     status: 200,
   });
 }

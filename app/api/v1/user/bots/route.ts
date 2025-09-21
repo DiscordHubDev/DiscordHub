@@ -38,38 +38,46 @@ const BotAPISelect = {
   },
 };
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<Response> {
-  const { id } = await params;
-
-  const bot = await prisma.bot.findUnique({
-    where: { id },
-    select: BotAPISelect,
+export async function GET(req: NextRequest): Promise<Response> {
+  const userId = req.headers.get('x-user-id');
+  const data = await prisma.user.findUnique({
+    where: {
+      id: userId || '',
+    },
+    select: {
+      developedBots: {
+        select: BotAPISelect,
+      },
+    },
   });
 
-  if (!bot) {
+  const bots = data?.developedBots;
+
+  if (!bots) {
     return new Response(
-      JSON.stringify({ message: '機器人不存在', success: false }),
+      JSON.stringify({ message: '沒有任何機器人', success: false }),
       {
         status: 404,
       },
     );
   }
 
-  const dev = bot.developers.find(d => d.id === req.headers.get('x-user-id'));
+  const dev = bots.find(d => d.developers.find(dev => dev.id === userId));
 
   if (!dev) {
     return new Response(
-      JSON.stringify({ message: '你並非此機器人的開發者', success: false }),
+      JSON.stringify(
+        { message: '你並非此機器人的開發者', success: false },
+        null,
+        2,
+      ),
       {
         status: 403,
       },
     );
   }
 
-  return new Response(JSON.stringify({ bot }, null, 2), {
+  return new Response(JSON.stringify(bots, null, 2), {
     status: 200,
   });
 }
