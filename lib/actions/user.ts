@@ -37,6 +37,8 @@ export async function upsertUserFromSession(profile: JWTDiscordProfile) {
   const { id, global_name, image_url, banner_url, banner_color, username } =
     profile;
 
+  console.log('upsert image', image_url);
+
   const user = await prisma.user.upsert({
     where: { id },
     create: {

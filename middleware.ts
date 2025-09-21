@@ -7,7 +7,6 @@ import {
   verifyJWTToken,
   createAuthenticatedUser,
 } from '@/lib/auth';
-import path from 'path';
 
 // 初始化 Redis 連接
 const redis = Redis.fromEnv();

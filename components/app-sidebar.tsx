@@ -269,23 +269,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
           id: '',
         }
-      : {
-          display_name: session?.user?.image
-            ? session?.discordProfile?.global_name ??
-              session?.discordProfile?.username ??
-              '未登入'
-            : '未登入',
+      : session?.discordProfile?.id && !session?.error
+        ? {
+            display_name:
+              session.discordProfile.global_name ??
+              session.discordProfile.username ??
+              '未登入',
 
-          username: session?.user?.image
-            ? session?.discordProfile?.username ?? '未設定'
-            : '未登入',
+            username: session.discordProfile.username ?? '未登入',
 
-          avatar:
-            session?.user?.image ??
-            'https://cdn.discordapp.com/embed/avatars/0.png',
+            avatar:
+              session.discordProfile.image_url ??
+              'https://cdn.discordapp.com/embed/avatars/0.png',
 
-          id: session?.user?.image ? session?.discordProfile?.id : undefined,
-        };
+            id: undefined,
+          }
+        : {
+            display_name: '未登入',
+            username: '未登入',
+            avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
+            id: undefined,
+          };
 
   const filterednavSecondary = data.navSecondary.filter(item => {
     if (!item.onlyFor) return true;
