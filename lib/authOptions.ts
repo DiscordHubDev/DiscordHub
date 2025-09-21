@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, account, user }) {
       if (account && user) {
         token.discordProfile = user as JWTDiscordProfile;
+        token.accessToken = account.access_token;
       }
       try {
         await upsertUserFromSession(user as JWTDiscordProfile);
@@ -59,6 +60,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token.discordProfile) {
         session.discordProfile = token.discordProfile as JWTDiscordProfile;
+        session.access_token = token.accessToken as string;
       }
 
       return session;
