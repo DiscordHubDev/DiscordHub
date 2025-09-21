@@ -13,7 +13,13 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Vote } from '@/lib/actions/vote';
-import { BotType, ServerType, UserType, VoteType } from '@/lib/prisma_type';
+import {
+  BotType,
+  PublicBot,
+  ServerType,
+  UserType,
+  VoteType,
+} from '@/lib/prisma_type';
 import { checkVoteCooldown } from '@/lib/actions/check-vote-cooldown';
 import { useRouter } from 'next/navigation';
 import { GetUserBySession } from '@/lib/actions/user';
@@ -161,7 +167,7 @@ export default function VoteButton({
       }
 
       let server: ServerType | undefined;
-      let bot: BotType | undefined;
+      let bot: PublicBot | undefined;
 
       if (type === 'server') {
         server = await getServerByGuildId(id);

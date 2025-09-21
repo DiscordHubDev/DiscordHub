@@ -1,7 +1,13 @@
 'use server';
 
 import { botFormSchema } from '@/schemas/add-bot-schema';
-import { BotType, EditServerType, ServerType, UserType } from './prisma_type';
+import {
+  BotType,
+  EditServerType,
+  PublicBot,
+  ServerType,
+  UserType,
+} from './prisma_type';
 import { z } from 'zod';
 import { ServerFormSchema } from '@/schemas/add-server-schema';
 import { ActiveServerInfo } from './get-user-guild';
@@ -11,7 +17,7 @@ export const sendWebhook = async (
   user: UserType,
   id: string,
   server?: ServerType,
-  bot?: BotType,
+  bot?: PublicBot,
 ) => {
   const target = (server ?? bot)!;
   const webhookUrl = process.env.VOTE_WEBHOOK_URL || '';

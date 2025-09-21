@@ -211,6 +211,7 @@ export const AdminGetAllServers = async () => {
   try {
     const servers = await prisma.server.findMany({
       include: {
+        Review: true,
         owner: true,
         favoritedBy: true,
         admins: true,
@@ -487,6 +488,7 @@ export const getServerByGuildId = async (
         createdAt: true,
         website: true,
         inviteUrl: true,
+        Review: true,
         pin: true,
         owner: {
           select: {

@@ -16,11 +16,6 @@ function getEnv(name: string): string {
   return v;
 }
 
-type ExpiresIn = string | number; // '5h' | '1d' | 3600 ...
-function getExpiresIn(): ExpiresIn {
-  return (process.env.JWT_EXPIRES_IN as ExpiresIn) ?? '5h';
-}
-
 function getKeyFromEnv(name: string): Uint8Array {
   return new TextEncoder().encode(getEnv(name));
 }
@@ -31,7 +26,6 @@ export class DcHubsJWT {
     return await new SignJWT({ id: payload.id })
       .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
       .setIssuedAt()
-      .setExpirationTime(getExpiresIn())
       .sign(key);
   }
 
@@ -40,7 +34,6 @@ export class DcHubsJWT {
     return await new SignJWT({ id: payload.id })
       .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
       .setIssuedAt()
-      .setExpirationTime(getExpiresIn())
       .sign(key);
   }
 

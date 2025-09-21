@@ -35,6 +35,7 @@ const ALLOWED_IDS = ['549056425943629825', '857502876108193812'];
 const ALLOWED_ORIGINS = new Set([
   'https://dchubs.org',
   'https://www.dchubs.org',
+  'https://docs.dchubs.org',
 ]);
 
 // 可疑模式檢測配置
@@ -129,8 +130,34 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
+// 工具函數：添加 CORS 標頭
+function addCORSHeaders(
+  response: NextResponse,
+  origin?: string | null,
+): NextResponse {
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+  }
+
+  response.headers.set(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS',
+  );
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-CSRF-Token, X-Requested-With',
+  );
+  response.headers.set('Access-Control-Max-Age', '86400'); // 24 hours
+
+  return response;
+}
+
 // 工具函數：創建 rate limit 響應
-function createRateLimitResponse(resetTime?: number): NextResponse {
+function createRateLimitResponse(
+  resetTime?: number,
+  origin?: string | null,
+): NextResponse {
   const response = new NextResponse('Too Many Requests', { status: 429 });
 
   if (resetTime) {
@@ -141,11 +168,16 @@ function createRateLimitResponse(resetTime?: number): NextResponse {
   }
 
   response.headers.set('X-RateLimit-Limit', 'exceeded');
-  return addSecurityHeaders(response);
+  addSecurityHeaders(response);
+  addCORSHeaders(response, origin);
+  return response;
 }
 
 // 工具函數：創建未授權響應
-function createUnauthorizedResponse(message = 'Unauthorized'): NextResponse {
+function createUnauthorizedResponse(
+  message = 'Unauthorized',
+  origin?: string | null,
+): NextResponse {
   const response = new NextResponse(
     JSON.stringify({
       error: message,
@@ -157,7 +189,9 @@ function createUnauthorizedResponse(message = 'Unauthorized'): NextResponse {
       headers: { 'Content-Type': 'application/json' },
     },
   );
-  return addSecurityHeaders(response);
+  addSecurityHeaders(response);
+  addCORSHeaders(response, origin);
+  return response;
 }
 
 // 工具函數：執行 rate limiting 檢查
@@ -210,12 +244,22 @@ export default withAuth(
     const { pathname, origin } = req.nextUrl;
     const method = req.method.toUpperCase();
     const ip = getClientIP(req);
+    const reqOrigin = req.headers.get('origin');
 
-    // 檢測可疑活動
+    // ========== 優先處理 OPTIONS 請求 (CORS preflight) ==========
+    if (method === 'OPTIONS') {
+      const response = new NextResponse(null, { status: 204 });
+      addCORSHeaders(response, reqOrigin);
+      return response;
+    }
+
+    // 檢測可疑活動（排除 OPTIONS 請求）
     if (isSuspiciousRequest(req, ip)) {
       console.warn(`Suspicious activity from IP: ${ip}, Path: ${pathname}`);
       await markSuspiciousIP(ip);
-      return new NextResponse('Forbidden', { status: 403 });
+      const response = new NextResponse('Forbidden', { status: 403 });
+      addCORSHeaders(response, reqOrigin);
+      return response;
     }
 
     // ========== /api/v1/user 路徑處理 ==========
@@ -223,13 +267,13 @@ export default withAuth(
       // 提取並驗證 Bearer token
       const bearerToken = extractBearerToken(req);
       if (!bearerToken) {
-        return createUnauthorizedResponse('必須傳入 Bearer Token');
+        return createUnauthorizedResponse('必須傳入 Bearer Token', reqOrigin);
       }
 
       // 驗證 JWT Token
       const jwtPayload = await verifyJWTToken(bearerToken);
       if (!jwtPayload) {
-        return createUnauthorizedResponse('無效的 Access Token');
+        return createUnauthorizedResponse('無效的 Access Token', reqOrigin);
       }
 
       const res = await fetch(new URL('/api/auth/jwt', req.url), {
@@ -242,16 +286,18 @@ export default withAuth(
       });
 
       if (!res.ok) {
-        return NextResponse.json(
+        const response = NextResponse.json(
           { error: '傳入的 Access Token 已過期' },
           { status: 401 },
         );
+        addCORSHeaders(response, reqOrigin);
+        return response;
       }
 
       // 創建認證用戶對象
       const authenticatedUser = createAuthenticatedUser(jwtPayload);
       if (!authenticatedUser.id) {
-        return createUnauthorizedResponse('Invalid token payload');
+        return createUnauthorizedResponse('Invalid token payload', reqOrigin);
       }
 
       // 用戶級別的 rate limiting
@@ -262,7 +308,7 @@ export default withAuth(
 
       if (!userRateLimit.success) {
         await markSuspiciousIP(ip);
-        return createRateLimitResponse(userRateLimit.reset);
+        return createRateLimitResponse(userRateLimit.reset, reqOrigin);
       }
 
       // 設置請求標頭
@@ -278,6 +324,7 @@ export default withAuth(
 
       // 添加標頭
       addSecurityHeaders(response);
+      addCORSHeaders(response, reqOrigin);
       response.headers.set(
         'X-RateLimit-Remaining',
         userRateLimit.remaining.toString(),
@@ -310,12 +357,11 @@ export default withAuth(
     if (!rateLimit.success) {
       console.warn(`Rate limit exceeded for IP: ${ip}`);
       await markSuspiciousIP(ip);
-      return createRateLimitResponse(rateLimit.reset);
+      return createRateLimitResponse(rateLimit.reset, reqOrigin);
     }
 
     // ========== CSRF 保護 ==========
     const isStateChanging = !['GET', 'HEAD', 'OPTIONS'].includes(method);
-    const reqOrigin = req.headers.get('origin');
     const referer = req.headers.get('referer');
 
     let source: string | null = null;
@@ -335,7 +381,9 @@ export default withAuth(
       !pathname.startsWith('/api/v1/user')
     ) {
       console.warn(`CSRF attempt from IP: ${ip}, Origin: ${source}`);
-      return new NextResponse('Forbidden (CSRF)', { status: 403 });
+      const response = new NextResponse('Forbidden (CSRF)', { status: 403 });
+      addCORSHeaders(response, reqOrigin);
+      return response;
     }
 
     // API 安全檢查
@@ -350,11 +398,19 @@ export default withAuth(
         (!contentType.includes('application/json') &&
           !contentType.includes('application/x-www-form-urlencoded'))
       ) {
-        return new NextResponse('Invalid Content-Type', { status: 400 });
+        const response = new NextResponse('Invalid Content-Type', {
+          status: 400,
+        });
+        addCORSHeaders(response, reqOrigin);
+        return response;
       }
 
       if (!isSameOrigin && !req.headers.get('x-csrf-token')) {
-        return new NextResponse('CSRF token required', { status: 403 });
+        const response = new NextResponse('CSRF token required', {
+          status: 403,
+        });
+        addCORSHeaders(response, reqOrigin);
+        return response;
       }
     }
 
@@ -372,6 +428,7 @@ export default withAuth(
     // 創建最終響應
     const response = NextResponse.next();
     addSecurityHeaders(response);
+    addCORSHeaders(response, reqOrigin);
 
     response.headers.set(
       'X-RateLimit-Remaining',

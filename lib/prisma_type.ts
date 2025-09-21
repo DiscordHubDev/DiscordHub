@@ -215,6 +215,7 @@ export type ServerType = Prisma.ServerGetPayload<{
     createdAt: true;
     website: true;
     inviteUrl: true;
+    Review: true;
     pin: true;
     owner: {
       select: {
