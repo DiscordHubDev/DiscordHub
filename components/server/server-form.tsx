@@ -30,6 +30,7 @@ import { insertServer, updateServer } from '@/lib/actions/servers';
 import { toast } from 'react-toastify';
 import MarkdownRenderer from '../MarkdownRenderer';
 import DOMPurify from 'isomorphic-dompurify';
+import { sendServerWebhook } from '@/lib/webhook';
 
 type FormSchemaType = z.infer<typeof ServerFormSchema>;
 
@@ -253,7 +254,7 @@ export default function ServerFormPage({
       }
 
       if (mode !== 'edit') {
-        // sendServerWebhook(data, activeServer);
+        await sendServerWebhook(data, activeServer);
         reset();
       }
       toast.success(mode === 'edit' ? '伺服器更新成功' : '伺服器發布成功');

@@ -267,7 +267,7 @@ const BotForm: React.FC<BotFormProps> = ({
       const botId = extractBotIdFromInviteLink(data.botInvite);
       const avatarUrl = await getBotAvatarUrl(botId);
       if (mode !== 'edit') {
-        // await sendPendingWebhook(data, avatarUrl);
+        await sendPendingWebhook(data, avatarUrl);
       }
       setSuccess(true);
       localStorage.removeItem('desc');
