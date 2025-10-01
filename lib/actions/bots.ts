@@ -260,7 +260,7 @@ type BotQuery = {
 };
 
 function buildBotQuery(category: string): BotQuery {
-  const where: Record<string, any> = {};
+  const where: Record<string, any> = { status: 'approved' };
   const orderBy: Record<string, 'asc' | 'desc'>[] = [];
 
   switch (category) {
@@ -288,6 +288,7 @@ function buildBotQuery(category: string): BotQuery {
 export const getAllBotsAction = unstable_cache(
   async (): Promise<PublicBot[]> => {
     return prisma.bot.findMany({
+      where: { status: 'approved' },
       orderBy: { servers: 'desc' },
       select: publicBotSelect,
     });

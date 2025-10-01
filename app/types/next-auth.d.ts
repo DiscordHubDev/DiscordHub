@@ -14,6 +14,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     maxAge?: number;
     accessToken?: string;
+    refreshToken?: string;
     discordProfile?: JWTDiscordProfile;
     error?: string;
   }
