@@ -6,7 +6,6 @@
     "dev": "next dev -H 0.0.0.0 -p 3000",
     "postinstall": "prisma generate",
     "build": "next build && next-sitemap",
-    "cf-build": "next build && next-sitemap && next export",
     "start": "next start",
     "lint:check": "next lint",
     "lint:fix": "next lint --fix",
