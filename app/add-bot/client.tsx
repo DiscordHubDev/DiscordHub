@@ -3,7 +3,7 @@
 import { submitBot } from '@/lib/actions/submit-bot';
 import { sendNotification } from '@/lib/actions/sendNotification';
 import { BotWithRelationsInput } from '@/lib/prisma_type';
-import { BotFormData, DiscordBotRPCInfo, Screenshot } from '@/lib/types';
+import { BotFormData, Screenshot } from '@/lib/types';
 import BotForm from '@/components/form/bot-form/BotForm';
 import { toast } from 'react-toastify';
 import { signIn, useSession } from 'next-auth/react';
