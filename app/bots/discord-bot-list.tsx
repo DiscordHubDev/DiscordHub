@@ -118,6 +118,8 @@ export default function DiscordBotListPageClient({
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [isComposing, setIsComposing] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   const renderBotListWithFallback = (bots: PublicBot[]) => {
     // if (!isClient) {
@@ -265,16 +267,41 @@ export default function DiscordBotListPageClient({
     [useClientSideFiltering, fetchBotPage, updateURL],
   );
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setSearchQuery(value);
+  const handleCompositionStart = useCallback(() => {
+    setIsComposing(true);
+  }, []);
+
+  const handleCompositionEnd = useCallback(
+    (e: React.CompositionEvent<HTMLInputElement>) => {
+      setIsComposing(false);
+      const value = e.currentTarget.value;
+      // 1. Finalize the search query state and start search
+      setSearchQuery(value); 
       setCurrentPage(1);
       value.trim() ? setIsSearching(true) : setIsSearching(false);
       if (value.trim()) setTimeout(() => setIsSearching(false), 300);
       updateURL({ search: value.trim() || null, page: '1' });
     },
     [updateURL],
+  );
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      
+      // 2. ALWAYS update the live input value for immediate feedback
+      setInputValue(value); 
+      
+      // 3. ONLY run search-triggering logic if NOT composing
+      if (!isComposing) {
+        setSearchQuery(value); // Update the state that holds the search term
+        setCurrentPage(1);
+        value.trim() ? setIsSearching(true) : setIsSearching(false);
+        if (value.trim()) setTimeout(() => setIsSearching(false), 300);
+        updateURL({ search: value.trim() || null, page: '1' });
+      }
+    },
+    [isComposing, updateURL],
   );
 
   const handleCategoryChange = useCallback(
@@ -379,8 +406,10 @@ export default function DiscordBotListPageClient({
             <Input
               placeholder="搜尋機器人名稱、標籤或描述..."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
-              value={searchQuery}
+              value={inputValue}
               onChange={handleSearchChange}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
             />
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60"
