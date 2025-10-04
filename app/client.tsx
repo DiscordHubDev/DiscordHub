@@ -369,7 +369,7 @@ export default function DiscordServerListPageClient({
           {/* Search Bar */}
           <div className="relative max-w-2xl mx-auto">
             <Input
-              placeholder="搜尋伺服器名稱、標籤或描述..."
+              placeholder="搜尋伺服器名稱、標籤或描述...."
               className="pl-10 py-6 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60 w-full"
               value={inputValue}
               onChange={handleSearchChange}
