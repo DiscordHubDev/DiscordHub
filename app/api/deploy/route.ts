@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
 import path from 'path';
+import { spawn } from 'child_process';
 
 // (可選) 你可以設定一個 SECRET 來驗證 Webhook
 const DEPLOY_SECRET = process.env.CRON_SECRET || '';
@@ -18,13 +18,18 @@ export async function POST(req: Request) {
     // 確保執行路徑正確
     const cwd = path.resolve(process.cwd(), '/home/container');
 
-    // 執行部署腳本
-    exec('bash deploy.sh', { cwd }, (error, stdout, stderr) => {
-      if (error) {
-        console.error('Deploy error:', stderr);
-      } else {
-        console.log('Deploy success:', stdout);
-      }
+    const deploy = spawn('bash', ['deploy.sh'], { cwd });
+
+    deploy.stdout.on('data', (data) => {
+      console.log(`[deploy.sh] ${data}`);
+    });
+
+    deploy.stderr.on('data', (data) => {
+      console.error(`[deploy.sh ERROR] ${data}`);
+    });
+
+    deploy.on('close', (code) => {
+      console.log(`deploy.sh exited with code ${code}`);
     });
 
     return NextResponse.json({ message: 'Deployment started 🚀' });
