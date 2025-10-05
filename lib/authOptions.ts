@@ -84,6 +84,18 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   callbacks: {
     async jwt({ token, account, user }) {
       // 初次登入時儲存 token 資訊
@@ -128,13 +140,6 @@ export const authOptions: NextAuthOptions = {
       }
 
       return session;
-    },
-  },
-  events: {
-    async signIn({ user, account, profile }) {
-      if (account?.provider === 'discord' && profile) {
-        console.log('User signed in via Discord:', user.email);
-      }
     },
   },
 };
