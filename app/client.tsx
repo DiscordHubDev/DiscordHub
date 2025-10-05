@@ -44,8 +44,8 @@ const sortServersByCategory = (
         ? a.pin
           ? -1
           : 1
-        : (b.pinExpiry ? +new Date(b.pinExpiry) : 0) -
-          (a.pinExpiry ? +new Date(a.pinExpiry) : 0),
+        : (a.pinExpiry ? +new Date(a.pinExpiry) : 0) -
+          (b.pinExpiry ? +new Date(b.pinExpiry) : 0)
     );
   }
   if (category === 'new') {
@@ -91,7 +91,6 @@ export default function DiscordServerListPageClient({
   const [isPending, startTransition] = useTransition();
 
   // --- State ---
-  const [isClient, setIsClient] = useState(false);
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get('search') || '',
   );
@@ -188,7 +187,8 @@ export default function DiscordServerListPageClient({
           page,
           ITEMS_PER_PAGE,
         );
-        setServers(sortServersByCategory(result.servers, tab));
+        // 移除這裡的排序，讓 useMemo 統一處理
+        setServers(result.servers);
         setTotal(result.total);
         setTotalPages(result.totalPages);
         setCurrentPage(page);
@@ -235,7 +235,6 @@ export default function DiscordServerListPageClient({
     (e: React.CompositionEvent<HTMLInputElement>) => {
       setIsComposing(false);
       const value = e.currentTarget.value;
-      // 1. Finalize the search query state and start search
       setSearchQuery(value); 
       setCurrentPage(1);
       value.trim() ? setIsSearching(true) : setIsSearching(false);
@@ -249,12 +248,10 @@ export default function DiscordServerListPageClient({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       
-      // 2. ALWAYS update the live input value for immediate feedback
       setInputValue(value); 
       
-      // 3. ONLY run search-triggering logic if NOT composing
       if (!isComposing) {
-        setSearchQuery(value); // Update the state that holds the search term
+        setSearchQuery(value);
         setCurrentPage(1);
         value.trim() ? setIsSearching(true) : setIsSearching(false);
         if (value.trim()) setTimeout(() => setIsSearching(false), 300);
@@ -310,10 +307,6 @@ export default function DiscordServerListPageClient({
     [allServersForFiltering],
   );
 
-  // --- Effects ---
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
   useEffect(() => {
     const tab = searchParams.get('tab');
     const search = searchParams.get('search');
