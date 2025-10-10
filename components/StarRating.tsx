@@ -30,6 +30,12 @@ export const StarRating: React.FC<StarRatingProps> = ({
   className,
 }) => {
   const { data: session } = useSession();
+  
+  // 如果未登入，不顯示按鈕
+  if (!session) {
+    return null;
+  }
+
   const [hoverValue, setHoverValue] = useState<number | null>(null);
 
   // 移除可能導致組件不渲染的 session 檢查
