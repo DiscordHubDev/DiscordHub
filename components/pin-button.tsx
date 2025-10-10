@@ -141,14 +141,30 @@ export default function PinButton({
       return;
     }
 
-    // 確認是擁有者
-    if (
-      session?.discordProfile?.id !== ownerId &&
-      type === 'bot' &&
-      devs &&
-      devs.includes(session?.discordProfile?.id ?? '')
-    ) {
-      showError('您只能為自己的項目置頂！');
+    const currentUserId = session?.discordProfile?.id;
+
+    let isAllowed = false;
+
+    if (type === 'server') {
+      if (currentUserId === ownerId) {
+        isAllowed = true;
+      }
+    } else if (type === 'bot') {
+      if (devs && devs.includes(currentUserId ?? '')) {
+        isAllowed = true;
+      }
+    }
+
+    if (!isAllowed) {
+      let errorMessage = '您沒有權限為此項目置頂。';
+      
+      if (type === 'server') {
+          errorMessage = '只有項目所有者 (Owner) 才能為伺服器項目置頂！';
+      } else if (type === 'bot') {
+          errorMessage = '只有項目開發者 (Dev) 才能為機器人項目置頂！';
+      }
+
+      showError(errorMessage);
       return;
     }
 
